@@ -1,0 +1,17 @@
+# 【微信开发者工具相关】
+project.private.config.json
+
+.temp/
+.upload/
+dist/
+
+miniprogram_npm/
+
+# 【开发环境与系统相关】
+node_modules/
+
+.DS_Store
+Thumbs.db
+
+.vscode/
+*.log
