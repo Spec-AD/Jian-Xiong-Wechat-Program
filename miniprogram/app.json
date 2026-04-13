@@ -1,11 +1,15 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/hall/hall",
+    "pages/viewer/viewer",
     "pages/logs/logs"
   ],
   "window": {
     "navigationBarTextStyle": "black",
-    "navigationStyle": "custom"
+    "navigationBarTitleText": "健雄书院",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f4f7fb"
   },
   "style": "v2",
   "rendererOptions": {

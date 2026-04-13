@@ -1,18 +1,32 @@
 // app.ts
 App<IAppOption>({
-  globalData: {},
-  onLaunch() {
-    // 展示本地存储能力
-    const logs = wx.getStorageSync('logs') || []
-    logs.unshift(Date.now())
-    wx.setStorageSync('logs', logs)
+  globalData: {
+    userInfo: null as WechatMiniprogram.UserInfo | null,
+    openid: '',
+  },
 
-    // 登录
+  onLaunch() {
+    // 微信登录：获取 code，可发送给后台换取 openId / sessionKey
     wx.login({
       success: res => {
-        console.log(res.code)
-        // 发送 res.code 到后台换取 openId, sessionKey, unionId
+        if (res.code) {
+          console.log('wx.login code:', res.code)
+          // TODO: 将 res.code 发送到自己的后端换取 openId、sessionKey
+          // wx.request({ url: 'https://your-server/login', data: { code: res.code }, ... })
+        }
       },
+      fail: err => console.error('wx.login failed', err),
     })
+
+    // 恢复本地缓存的用户信息（如有）
+    const cached = wx.getStorageSync('userInfo')
+    if (cached) {
+      this.globalData.userInfo = cached
+    }
+  },
+
+  saveUserInfo(info: WechatMiniprogram.UserInfo) {
+    this.globalData.userInfo = info
+    wx.setStorageSync('userInfo', info)
   },
 })

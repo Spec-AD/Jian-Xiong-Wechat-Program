@@ -1,28 +1,36 @@
 <!--index.wxml-->
-<navigation-bar title="Weixin" back="{{false}}" color="black" background="#FFF"></navigation-bar>
-<scroll-view class="scrollarea" scroll-y type="list">
-  <view class="container">
-    <view class="userinfo">
-      <block wx:if="{{canIUseNicknameComp && !hasUserInfo}}">
+<view class="page">
+  <view class="hero">
+    <view class="logo-wrap">
+      <text class="logo-text">健雄</text>
+    </view>
+    <text class="title">健雄书院</text>
+    <text class="subtitle">南京大学 · 学生成果展示平台</text>
+  </view>
+
+  <view class="login-card">
+    <block wx:if="{{hasUserInfo}}">
+      <image class="avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill" />
+      <text class="welcome">欢迎，{{userInfo.nickName}}</text>
+      <button class="enter-btn" bindtap="goHall">进入大厅</button>
+    </block>
+    <block wx:else>
+      <text class="login-tip">登录后探索同学们的精彩成果</text>
+      <block wx:if="{{canIUseNicknameComp}}">
         <button class="avatar-wrapper" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
-          <image class="avatar" src="{{userInfo.avatarUrl}}"></image>
+          <image class="avatar-placeholder" src="{{userInfo.avatarUrl}}" mode="aspectFill" />
         </button>
-        <view class="nickname-wrapper">
+        <view class="nickname-row">
           <text class="nickname-label">昵称</text>
-          <input type="nickname" class="nickname-input" placeholder="请输入昵称" bind:change="onInputChange" />
+          <input type="nickname" class="nickname-input" placeholder="点击设置昵称" bind:change="onInputChange" />
         </view>
       </block>
-      <block wx:elif="{{!hasUserInfo}}">
-        <button wx:if="{{canIUseGetUserProfile}}" bindtap="getUserProfile"> 获取头像昵称 </button>
-        <view wx:else> 请使用2.10.4及以上版本基础库 </view>
-      </block>
-      <block wx:else>
-        <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" mode="cover"></image>
-        <text class="userinfo-nickname">{{userInfo.nickName}}</text>
-      </block>
-    </view>
-    <view class="usermotto">
-      <text class="user-motto">{{motto}}</text>
-    </view>
+      <button wx:if="{{canIUseGetUserProfile && !canIUseNicknameComp}}" class="login-btn" bindtap="getUserProfile">获取头像昵称</button>
+      <button class="guest-btn" bindtap="goHall">游客浏览</button>
+    </block>
   </view>
-</scroll-view>
+
+  <view class="footer">
+    <text class="footer-text">© 2024 南京大学健雄书院</text>
+  </view>
+</view>
