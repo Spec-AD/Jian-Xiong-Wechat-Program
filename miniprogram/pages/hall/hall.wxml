@@ -1,24 +1,53 @@
-<!--hall.wxml-->
+<!--pages/hall/hall.wxml-->
 <view class="page">
 
-  <!-- 顶部 Banner -->
-  <view class="banner">
-    <view class="banner-inner">
-      <text class="banner-title">成果大厅</text>
-      <text class="banner-sub">探索健雄学子的精彩作品</text>
-    </view>
-  </view>
-
-  <!-- 搜索栏 -->
+  <!-- ===== 顶部搜索栏 ===== -->
   <view class="search-bar">
     <view class="search-inner">
       <text class="search-icon">🔍</text>
-      <input class="search-input" placeholder="搜索作品、作者…" bindinput="onSearch" value="{{keyword}}" />
+      <input
+        class="search-input"
+        placeholder="搜索作品、作者、标签…"
+        bindinput="onSearch"
+        value="{{keyword}}"
+        confirm-type="search"
+      />
+      <text wx:if="{{keyword}}" class="search-clear" bindtap="onSearchClear">✕</text>
     </view>
   </view>
 
-  <!-- 分类标签 -->
-  <scroll-view class="tab-scroll" scroll-x>
+  <!-- ===== Banner 轮播（推荐作品）===== -->
+  <swiper
+    wx:if="{{bannerList.length > 0}}"
+    class="banner-swiper"
+    autoplay
+    interval="4000"
+    circular
+    indicator-dots
+    indicator-color="rgba(255,255,255,0.5)"
+    indicator-active-color="#ffffff"
+  >
+    <swiper-item
+      wx:for="{{bannerList}}"
+      wx:key="id"
+      bindtap="onBannerTap"
+      data-item="{{item}}"
+    >
+      <view class="banner-item">
+        <view class="banner-placeholder">
+          <text class="banner-icon">{{item.typeIcon}}</text>
+        </view>
+        <view class="banner-overlay">
+          <view class="banner-tag">{{item.typeName}}</view>
+          <text class="banner-title">{{item.title}}</text>
+          <text class="banner-author">{{item.author}}</text>
+        </view>
+      </view>
+    </swiper-item>
+  </swiper>
+
+  <!-- ===== 分类标签 ===== -->
+  <scroll-view class="tab-scroll" scroll-x enable-flex>
     <view class="tab-list">
       <view
         wx:for="{{categories}}"
@@ -27,57 +56,62 @@
         bindtap="onTabTap"
         data-id="{{item.id}}"
       >
-        <text>{{item.icon}} {{item.name}}</text>
+        {{item.icon}} {{item.name}}
       </view>
     </view>
   </scroll-view>
 
-  <!-- 作品列表 -->
-  <scroll-view class="work-scroll" scroll-y enhanced show-scrollbar="{{false}}">
-    <view class="work-grid">
-      <view
-        wx:for="{{filteredWorks}}"
-        wx:key="id"
-        class="work-card"
-        bindtap="onWorkTap"
-        data-item="{{item}}"
-      >
-        <!-- 封面 -->
-        <view class="card-cover">
-          <image
-            wx:if="{{item.cover}}"
-            class="cover-img"
-            src="{{item.cover}}"
-            mode="aspectFill"
-            lazy-load
-          />
-          <view wx:else class="cover-placeholder">
-            <text class="cover-icon">{{item.typeIcon}}</text>
-          </view>
-          <view class="type-badge">{{item.typeName}}</view>
+  <!-- ===== 列表区域头 ===== -->
+  <view class="list-header">
+    <text class="list-header-text">全部作品</text>
+    <text class="list-count">共 {{filteredWorks.length}} 项</text>
+  </view>
+
+  <!-- ===== 作品网格 ===== -->
+  <view class="work-grid">
+    <view
+      wx:for="{{filteredWorks}}"
+      wx:key="id"
+      class="work-card"
+      bindtap="onWorkTap"
+      data-item="{{item}}"
+    >
+      <!-- 封面 -->
+      <view class="card-cover">
+        <image
+          wx:if="{{item.cover}}"
+          class="cover-img"
+          src="{{item.cover}}"
+          mode="aspectFill"
+          lazy-load
+        />
+        <view wx:else class="cover-placeholder">
+          <text class="cover-icon">{{item.typeIcon}}</text>
         </view>
-        <!-- 信息 -->
-        <view class="card-info">
-          <text class="card-title">{{item.title}}</text>
-          <text class="card-author">{{item.author}}</text>
-          <view class="card-meta">
-            <text class="card-date">{{item.date}}</text>
-            <view class="card-likes">
-              <text class="like-icon">♥</text>
-              <text class="like-count">{{item.likes}}</text>
-            </view>
+        <view class="type-badge">{{item.typeName}}</view>
+      </view>
+
+      <!-- 信息 -->
+      <view class="card-info">
+        <text class="card-title">{{item.title}}</text>
+        <text class="card-author">{{item.author}}</text>
+        <view class="card-meta">
+          <text class="card-date">{{item.date}}</text>
+          <view class="card-stats">
+            <text class="stat-text">👁 {{item.views}}</text>
+            <text class="stat-text">♥ {{item.likes}}</text>
           </view>
         </view>
       </view>
     </view>
+  </view>
 
-    <!-- 空状态 -->
-    <view wx:if="{{filteredWorks.length === 0}}" class="empty">
-      <text class="empty-icon">🔭</text>
-      <text class="empty-text">暂无相关作品</text>
-    </view>
+  <!-- 空状态 -->
+  <view wx:if="{{filteredWorks.length === 0}}" class="empty">
+    <text class="empty-icon">🔭</text>
+    <text class="empty-text">暂无相关作品</text>
+  </view>
 
-    <view class="list-bottom"></view>
-  </scroll-view>
+  <view class="list-bottom"></view>
 
 </view>

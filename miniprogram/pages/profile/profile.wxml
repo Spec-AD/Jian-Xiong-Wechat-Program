@@ -1,0 +1,78 @@
+<!--pages/profile/profile.wxml-->
+<view class="page">
+
+  <!-- ===== 用户信息头部 ===== -->
+  <view class="profile-header">
+    <image
+      class="profile-avatar"
+      src="{{userInfo.avatarUrl}}"
+      mode="aspectFill"
+    />
+    <view class="profile-info">
+      <text class="profile-name">{{userInfo.nickName || '书院同学'}}</text>
+      <text class="profile-school">南京大学健雄书院</text>
+    </view>
+  </view>
+
+  <!-- ===== 数据统计 ===== -->
+  <view class="stats-card">
+    <view class="stat-item">
+      <text class="stat-num">{{stats.publishCount}}</text>
+      <text class="stat-label">发布</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-num">{{stats.likeCount}}</text>
+      <text class="stat-label">获赞</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-num">{{stats.viewCount}}</text>
+      <text class="stat-label">浏览量</text>
+    </view>
+  </view>
+
+  <!-- ===== 功能菜单 ===== -->
+  <view class="menu-group">
+    <text class="menu-group-title">我的内容</text>
+    <view class="menu-item" bindtap="onMenuTap" data-key="myPublish">
+      <text class="menu-icon">📋</text>
+      <text class="menu-label">我的发布</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="onMenuTap" data-key="myLike">
+      <text class="menu-icon">❤️</text>
+      <text class="menu-label">我的点赞</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <view class="menu-group">
+    <text class="menu-group-title">关于</text>
+    <view class="menu-item" bindtap="onMenuTap" data-key="about">
+      <text class="menu-icon">🏫</text>
+      <text class="menu-label">关于书院</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="onMenuTap" data-key="logs">
+      <text class="menu-icon">📝</text>
+      <text class="menu-label">启动日志</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="onMenuTap" data-key="privacy">
+      <text class="menu-icon">🔒</text>
+      <text class="menu-label">隐私政策</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="logout-wrap">
+    <button class="logout-btn" bindtap="onLogout">退出登录</button>
+  </view>
+
+  <view class="footer">
+    <text class="footer-text">南京大学健雄书院 © 2024 · v1.0.0</text>
+  </view>
+
+</view>

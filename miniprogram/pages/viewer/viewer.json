@@ -1,1 +1,6 @@
-{"navigationBarTitleText":"作品预览","navigationBarBackgroundColor":"#ffffff","navigationBarTextStyle":"black"}
+{
+  "navigationBarTitleText": "作品预览",
+  "navigationBarBackgroundColor": "#4a90e2",
+  "navigationBarTextStyle": "white",
+  "usingComponents": {}
+}

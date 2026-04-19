@@ -1,0 +1,210 @@
+/* pages/detail/detail.wxss */
+
+.detail-page {
+  background: var(--color-bg);
+  min-height: 100vh;
+  padding-bottom: 140rpx; /* 为底部操作栏留空 */
+}
+
+/* ===== 封面 ===== */
+.detail-cover {
+  width: 100%;
+  height: 380rpx;
+  display: block;
+}
+
+/* ===== 媒体区块通用 ===== */
+.media-block {
+  width: 100%;
+  background: #000;
+}
+
+/* ===== 视频播放器 ===== */
+.video-player {
+  width: 100%;
+  height: 420rpx;
+}
+
+/* ===== 音频播放器 ===== */
+.audio-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40rpx 32rpx;
+  margin: 0;
+  border-radius: 0;
+  background: #FFFFFF;
+}
+
+.audio-cover {
+  width: 220rpx;
+  height: 220rpx;
+  border-radius: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.audio-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.audio-controls {
+  width: 100%;
+}
+
+.audio-time {
+  display: block;
+  text-align: center;
+  margin-bottom: 12rpx;
+}
+
+.audio-slider {
+  width: 100%;
+  margin-bottom: 16rpx;
+}
+
+.audio-btn-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48rpx;
+}
+
+.audio-btn {
+  color: var(--color-text-secondary);
+  font-size: 26rpx;
+}
+
+.audio-play-btn {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44rpx;
+}
+
+/* ===== 图片区块 ===== */
+.image-block {
+  width: 100%;
+  background: #111;
+}
+
+.image-scroll {
+  width: 100%;
+  height: 500rpx;
+}
+
+.image-scroll-inner {
+  display: flex;
+  flex-direction: row;
+  height: 500rpx;
+}
+
+.image-scroll-item {
+  width: 680rpx;
+  height: 500rpx;
+  flex-shrink: 0;
+  margin-right: 8rpx;
+}
+
+.long-image-scroll {
+  width: 100%;
+  max-height: 80vh;
+}
+
+.long-image {
+  width: 100%;
+  display: block;
+}
+
+/* ===== PDF 区块 ===== */
+.pdf-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48rpx 40rpx;
+  border-radius: 0;
+  background: #FFFFFF;
+}
+
+.pdf-icon {
+  width: 120rpx;
+  height: 120rpx;
+  margin-bottom: 24rpx;
+}
+
+.pdf-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ===== 信息卡片 ===== */
+.info-card {
+  margin: 24rpx;
+  border-radius: 16rpx;
+}
+
+.detail-title {
+  line-height: 1.4;
+  flex: 1;
+  margin-right: 16rpx;
+}
+
+.author-avatar-lg {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+}
+
+.detail-desc {
+  color: var(--color-text);
+  font-size: 28rpx;
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.stat-item {
+  min-width: 60rpx;
+}
+
+/* ===== 底部操作栏 ===== */
+.action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120rpx;
+  background: #FFFFFF;
+  border-top: 1rpx solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 24rpx;
+  padding-bottom: env(safe-area-inset-bottom);
+  box-sizing: border-box;
+  z-index: 100;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  flex: 1;
+}
+
+.action-icon {
+  font-size: 48rpx;
+}
+
+.action-label {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+}

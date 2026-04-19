@@ -1,0 +1,67 @@
+<!-- pages/login/login.wxml -->
+<view class="login-page">
+
+  <!-- 顶部背景区 -->
+  <view class="login-header">
+    <image class="login-logo" src="/assets/images/logo.png" mode="aspectFit" />
+    <text class="login-title">健雄书院</text>
+    <text class="login-subtitle">南京大学学生成果展示平台</text>
+  </view>
+
+  <!-- 登录卡片 -->
+  <view class="login-card card">
+
+    <!-- 已获取用户信息时展示头像昵称 -->
+    <block wx:if="{{userInfo}}">
+      <view class="user-preview flex-center" style="flex-direction:column;gap:16rpx;">
+        <image class="user-avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill" />
+        <text class="text-bold text-lg">{{userInfo.nickName}}</text>
+      </view>
+      <button class="btn-primary mt-24" bindtap="goToHall">进入书院大厅</button>
+      <button class="btn-outline mt-16" bindtap="logout">切换账号</button>
+    </block>
+
+    <!-- 未登录时引导授权 -->
+    <block wx:else>
+      <view class="login-desc flex-col" style="align-items:center;margin-bottom:40rpx;">
+        <text class="text-lg text-bold text-center">微信一键登录</text>
+        <text class="text-secondary text-sm text-center mt-8">
+          授权后即可展示与查看同学们的精彩成果
+        </text>
+      </view>
+
+      <!-- 头像昵称获取（微信新规：使用 type=nickname 输入框 + chooseAvatar） -->
+      <button class="btn-weixin" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+        <image src="/assets/images/wechat_icon.png" class="weixin-icon" mode="aspectFit"/>
+        <text>使用微信头像</text>
+      </button>
+
+      <view class="nickname-row mt-24">
+        <text class="nickname-label">昵称：</text>
+        <input
+          class="nickname-input"
+          type="nickname"
+          placeholder="点击填写昵称"
+          value="{{nickNameInput}}"
+          bindinput="onNickNameInput"
+          bindblur="onNickNameBlur"
+        />
+      </view>
+
+      <button class="btn-primary mt-32" bindtap="onLogin" loading="{{loading}}">
+        授权并进入
+      </button>
+
+      <text class="text-secondary text-sm text-center mt-16" style="display:block;">
+        登录即代表同意《用户协议》与《隐私政策》
+      </text>
+    </block>
+
+  </view>
+
+  <!-- 底部装饰 -->
+  <view class="login-footer">
+    <text class="text-secondary text-sm">南京大学健雄书院 © 2024</text>
+  </view>
+
+</view>

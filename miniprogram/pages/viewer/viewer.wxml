@@ -1,12 +1,7 @@
-<!--viewer.wxml-->
+<!--pages/viewer/viewer.wxml-->
 <view class="page">
 
-  <!-- 标题栏 -->
-  <view class="header">
-    <text class="header-title">{{title}}</text>
-  </view>
-
-  <!-- 视频 -->
+  <!-- ===== 视频 ===== -->
   <view wx:if="{{type === 'video'}}" class="media-wrap">
     <video
       class="video-player"
@@ -16,64 +11,118 @@
       show-fullscreen-btn
       show-play-btn
       enable-progress-gesture
-      objectFit="contain"
+      object-fit="contain"
+      poster=""
     />
   </view>
 
-  <!-- 音频 -->
+  <!-- ===== 音频播放器 ===== -->
   <view wx:elif="{{type === 'audio'}}" class="audio-wrap">
-    <view class="audio-cover">
-      <text class="audio-icon">🎵</text>
+    <view class="audio-disc {{audioPlaying ? 'audio-disc--spin' : ''}}">
+      <text class="audio-disc-icon">🎵</text>
     </view>
-    <view class="audio-title">{{title}}</view>
-    <view class="audio-controls">
-      <text class="ctrl-btn" bindtap="onAudioPlay">{{audioPlaying ? '⏸' : '▶'}}</text>
-      <slider
-        class="audio-slider"
-        value="{{audioProgress}}"
-        max="{{audioDuration}}"
-        bindchange="onSliderChange"
-        activeColor="#4a90e2"
-        block-size="16"
-      />
-      <view class="audio-time">
-        <text>{{audioCurrentTime}}</text>
-        <text>{{audioDurationText}}</text>
+    <text class="audio-title">{{title}}</text>
+    <text class="audio-time-row">
+      <text class="audio-cur">{{audioCurrentTime}}</text>
+      <text class="audio-sep"> / </text>
+      <text class="audio-dur">{{audioDurationText}}</text>
+    </text>
+    <slider
+      class="audio-slider"
+      value="{{audioProgress}}"
+      max="{{audioDuration}}"
+      bindchange="onSliderChange"
+      activeColor="#4a90e2"
+      backgroundColor="#e8edf5"
+      block-size="18"
+    />
+    <view class="audio-btn-row">
+      <view class="audio-ctrl-btn" bindtap="onSeekBack">
+        <text class="ctrl-icon">⏪</text>
+        <text class="ctrl-label">15s</text>
+      </view>
+      <view class="audio-play-btn" bindtap="onAudioPlay">
+        <text class="play-icon">{{audioPlaying ? '⏸' : '▶'}}</text>
+      </view>
+      <view class="audio-ctrl-btn" bindtap="onSeekForward">
+        <text class="ctrl-label">15s</text>
+        <text class="ctrl-icon">⏩</text>
       </view>
     </view>
   </view>
 
-  <!-- 图片（含长图） -->
+  <!-- ===== 图片（支持长图 + 多图）===== -->
   <view wx:elif="{{type === 'image'}}" class="image-wrap">
-    <scroll-view scroll-y class="image-scroll">
-      <image
-        class="preview-image"
-        src="{{fileUrl}}"
-        mode="widthFix"
-        lazy-load
-        bindtap="onImageTap"
-      />
-    </scroll-view>
-    <text class="image-hint">点击图片可全屏查看</text>
+    <!-- 多图横向滑动 -->
+    <block wx:if="{{imageList.length > 1}}">
+      <scroll-view scroll-x class="image-h-scroll" enable-flex>
+        <view class="image-h-inner">
+          <image
+            wx:for="{{imageList}}"
+            wx:key="index"
+            class="image-h-item"
+            src="{{item}}"
+            mode="aspectFill"
+            lazy-load
+            bindtap="onImageTap"
+            data-src="{{item}}"
+          />
+        </view>
+      </scroll-view>
+      <text class="image-hint">← 左右滑动查看多图 · 点击全屏</text>
+    </block>
+    <!-- 单图竖向滚动（长图）-->
+    <block wx:else>
+      <scroll-view scroll-y class="image-v-scroll">
+        <image
+          class="preview-image"
+          src="{{fileUrl}}"
+          mode="widthFix"
+          lazy-load
+          bindtap="onImageTap"
+          data-src="{{fileUrl}}"
+        />
+      </scroll-view>
+      <text class="image-hint">支持长图滚动 · 点击全屏查看</text>
+    </block>
   </view>
 
-  <!-- PDF / 文档 -->
+  <!-- ===== PDF / 文档 ===== -->
   <view wx:elif="{{type === 'doc'}}" class="doc-wrap">
-    <view class="doc-card" bindtap="onOpenDoc">
-      <text class="doc-icon">📄</text>
-      <view class="doc-info">
-        <text class="doc-name">{{title}}</text>
-        <text class="doc-hint">点击在微信内打开文档</text>
-      </view>
-      <text class="doc-arrow">›</text>
+    <view class="doc-preview-card">
+      <text class="doc-big-icon">📄</text>
+      <text class="doc-name">{{title}}</text>
+      <text class="doc-sub">PDF 文档</text>
     </view>
+    <button
+      class="doc-open-btn"
+      loading="{{docLoading}}"
+      bindtap="onOpenDoc"
+    >在微信内打开文档</button>
+    <text class="doc-tip">文档将在微信内置阅读器中打开\n支持从菜单转发或保存</text>
   </view>
 
-  <!-- 无法识别 -->
+  <!-- ===== 不支持的格式 ===== -->
   <view wx:else class="unsupported">
     <text class="unsupported-icon">🔗</text>
     <text class="unsupported-text">暂不支持该文件格式</text>
-    <button class="open-btn" bindtap="onOpenDoc">在浏览器中打开</button>
+    <button class="open-btn" bindtap="onOpenDoc">尝试打开</button>
+  </view>
+
+  <!-- ===== 底部操作栏（通用）===== -->
+  <view class="action-bar">
+    <view class="action-btn" bindtap="onLike">
+      <text class="action-icon">{{liked ? '❤️' : '🤍'}}</text>
+      <text class="action-label">{{liked ? '已赞' : '点赞'}}</text>
+    </view>
+    <view class="action-btn" bindtap="onShare">
+      <text class="action-icon">📤</text>
+      <text class="action-label">分享</text>
+    </view>
+    <view class="action-btn" bindtap="onDownload">
+      <text class="action-icon">⬇️</text>
+      <text class="action-label">下载</text>
+    </view>
   </view>
 
 </view>

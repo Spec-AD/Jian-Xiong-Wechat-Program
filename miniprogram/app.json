@@ -3,13 +3,41 @@
     "pages/index/index",
     "pages/hall/hall",
     "pages/viewer/viewer",
+    "pages/profile/profile",
     "pages/logs/logs"
   ],
   "window": {
-    "navigationBarTextStyle": "black",
+    "navigationBarTextStyle": "white",
     "navigationBarTitleText": "健雄书院",
-    "navigationBarBackgroundColor": "#ffffff",
-    "backgroundColor": "#f4f7fb"
+    "navigationBarBackgroundColor": "#4a90e2",
+    "backgroundColor": "#f4f7fb",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "color": "#7a8fa8",
+    "selectedColor": "#4a90e2",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/icons/home.png",
+        "selectedIconPath": "assets/icons/home_active.png"
+      },
+      {
+        "pagePath": "pages/hall/hall",
+        "text": "大厅",
+        "iconPath": "assets/icons/hall.png",
+        "selectedIconPath": "assets/icons/hall_active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "assets/icons/profile.png",
+        "selectedIconPath": "assets/icons/profile_active.png"
+      }
+    ]
   },
   "style": "v2",
   "rendererOptions": {

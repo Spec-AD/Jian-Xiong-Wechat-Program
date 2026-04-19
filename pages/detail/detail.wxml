@@ -1,0 +1,181 @@
+<!-- pages/detail/detail.wxml -->
+<view class="detail-page">
+
+  <!-- ===== 加载中 ===== -->
+  <view wx:if="{{loading}}" class="loading-wrap" style="height:60vh;">
+    <text>加载中…</text>
+  </view>
+
+  <block wx:elif="{{item}}">
+
+    <!-- ===== 封面（非视频时展示）===== -->
+    <image
+      wx:if="{{item.fileType !== 'video'}}"
+      class="detail-cover"
+      src="{{item.coverUrl || '/assets/images/default_cover.png'}}"
+      mode="aspectFill"
+    />
+
+    <!-- ===============================
+         文件内容区：按类型渲染
+    ================================ -->
+
+    <!-- ── 视频 ── -->
+    <view wx:if="{{item.fileType === 'video'}}" class="media-block">
+      <video
+        id="myVideo"
+        class="video-player"
+        src="{{item.fileUrl}}"
+        controls
+        autoplay="{{false}}"
+        show-fullscreen-btn
+        enable-progress-gesture
+        object-fit="contain"
+        poster="{{item.coverUrl}}"
+        bindplay="onVideoPlay"
+        bindpause="onVideoPause"
+        bindended="onVideoEnded"
+        binderror="onVideoError"
+      />
+    </view>
+
+    <!-- ── 音频 ── -->
+    <view wx:if="{{item.fileType === 'audio'}}" class="media-block audio-block card">
+      <image class="audio-cover" src="{{item.coverUrl || '/assets/images/default_cover.png'}}" mode="aspectFill" />
+      <view class="audio-info">
+        <text class="text-bold text-lg">{{item.title}}</text>
+        <text class="text-secondary text-sm mt-8">{{item.authorName}}</text>
+      </view>
+      <view class="audio-controls">
+        <text class="audio-time text-sm text-secondary">{{audioCurrentTime}} / {{audioDuration}}</text>
+        <slider
+          class="audio-slider"
+          value="{{audioProgress}}"
+          max="100"
+          activeColor="#4A2C6E"
+          backgroundColor="#EEEEEE"
+          block-size="20"
+          bindchange="onAudioSliderChange"
+        />
+        <view class="audio-btn-row">
+          <view class="audio-btn" bindtap="onAudioSeekBack">
+            <text>⏪ 15s</text>
+          </view>
+          <view class="audio-play-btn" bindtap="onAudioToggle">
+            <text>{{audioPlaying ? '⏸' : '▶️'}}</text>
+          </view>
+          <view class="audio-btn" bindtap="onAudioSeekForward">
+            <text>15s ⏩</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- ── 图片（支持长图、多图）── -->
+    <view wx:if="{{item.fileType === 'image'}}" class="image-block">
+      <!-- 多图时用 scroll-view 横滑，单图支持长图 scroll -->
+      <block wx:if="{{item.imageList && item.imageList.length > 1}}">
+        <scroll-view scroll-x class="image-scroll" enable-flex>
+          <view class="image-scroll-inner">
+            <image
+              wx:for="{{item.imageList}}"
+              wx:key="index"
+              class="image-scroll-item"
+              src="{{item}}"
+              mode="aspectFill"
+              lazy-load
+              bindtap="onImagePreview"
+              data-src="{{item}}"
+              data-list="{{item.imageList}}"
+            />
+          </view>
+        </scroll-view>
+      </block>
+      <!-- 单图（支持竖向滚动长图）-->
+      <block wx:else>
+        <scroll-view scroll-y class="long-image-scroll">
+          <image
+            class="long-image"
+            src="{{item.fileUrl || item.coverUrl}}"
+            mode="widthFix"
+            lazy-load
+            bindtap="onImagePreview"
+            data-src="{{item.fileUrl || item.coverUrl}}"
+            data-list="{{[item.fileUrl || item.coverUrl]}}"
+          />
+        </scroll-view>
+      </block>
+    </view>
+
+    <!-- ── PDF（使用 web-view 加载，需在后台配置业务域名）── -->
+    <!-- 注意：pdf 预览建议使用 wx.downloadFile + wx.openDocument，见 JS 实现 -->
+    <view wx:if="{{item.fileType === 'pdf'}}" class="pdf-block card">
+      <image src="/assets/images/pdf_icon.png" class="pdf-icon" mode="aspectFit"/>
+      <view class="pdf-info">
+        <text class="text-bold">{{item.title}}.pdf</text>
+        <text class="text-secondary text-sm mt-8">点击下方按钮预览完整文档</text>
+      </view>
+      <button class="btn-primary mt-24" bindtap="onOpenPDF" loading="{{pdfLoading}}">
+        📄 预览 PDF
+      </button>
+    </view>
+
+    <!-- ===== 成果信息卡 ===== -->
+    <view class="info-card card page-content">
+
+      <!-- 标题与类别 -->
+      <view class="flex-between">
+        <text class="detail-title text-bold text-xl flex-1">{{item.title}}</text>
+        <view class="tag">{{item.categoryLabel}}</view>
+      </view>
+
+      <!-- 作者信息 -->
+      <view class="author-row flex mt-24" style="align-items:center;gap:16rpx;">
+        <image class="author-avatar-lg" src="{{item.authorAvatar || '/assets/images/default_avatar.png'}}" mode="aspectFill"/>
+        <view class="flex-col flex-1">
+          <text class="text-bold">{{item.authorName}}</text>
+          <text class="text-secondary text-sm">{{item.publishTime || '2024-09-01'}}</text>
+        </view>
+        <view class="flex" style="gap:24rpx;">
+          <view class="stat-item flex-col flex-center">
+            <text class="text-bold text-primary">{{item.views || 0}}</text>
+            <text class="text-secondary text-sm">浏览</text>
+          </view>
+          <view class="stat-item flex-col flex-center">
+            <text class="text-bold text-primary">{{item.likes || 0}}</text>
+            <text class="text-secondary text-sm">点赞</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="divider mt-24"></view>
+
+      <!-- 描述 -->
+      <text class="detail-desc" style="line-height:1.8;">{{item.description}}</text>
+
+      <!-- 标签列表 -->
+      <view wx:if="{{item.tags && item.tags.length}}" class="tags-row flex mt-24" style="flex-wrap:wrap;gap:12rpx;">
+        <view wx:for="{{item.tags}}" wx:key="index" class="tag">{{item}}</view>
+      </view>
+
+    </view>
+
+    <!-- ===== 操作栏 ===== -->
+    <view class="action-bar">
+      <view class="action-btn" bindtap="onLike">
+        <text class="action-icon">{{liked ? '❤️' : '🤍'}}</text>
+        <text class="action-label">{{liked ? '已点赞' : '点赞'}}</text>
+      </view>
+      <view class="action-btn" bindtap="onShare">
+        <text class="action-icon">📤</text>
+        <text class="action-label">分享</text>
+      </view>
+      <view class="action-btn" bindtap="onDownload">
+        <text class="action-icon">⬇️</text>
+        <text class="action-label">下载</text>
+      </view>
+    </view>
+
+  </block>
+
+</view>

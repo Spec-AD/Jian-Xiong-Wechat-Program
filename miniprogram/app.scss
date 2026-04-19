@@ -1,13 +1,30 @@
-/**app.scss**/
-page {
-  box-sizing: border-box;
-} 
+/**app.scss — 健雄书院全局样式**/
 
-/* 全局按钮重置 */
-button::after {
-  border: none;
+/* ===== CSS 变量 ===== */
+page {
+  --c-primary:      #4a90e2;
+  --c-primary-dark: #2c6fcf;
+  --c-secondary:    #2ecc71;
+  --c-bg:           #f4f7fb;
+  --c-card:         #ffffff;
+  --c-text:         #1a2a4a;
+  --c-text-sub:     #7a8fa8;
+  --c-border:       #e8edf5;
+  --c-danger:       #e57373;
+  --radius-card:    24rpx;
+  --shadow-card:    0 4rpx 24rpx rgba(74,144,226,0.10);
+  --gradient-main:  linear-gradient(135deg, #4a90e2 0%, #2ecc71 100%);
+
+  box-sizing: border-box;
+  background: var(--c-bg);
+  font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  color: var(--c-text);
+  font-size: 28rpx;
+  line-height: 1.6;
 }
 
+/* ===== 全局按钮重置 ===== */
+button::after { border: none; }
 button {
   background: transparent;
   border-radius: 0;
@@ -16,4 +33,96 @@ button {
   line-height: inherit;
   font-size: inherit;
   color: inherit;
+}
+
+/* ===== 通用卡片 ===== */
+.g-card {
+  background: var(--c-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* ===== 渐变主按钮 ===== */
+.g-btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 96rpx;
+  background: var(--gradient-main);
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 600;
+  border-radius: 48rpx;
+  letter-spacing: 2rpx;
+  box-shadow: 0 8rpx 28rpx rgba(74,144,226,0.25);
+}
+
+/* ===== 镂空次级按钮 ===== */
+.g-btn-outline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 88rpx;
+  background: transparent;
+  color: var(--c-text-sub);
+  font-size: 28rpx;
+  border-radius: 44rpx;
+  border: 2rpx solid var(--c-border);
+}
+
+/* ===== 标签 ===== */
+.g-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 18rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  background: rgba(74,144,226,0.10);
+  color: var(--c-primary);
+}
+
+/* ===== Flex 工具 ===== */
+.g-row        { display: flex; flex-direction: row; align-items: center; }
+.g-col        { display: flex; flex-direction: column; }
+.g-center     { display: flex; align-items: center; justify-content: center; }
+.g-between    { display: flex; align-items: center; justify-content: space-between; }
+.g-flex1      { flex: 1; }
+
+/* ===== 文字工具 ===== */
+.g-text-sub   { color: var(--c-text-sub); }
+.g-text-bold  { font-weight: 700; }
+.g-text-sm    { font-size: 24rpx; }
+.g-text-lg    { font-size: 36rpx; }
+.g-text-center{ text-align: center; }
+
+/* ===== 分割线 ===== */
+.g-divider {
+  width: 100%;
+  height: 1rpx;
+  background: var(--c-border);
+}
+
+/* ===== 空状态 ===== */
+.g-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 0;
+  color: var(--c-text-sub);
+}
+.g-empty-icon { font-size: 80rpx; margin-bottom: 24rpx; }
+.g-empty-text { font-size: 28rpx; }
+
+/* ===== 加载占位 ===== */
+.g-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48rpx;
+  color: var(--c-text-sub);
+  font-size: 26rpx;
 }

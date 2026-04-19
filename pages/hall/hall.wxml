@@ -1,0 +1,119 @@
+<!-- pages/hall/hall.wxml -->
+<view class="hall-page">
+
+  <!-- ===== 搜索栏 ===== -->
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <image src="/assets/images/search.png" class="search-icon" mode="aspectFit"/>
+      <input
+        class="search-input"
+        placeholder="搜索成果、同学姓名…"
+        value="{{keyword}}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
+        confirm-type="search"
+      />
+      <view wx:if="{{keyword}}" class="search-clear" bindtap="onSearchClear">✕</view>
+    </view>
+  </view>
+
+  <!-- ===== 分类筛选 ===== -->
+  <scroll-view class="category-scroll" scroll-x enable-flex>
+    <view class="category-list">
+      <view
+        wx:for="{{categories}}"
+        wx:key="key"
+        class="category-item {{activeCategory === item.key ? 'category-item--active' : ''}}"
+        bindtap="onCategoryTap"
+        data-key="{{item.key}}"
+      >
+        {{item.label}}
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- ===== 置顶 Banner 轮播（推荐成果）===== -->
+  <swiper
+    wx:if="{{bannerList.length > 0}}"
+    class="banner-swiper"
+    autoplay
+    interval="4000"
+    circular
+    indicator-dots
+    indicator-color="rgba(255,255,255,0.5)"
+    indicator-active-color="#FFFFFF"
+  >
+    <swiper-item wx:for="{{bannerList}}" wx:key="id" bindtap="onBannerTap" data-item="{{item}}">
+      <image class="banner-image" src="{{item.coverUrl}}" mode="aspectFill"/>
+      <view class="banner-title-wrap">
+        <text class="banner-title">{{item.title}}</text>
+        <text class="banner-author text-sm">{{item.authorName}}</text>
+      </view>
+    </swiper-item>
+  </swiper>
+
+  <!-- ===== 成果列表 ===== -->
+  <view class="achievement-list page-content">
+
+    <!-- 列表头 -->
+    <view class="list-header flex-between mb-16">
+      <text class="text-bold">{{activeCategory === 'all' ? '全部成果' : categories[activeCategoryIndex].label}}</text>
+      <text class="text-secondary text-sm">共 {{total}} 项</text>
+    </view>
+
+    <!-- 成果卡片 -->
+    <view
+      wx:for="{{achievementList}}"
+      wx:key="id"
+      class="achievement-card card"
+      bindtap="onAchievementTap"
+      data-item="{{item}}"
+    >
+      <!-- 封面 -->
+      <view class="card-cover-wrap">
+        <image
+          class="card-cover"
+          src="{{item.coverUrl || '/assets/images/default_cover.png'}}"
+          mode="aspectFill"
+          lazy-load
+        />
+        <!-- 类型角标 -->
+        <view class="file-type-badge badge-{{item.fileType}}">
+          {{item.fileTypeLabel}}
+        </view>
+      </view>
+
+      <!-- 内容区 -->
+      <view class="card-body">
+        <view class="flex-between">
+          <text class="card-title text-bold">{{item.title}}</text>
+          <view class="tag">{{item.categoryLabel}}</view>
+        </view>
+        <text class="card-desc text-secondary text-sm mt-8">{{item.description}}</text>
+        <view class="card-meta flex-between mt-16">
+          <view class="author-info flex" style="align-items:center;gap:12rpx;">
+            <image class="author-avatar" src="{{item.authorAvatar || '/assets/images/default_avatar.png'}}" mode="aspectFill"/>
+            <text class="text-sm">{{item.authorName}}</text>
+          </view>
+          <view class="flex" style="align-items:center;gap:24rpx;">
+            <text class="text-secondary text-sm">👁 {{item.views || 0}}</text>
+            <text class="text-secondary text-sm">❤️ {{item.likes || 0}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 加载更多 / 空状态 -->
+    <view wx:if="{{loading}}" class="loading-wrap">
+      <text>加载中…</text>
+    </view>
+    <view wx:elif="{{achievementList.length === 0 && !loading}}" class="empty-state">
+      <text class="text-secondary">暂无相关成果</text>
+    </view>
+    <view wx:elif="{{noMore}}" class="loading-wrap">
+      <text class="text-secondary text-sm">— 已加载全部 —</text>
+    </view>
+
+  </view>
+
+</view>
