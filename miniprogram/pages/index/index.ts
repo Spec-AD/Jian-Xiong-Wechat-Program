@@ -1,11 +1,12 @@
 // pages/index/index.ts — 首页（登录 + 已登录跳转）
+// AppUserInfo 已在 typings/index.d.ts 中全局声明：{ avatarUrl: string; nickName: string }
 const app = getApp<IAppOption>()
 
 const DEFAULT_AVATAR = 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
 
 Component({
   data: {
-    userInfo: { avatarUrl: DEFAULT_AVATAR, nickName: '' } as WechatMiniprogram.UserInfo,
+    userInfo: { avatarUrl: DEFAULT_AVATAR, nickName: '' } as AppUserInfo,
     hasUserInfo: false,
     loading: false,
     canIUseNicknameComp: wx.canIUse('input.type.nickname'),
@@ -13,7 +14,7 @@ Component({
 
   lifetimes: {
     attached() {
-      // 已有缓存用户信息则直接跳转大厅
+      // 已有缓存用户信息则直接展示，无需再次授权
       if (app.globalData.userInfo) {
         this.setData({
           userInfo: app.globalData.userInfo,
@@ -56,10 +57,8 @@ Component({
         return
       }
       this.setData({ loading: true })
-
       // TODO: 联合后端 openid 绑定
       app.saveUserInfo(userInfo)
-
       setTimeout(() => {
         this.setData({ loading: false })
         wx.switchTab({ url: '/pages/hall/hall' })
@@ -86,7 +85,7 @@ Component({
           if (res.confirm) {
             app.clearUserInfo()
             this.setData({
-              userInfo: { avatarUrl: DEFAULT_AVATAR, nickName: '' },
+              userInfo: { avatarUrl: DEFAULT_AVATAR, nickName: '' } as AppUserInfo,
               hasUserInfo: false,
             })
           }

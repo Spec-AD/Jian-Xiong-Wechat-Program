@@ -5,7 +5,7 @@ const app = getApp<IAppOption>()
 
 Page({
   data: {
-    userInfo: null as WechatMiniprogram.UserInfo | null,
+    userInfo: null as AppUserInfo | null,
     stats: {
       publishCount: 0,
       likeCount: 0,

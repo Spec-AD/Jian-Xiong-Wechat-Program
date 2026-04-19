@@ -1,7 +1,7 @@
 // app.ts
 App<IAppOption>({
   globalData: {
-    userInfo: null as WechatMiniprogram.UserInfo | null,
+    userInfo: null as AppUserInfo | null,
     openid: '',
     loginCode: '',
     baseUrl: '', // TODO: 替换为实际后端地址，如 'https://your-server.com/api'
@@ -49,7 +49,7 @@ App<IAppOption>({
   },
 
   /** 保存并持久化用户信息 */
-  saveUserInfo(info: WechatMiniprogram.UserInfo) {
+  saveUserInfo(info: AppUserInfo) {
     this.globalData.userInfo = info
     wx.setStorageSync('userInfo', info)
   },
