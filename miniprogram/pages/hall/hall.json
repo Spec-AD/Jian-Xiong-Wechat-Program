@@ -1,8 +1,1 @@
-{
-  "navigationBarTitleText": "成果大厅",
-  "navigationBarBackgroundColor": "#4a90e2",
-  "navigationBarTextStyle": "white",
-  "enablePullDownRefresh": true,
-  "backgroundTextStyle": "light",
-  "usingComponents": {}
-}
+{  "navigationBarTitleText": "大厅",  "navigationBarBackgroundColor": "#6A005F",  "navigationBarTextStyle": "white",  "enablePullDownRefresh": true,  "backgroundTextStyle": "light",  "usingComponents": {}}
