@@ -4,19 +4,23 @@ import path from 'path'
 import * as uploadController from '../controllers/upload.controller'
 import { authMiddleware } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
+import { isCosConfigured } from '../services/cos.service'
 
-// 配置文件存储（本地开发用）
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, path.resolve(__dirname, '../../uploads'))
-  },
-  filename: (_req, file, cb) => {
-    // 生成唯一文件名：时间戳 + 随机数 + 原扩展名
-    const ext = path.extname(file.originalname)
-    const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`
-    cb(null, name)
-  },
-})
+// 文件存储策略：
+// - 如果 COS 已配置 → 使用内存存储（直接流转发到 COS）
+// - 如果 COS 未配置 → 使用本地磁盘存储（开发环境降级）
+const storage = isCosConfigured()
+  ? multer.memoryStorage()
+  : multer.diskStorage({
+      destination: (_req, _file, cb) => {
+        cb(null, path.resolve(__dirname, '../../uploads'))
+      },
+      filename: (_req, file, cb) => {
+        const ext = path.extname(file.originalname)
+        const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`
+        cb(null, name)
+      },
+    })
 
 // 文件类型白名单
 const ALLOWED_TYPES = [
