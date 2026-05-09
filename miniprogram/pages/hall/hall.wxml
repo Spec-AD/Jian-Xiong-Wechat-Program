@@ -63,14 +63,14 @@
 
   <!-- ===== 列表区域头 ===== -->
   <view class="list-header">
-    <text class="list-header-text">全部作品</text>
-    <text class="list-count">共 {{filteredWorks.length}} 项</text>
+    <text class="list-header-text">{{mode === 'hall' ? '全部作品' : mode === 'my' ? '我的发布' : '我的点赞'}}</text>
+    <text class="list-count">共 {{total}} 项</text>
   </view>
 
   <!-- ===== 作品网格 ===== -->
   <view class="work-grid">
     <view
-      wx:for="{{filteredWorks}}"
+      wx:for="{{works}}"
       wx:key="id"
       class="work-card"
       bindtap="onWorkTap"
@@ -106,10 +106,15 @@
     </view>
   </view>
 
+  <!-- 加载中提示 -->
+  <view wx:if="{{loading && works.length > 0}}" class="list-bottom">
+    <text class="loading-text">加载中...</text>
+  </view>
+
   <!-- 空状态 -->
-  <view wx:if="{{filteredWorks.length === 0}}" class="empty">
+  <view wx:if="{{!loading && works.length === 0}}" class="empty">
     <text class="empty-icon">🔭</text>
-    <text class="empty-text">暂无相关作品</text>
+    <text class="empty-text">{{mode === 'my' ? '还没有发布作品哦' : mode === 'liked' ? '还没有点赞过作品' : '暂无相关作品'}}</text>
   </view>
 
   <view class="list-bottom"></view>

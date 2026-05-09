@@ -114,6 +114,7 @@
     <view class="action-btn" bindtap="onLike">
       <text class="action-icon">{{liked ? '❤️' : '🤍'}}</text>
       <text class="action-label">{{liked ? '已赞' : '点赞'}}</text>
+      <text class="action-count">{{likesCount || ''}}</text>
     </view>
     <view class="action-btn" bindtap="onShare">
       <text class="action-icon">📤</text>

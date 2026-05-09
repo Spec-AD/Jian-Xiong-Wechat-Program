@@ -2,11 +2,13 @@
 import { loginWithCode, getUserProfile, setToken, getToken, removeToken } from './utils/api'
 
 App<IAppOption>({
-  globalData: {
+    globalData: {
     userInfo: null as AppUserInfo | null,
     openid: '',
     loginCode: '',
     baseUrl: 'http://localhost:3000/api',
+    /** hall 页面的展示模式：hall | my | liked */
+    hallMode: 'hall' as 'hall' | 'my' | 'liked',
   },
 
   onLaunch() {

@@ -1,5 +1,4 @@
 // pages/profile/profile.ts
-import { toast } from '../../utils/util'
 import { getUserStats } from '../../utils/api'
 
 const app = getApp<IAppOption>()
@@ -33,14 +32,21 @@ Page({
     }
   },
 
-  onMenuTap(e: any) {
+    onMenuTap(e: any) {
     const key: string = e.currentTarget.dataset.key
     switch (key) {
-      case 'myPublish':
-        toast('我的发布（开发中）')
+            case 'myPublish':
+        // 跳转到大厅页，显示我的发布
+        app.globalData.hallMode = 'my'
+        wx.switchTab({ url: '/pages/hall/hall' })
         break
-      case 'myLike':
-        toast('我的点赞（开发中）')
+            case 'myLike':
+        // 跳转到大厅页，显示我的点赞
+        app.globalData.hallMode = 'liked'
+        wx.switchTab({ url: '/pages/hall/hall' })
+        break
+      case 'publish':
+        wx.navigateTo({ url: '/pages/publish/publish' })
         break
       case 'about':
         wx.showModal({

@@ -250,20 +250,99 @@ export function toggleLike(id: string): Promise<{ liked: boolean; likesCount: nu
 
 /**
  * 获取我的作品列表 — GET /api/works/my/list
+ * 返回分页数据 { list, total, page, pageSize }
  */
-export function getMyWorks(): Promise<any[]> {
+export function getMyWorks(params?: {
+  page?: number
+  pageSize?: number
+}): Promise<PaginatedData<any>> {
   return request({
     url: '/works/my/list',
     method: 'GET',
+    data: params as Record<string, any>,
   })
 }
 
 /**
  * 获取我点赞的作品列表 — GET /api/works/liked/list
+ * 返回分页数据 { list, total, page, pageSize }
  */
-export function getLikedWorks(): Promise<any[]> {
+export function getLikedWorks(params?: {
+  page?: number
+  pageSize?: number
+}): Promise<PaginatedData<any>> {
   return request({
     url: '/works/liked/list',
     method: 'GET',
+    data: params as Record<string, any>,
+  })
+}
+
+/**
+ * 记录浏览量 — POST /api/works/:id/view
+ */
+export function recordView(id: string): Promise<void> {
+  return request({
+    url: `/works/${id}/view`,
+    method: 'POST',
+    needAuth: false,
+  })
+}
+
+/**
+ * 上传文件 — POST /api/upload
+ * 使用 wx.uploadFile（multipart/form-data）
+ * @returns { url, filename }
+ */
+export function uploadFile(tempFilePath: string, type?: string, name?: string): Promise<{ url: string; filename: string }> {
+  return new Promise((resolve, reject) => {
+    const token = getToken()
+    wx.uploadFile({
+      url: `${BASE_URL}/upload`,
+      filePath: tempFilePath,
+      name: 'file',
+      formData: {
+        ...(type ? { type } : {}),
+        ...(name ? { name } : {}),
+      },
+      header: {
+        Authorization: `Bearer ${token}`,
+      },
+      success: (res) => {
+        try {
+          const body = JSON.parse(res.data)
+          if (body.code === 0 && body.data) {
+            resolve(body.data)
+          } else {
+            reject(new Error(body.message || '上传失败'))
+          }
+        } catch {
+          reject(new Error('上传响应异常'))
+        }
+      },
+      fail: (err) => {
+        reject(new Error(err.errMsg || '网络异常'))
+      },
+    })
+  })
+}
+
+/**
+ * 创建作品 — POST /api/works
+ */
+export function createWork(data: {
+  title: string
+  description?: string
+  type: string
+  categoryId: string
+  fileUrl: string
+  cover?: string
+  imageList?: string[]
+  tags?: string[]
+}): Promise<any> {
+  return request({
+    url: '/works',
+    method: 'POST',
+    data,
   })
 }

@@ -1,9 +1,10 @@
 {
-    "pages": [
-    "pages/login/login",
+        "pages": [
     "pages/hall/hall",
-    "pages/viewer/viewer",
     "pages/profile/profile",
+    "pages/viewer/viewer",
+    "pages/publish/publish",
+    "pages/login/login",
     "pages/logs/logs"
   ],
     "window": {

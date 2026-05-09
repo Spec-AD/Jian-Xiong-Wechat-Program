@@ -1,0 +1,139 @@
+<!--pages/publish/publish.wxml-->
+<view class="page">
+
+  <!-- ===== 作品类型选择 ===== -->
+  <view class="section">
+    <text class="section-title">作品类型 <text class="required">*</text></text>
+    <view class="type-grid">
+      <view
+        wx:for="{{typeOptions}}"
+        wx:key="id"
+        class="type-card {{selectedType === item.id ? 'type-card--active' : ''}}"
+        bindtap="onTypeSelect"
+        data-id="{{item.id}}"
+      >
+        <text class="type-icon">{{item.icon}}</text>
+        <text class="type-name">{{item.name}}</text>
+        <text class="type-desc">{{item.desc}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 标题 ===== -->
+  <view class="section">
+    <text class="section-title">作品标题 <text class="required">*</text></text>
+    <input
+      class="input-field"
+      placeholder="给你的作品取个名字吧"
+      value="{{title}}"
+      bindinput="onTitleInput"
+      maxlength="50"
+    />
+  </view>
+
+  <!-- ===== 描述 ===== -->
+  <view class="section">
+    <text class="section-title">作品描述</text>
+    <textarea
+      class="textarea-field"
+      placeholder="简要描述你的作品（选填）"
+      value="{{description}}"
+      bindinput="onDescInput"
+      maxlength="500"
+      auto-height
+    />
+  </view>
+
+  <!-- ===== 标签 ===== -->
+  <view class="section">
+    <text class="section-title">标签（最多5个）</text>
+    <view class="tag-input-row">
+      <input
+        class="tag-input"
+        placeholder="输入标签后确认"
+        value="{{tagInput}}"
+        bindinput="onTagInput"
+        bindconfirm="onTagConfirm"
+        maxlength="10"
+      />
+      <button class="tag-add-btn" bindtap="onTagConfirm">添加</button>
+    </view>
+    <view wx:if="{{tags.length > 0}}" class="tag-list">
+      <view
+        wx:for="{{tags}}"
+        wx:key="index"
+        class="tag-item"
+        bindtap="onTagRemove"
+        data-index="{{index}}"
+      >
+        <text>{{item}}</text>
+        <text class="tag-remove">✕</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 文件上传 ===== -->
+  <view class="section">
+    <text class="section-title">
+      上传作品文件 <text class="required">*</text>
+      <text wx:if="{{selectedType}}" class="section-sub">（{{selectedType === 'image' ? '支持多张图片' : '支持单个文件'}}）</text>
+    </text>
+
+    <!-- 已上传文件展示 -->
+    <view wx:if="{{!selectedType}}" class="upload-hint">
+      <text>请先选择上方作品类型</text>
+    </view>
+
+    <!-- 图片类型：多图展示 -->
+    <view wx:elif="{{selectedType === 'image'}}" class="image-upload-area">
+      <view class="image-grid">
+        <view
+          wx:for="{{imageList}}"
+          wx:key="index"
+          class="image-preview-item"
+        >
+          <image class="image-preview" src="{{item}}" mode="aspectFill" />
+          <view class="image-remove" bindtap="onRemoveImage" data-index="{{index}}">✕</view>
+        </view>
+        <view
+          wx:if="{{imageList.length < 9}}"
+          class="image-upload-btn"
+          bindtap="onChooseFile"
+        >
+          <text class="upload-btn-icon">＋</text>
+          <text class="upload-btn-text">添加图片</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 非图片类型：单文件 -->
+    <view wx:else class="file-upload-area">
+      <view wx:if="{{uploadedUrl}}" class="file-preview">
+        <text class="file-preview-icon">{{selectedType === 'video' ? '🎬' : selectedType === 'audio' ? '🎵' : '📄'}}</text>
+        <text class="file-preview-name">{{uploadedName || '已上传'}}</text>
+        <button class="reupload-btn" bindtap="onChooseFile" size="mini">重新选择</button>
+      </view>
+      <button
+        wx:else
+        class="upload-btn"
+        loading="{{uploading}}"
+        bindtap="onChooseFile"
+      >
+        {{selectedType === 'video' ? '选择视频' : selectedType === 'audio' ? '选择音频文件' : '选择文件'}}
+      </button>
+    </view>
+  </view>
+
+  <!-- ===== 提交按钮 ===== -->
+  <view class="submit-wrap">
+    <button
+      class="submit-btn"
+      loading="{{submitting}}"
+      disabled="{{submitting}}"
+      bindtap="onSubmit"
+    >
+      发布作品
+    </button>
+  </view>
+
+</view>

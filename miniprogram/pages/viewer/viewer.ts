@@ -1,11 +1,18 @@
-// pages/viewer/viewer.ts
+// pages/viewer/viewer.ts — 作品详情页（真实 API 版）
 import { formatDuration, toast } from '../../utils/util'
+import { getWorkDetail, toggleLike, request } from '../../utils/api'
 
 Page({
   data: {
+    id: '' as string,
     type: '' as string,
     fileUrl: '' as string,
     title: '' as string,
+    author: '' as string,
+    authorAvatar: '' as string,
+    description: '' as string,
+    date: '' as string,
+    tags: [] as string[],
     // 图片多图模式
     imageList: [] as string[],
     // 音频
@@ -16,24 +23,63 @@ Page({
     audioDurationText: '00:00',
     // 操作
     liked: false,
+    likesCount: 0,
+    views: 0,
     docLoading: false,
+    loading: true,
   },
 
   _audio: null as WechatMiniprogram.InnerAudioContext | null,
+  _workId: '',
 
-  onLoad(options: any) {
-    const type      = options.type || ''
-    const fileUrl   = decodeURIComponent(options.url || '')
-    const title     = decodeURIComponent(options.title || '文件预览')
-    let imageList: string[] = []
+  async onLoad(options: any) {
+    const id = options.id || ''
+    if (!id) { toast('作品ID无效'); return }
+    this._workId = id
+    this.setData({ id, loading: true })
+
     try {
-      imageList = JSON.parse(decodeURIComponent(options.imageList || '[]'))
-    } catch { imageList = [] }
+      // 1. 从后端加载作品详情
+      const detail = await getWorkDetail(id)
 
-    this.setData({ type, fileUrl, title, imageList })
-    wx.setNavigationBarTitle({ title })
+      this.setData({
+        type: detail.type || '',
+        fileUrl: detail.fileUrl || '',
+        title: detail.title || '文件预览',
+        author: detail.author || '',
+        authorAvatar: detail.authorAvatar || '',
+        description: detail.description || '',
+        date: detail.date || '',
+        tags: detail.tags || [],
+        imageList: detail.imageList || [],
+        liked: detail.liked || false,
+        likesCount: detail.likes || 0,
+        views: detail.views || 0,
+        loading: false,
+      })
 
-    if (type === 'audio') this._initAudio(fileUrl)
+      wx.setNavigationBarTitle({ title: detail.title || '文件预览' })
+
+      // 2. 如果是音频则初始化播放器
+      if (detail.type === 'audio' && detail.fileUrl) {
+        this._initAudio(detail.fileUrl)
+      }
+
+      // 3. 异步记录浏览量（不阻塞）
+      this._recordView(id)
+    } catch (err: any) {
+      console.error('[Viewer] 加载失败:', err)
+      toast('作品加载失败')
+      this.setData({ loading: false })
+    }
+  },
+
+  /** 异步记录浏览量 */
+  async _recordView(id: string) {
+    try {
+      await request({ url: `/works/${id}/view`, method: 'POST', needAuth: false })
+      this.setData({ views: this.data.views + 1 })
+    } catch { /* 静默 */ }
   },
 
   onUnload() {
@@ -136,10 +182,17 @@ Page({
   },
 
   // ─── 操作栏 ─────────────────────────────────────────────
-  onLike() {
-    const liked = !this.data.liked
-    this.setData({ liked })
-    toast(liked ? '已点赞 ❤️' : '已取消点赞')
+  async onLike() {
+    try {
+      const result = await toggleLike(this._workId)
+      this.setData({
+        liked: result.liked,
+        likesCount: result.likesCount,
+      })
+      toast(result.liked ? '已点赞 ❤️' : '已取消点赞')
+    } catch (err: any) {
+      toast('操作失败，请重试')
+    }
   },
 
   onShare() {
