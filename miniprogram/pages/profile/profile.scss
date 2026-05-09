@@ -1,6 +1,6 @@
 /**profile.scss**/
 page {
-  background: #f4f7fb;
+  background: var(--theme-bg-light);
   min-height: 100vh;
 }
 
@@ -12,7 +12,7 @@ page {
 
 /* ===== 头部 ===== */
 .profile-header {
-  background: linear-gradient(135deg, #4a90e2 0%, #2ecc71 100%);
+  background: var(--theme-gradient);
   padding: 56rpx 40rpx 64rpx;
   display: flex;
   align-items: center;
@@ -52,7 +52,7 @@ page {
   padding: 36rpx 0;
   display: flex;
   align-items: center;
-  box-shadow: 0 6rpx 36rpx rgba(74,144,226,0.12);
+  box-shadow: 0 6rpx 36rpx rgba(106,0,95,0.12);
   position: relative;
   z-index: 10;
 }
@@ -68,7 +68,7 @@ page {
 .stat-num {
   font-size: 44rpx;
   font-weight: 700;
-  color: #4a90e2;
+  color: var(--theme-color);
 }
 
 .stat-label {
@@ -88,7 +88,7 @@ page {
   border-radius: 20rpx;
   margin: 0 28rpx 20rpx;
   overflow: hidden;
-  box-shadow: 0 2rpx 12rpx rgba(74,144,226,0.06);
+  box-shadow: 0 2rpx 12rpx rgba(106,0,95,0.06);
 }
 
 .menu-group-title {

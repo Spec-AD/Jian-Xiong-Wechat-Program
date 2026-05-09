@@ -1,22 +1,45 @@
-/**app.scss — 健雄书院全局样式**/
+/**app.scss — 健雄书院全局样式（南大紫主题）**/
 
-/* ===== CSS 变量 ===== */
+/* ===== 南大紫主题 CSS 变量 ===== */
 page {
-  --c-primary:      #4a90e2;
-  --c-primary-dark: #2c6fcf;
-  --c-secondary:    #2ecc71;
-  --c-bg:           #f4f7fb;
-  --c-card:         #ffffff;
-  --c-text:         #1a2a4a;
-  --c-text-sub:     #7a8fa8;
-  --c-border:       #e8edf5;
-  --c-danger:       #e57373;
-  --radius-card:    24rpx;
-  --shadow-card:    0 4rpx 24rpx rgba(74,144,226,0.10);
-  --gradient-main:  linear-gradient(135deg, #4a90e2 0%, #2ecc71 100%);
+  /* ── 品牌核心：标准南大紫，用于导航栏、主按钮及核心品牌识别 ── */
+  --theme-color:      #6A005F;
+
+  /* ── 深色深邃品牌紫：用于沉浸式页眉、投影深度及重文本强调 ── */
+  --theme-dark:       #42003B;
+
+  /* ── 浅色活力辅助紫：用于渐变过渡、图标高亮及分类标签 ── */
+  --theme-light:      #95318A;
+
+  /* ── 点缀金荣誉金：用于勋章、高级成果标志及交互反馈 ── */
+  --theme-gold:       #D4AF37;
+
+  /* ── 合成渐变 —— 浅紫 → 标准紫 ── */
+  --theme-gradient:   linear-gradient(135deg, var(--theme-light), var(--theme-color));
+
+  /* ── 全局背景：浅灰色 ── */
+  --bg-page:          #F5F5F7;
+
+  /* ── 卡片与文本 ── */
+  --c-card:           #ffffff;
+  --c-text:           #1a2a4a;
+  --c-text-sub:       #7a8fa8;
+  --c-border:         #e8edf5;
+  --c-danger:         #e57373;
+  --radius-card:      24rpx;
+  --shadow-card:      0 4rpx 24rpx rgba(66,0,59,0.06);   /* 基于 --theme-dark 的柔和阴影 */
+  --shadow-elevated:  0 8rpx 40rpx rgba(66,0,59,0.10);
+
+  /* ── 向下兼容的旧变量名 ── */
+  --c-primary:        var(--theme-color);
+  --c-primary-dark:   var(--theme-dark);
+  --c-secondary:      var(--theme-light);
+  --c-bg:             var(--bg-page);
+  --gradient-main:    var(--theme-gradient);
+  --theme-bg-light:   var(--bg-page);
 
   box-sizing: border-box;
-  background: var(--c-bg);
+  background: var(--bg-page);
   font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
   color: var(--c-text);
   font-size: 28rpx;
@@ -50,13 +73,13 @@ button {
   justify-content: center;
   width: 100%;
   height: 96rpx;
-  background: var(--gradient-main);
+  background: var(--theme-gradient);
   color: #fff;
   font-size: 32rpx;
   font-weight: 600;
   border-radius: 48rpx;
   letter-spacing: 2rpx;
-  box-shadow: 0 8rpx 28rpx rgba(74,144,226,0.25);
+    box-shadow: 0 8rpx 28rpx rgba(66,0,59,0.20);
 }
 
 /* ===== 镂空次级按钮 ===== */
@@ -80,8 +103,8 @@ button {
   padding: 4rpx 18rpx;
   border-radius: 20rpx;
   font-size: 22rpx;
-  background: rgba(74,144,226,0.10);
-  color: var(--c-primary);
+    background: rgba(149,49,138,0.10);
+  color: var(--theme-light);
 }
 
 /* ===== Flex 工具 ===== */

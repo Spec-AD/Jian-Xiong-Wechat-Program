@@ -13,10 +13,10 @@ Page({
     },
   },
 
-  onShow() {
+    onShow() {
     const userInfo = app.globalData.userInfo
     if (!userInfo) {
-      wx.switchTab({ url: '/pages/index/index' })
+      wx.navigateTo({ url: '/pages/login/login' })
       return
     }
     this.setData({ userInfo })
@@ -65,7 +65,7 @@ Page({
     }
   },
 
-  onLogout() {
+    onLogout() {
     wx.showModal({
       title: '确认退出',
       content: '退出后需要重新登录',
@@ -73,7 +73,7 @@ Page({
       success: res => {
         if (res.confirm) {
           app.clearUserInfo()
-          wx.switchTab({ url: '/pages/index/index' })
+          wx.redirectTo({ url: '/pages/login/login' })
         }
       },
     })

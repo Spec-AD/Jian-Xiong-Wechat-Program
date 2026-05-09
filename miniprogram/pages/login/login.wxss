@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(160deg, #4A2C6E 0%, #7B4FA6 50%, #F5F5F5 100%);
+  background: linear-gradient(160deg, var(--theme-color) 0%, var(--theme-light) 50%, #F5F5F5 100%);
 }
 
 /* ===== 顶部头部 ===== */
@@ -44,65 +44,31 @@
   width: calc(100% - 64rpx);
   margin: 0 32rpx;
   border-radius: 24rpx;
-  padding: 48rpx 40rpx;
+  padding: 56rpx 40rpx 48rpx;
   box-sizing: border-box;
   background: #FFFFFF;
-  box-shadow: 0 8rpx 40rpx rgba(74,44,110,0.18);
+  box-shadow: 0 8rpx 40rpx rgba(66,0,59,0.12);
 }
 
-/* ===== 用户预览 ===== */
-.user-avatar {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 50%;
-  border: 4rpx solid #4A2C6E;
-}
-
-/* ===== 微信授权按钮 ===== */
-.btn-weixin {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16rpx;
-  background: #07C160;
-  color: #FFFFFF;
+/* ===== 主要按钮 ===== */
+.btn-primary {
+  display: block;
+  width: 100%;
+  padding: 24rpx 0;
   border-radius: 50rpx;
   font-size: 32rpx;
   font-weight: 600;
-  padding: 22rpx 0;
-  width: 100%;
+  color: #FFFFFF;
+  background: var(--theme-color);
+  text-align: center;
   border: none;
 }
 
-.btn-weixin::after { border: none; }
+.btn-primary::after { border: none; }
 
-.weixin-icon {
-  width: 44rpx;
-  height: 44rpx;
-}
-
-/* ===== 昵称输入 ===== */
-.nickname-row {
-  display: flex;
-  align-items: center;
-  border: 2rpx solid #EEEEEE;
-  border-radius: 16rpx;
-  padding: 20rpx 24rpx;
-  box-sizing: border-box;
-}
-
-.nickname-label {
-  color: #888;
-  font-size: 28rpx;
-  white-space: nowrap;
-  margin-right: 8rpx;
-}
-
-.nickname-input {
-  flex: 1;
-  font-size: 28rpx;
-  color: #333;
-}
+/* ===== 间距工具 ===== */
+.mt-8  { margin-top: 8rpx; }
+.mt-32 { margin-top: 32rpx; }
 
 /* ===== 底部 ===== */
 .login-footer {

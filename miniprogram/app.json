@@ -1,30 +1,24 @@
 {
-  "pages": [
-    "pages/index/index",
+    "pages": [
+    "pages/login/login",
     "pages/hall/hall",
     "pages/viewer/viewer",
     "pages/profile/profile",
     "pages/logs/logs"
   ],
-  "window": {
+    "window": {
     "navigationBarTextStyle": "white",
     "navigationBarTitleText": "健雄书院",
-    "navigationBarBackgroundColor": "#4a90e2",
-    "backgroundColor": "#f4f7fb",
+    "navigationBarBackgroundColor": "#6A005F",
+    "backgroundColor": "#F5F5F7",
     "enablePullDownRefresh": false
   },
-  "tabBar": {
+    "tabBar": {
     "color": "#7a8fa8",
-    "selectedColor": "#4a90e2",
+    "selectedColor": "#6A005F",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [
-      {
-        "pagePath": "pages/index/index",
-        "text": "首页",
-        "iconPath": "assets/icons/home.png",
-        "selectedIconPath": "assets/icons/home_active.png"
-      },
       {
         "pagePath": "pages/hall/hall",
         "text": "大厅",

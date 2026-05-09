@@ -1,1 +1,8 @@
-{"navigationBarTitleText":"我的","navigationBarBackgroundColor":"#4a90e2","navigationBarTextStyle":"white","usingComponents":{}}
+
+
+
+
+
+
+
+{  "navigationBarTitleText": "成果大厅",  "navigationBarBackgroundColor": "#6A005F",  "navigationBarTextStyle": "white",  "enablePullDownRefresh": true,  "backgroundTextStyle": "light",  "usingComponents": {}}

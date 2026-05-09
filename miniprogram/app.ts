@@ -7,12 +7,15 @@ App<IAppOption>({
     baseUrl: '', // TODO: 替换为实际后端地址，如 'https://your-server.com/api'
   },
 
-  onLaunch() {
+    onLaunch() {
     // ── 恢复本地缓存用户信息 ──
     const cached = wx.getStorageSync('userInfo')
     if (cached) {
       this.globalData.userInfo = cached
     }
+
+    // ── 默认打开「我的」标签页 ──
+    wx.switchTab({ url: '/pages/profile/profile' })
 
     // ── 微信登录：获取 code ──
     wx.login({
