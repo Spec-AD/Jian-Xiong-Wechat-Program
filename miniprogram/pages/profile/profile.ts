@@ -1,5 +1,6 @@
 // pages/profile/profile.ts
 import { toast } from '../../utils/util'
+import { getUserStats } from '../../utils/api'
 
 const app = getApp<IAppOption>()
 
@@ -13,7 +14,7 @@ Page({
     },
   },
 
-    onShow() {
+  onShow() {
     const userInfo = app.globalData.userInfo
     if (!userInfo) {
       wx.navigateTo({ url: '/pages/login/login' })
@@ -23,13 +24,13 @@ Page({
     this._loadStats()
   },
 
-  _loadStats() {
-    // TODO: 替换为真实 API 请求
-    setTimeout(() => {
-      this.setData({
-        stats: { publishCount: 3, likeCount: 186, viewCount: 1024 },
-      })
-    }, 300)
+  async _loadStats() {
+    try {
+      const stats = await getUserStats()
+      this.setData({ stats })
+    } catch (err: any) {
+      console.warn('[Profile] 获取统计数据失败:', err.message || err)
+    }
   },
 
   onMenuTap(e: any) {
