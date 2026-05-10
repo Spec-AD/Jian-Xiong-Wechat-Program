@@ -1,60 +1,165 @@
-/**profile.scss**/
+/** pages/profile/profile.scss — 个人主页（大重构版） */
+
 page {
-  background: var(--theme-bg-light);
-  min-height: 100vh;
+  background: var(--bg-page);
 }
 
 .page {
-  display: flex;
-  flex-direction: column;
   min-height: 100vh;
+  padding-bottom: 40rpx;
 }
 
-/* ===== 头部 ===== */
-.profile-header {
-  background: var(--theme-gradient);
-  padding: 56rpx 40rpx 64rpx;
+/* ===== 首次使用引导 ===== */
+.guide-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
   display: flex;
   align-items: center;
-  gap: 32rpx;
+  justify-content: center;
+  padding: 40rpx;
+}
+
+.guide-card {
+  background: #fff;
+  border-radius: 28rpx;
+  padding: 48rpx 36rpx;
+  max-width: 560rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.guide-icon {
+  font-size: 80rpx;
+}
+
+.guide-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.guide-desc {
+  font-size: 26rpx;
+  color: var(--c-text-sub);
+  text-align: center;
+  line-height: 1.7;
+}
+
+.guide-btn {
+  margin-top: 20rpx;
+  width: 100%;
+  height: 80rpx;
+  line-height: 80rpx;
+  background: var(--theme-gradient);
+  color: #fff;
+  border-radius: 40rpx;
+  font-size: 30rpx;
+}
+
+/* ===== 用户信息头部 ===== */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 28rpx;
+  padding: 40rpx 28rpx 32rpx;
+  background: #fff;
+  margin-bottom: 20rpx;
+}
+
+.avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
 }
 
 .profile-avatar {
   width: 140rpx;
   height: 140rpx;
   border-radius: 70rpx;
-  border: 4rpx solid rgba(255,255,255,0.6);
-  flex-shrink: 0;
+  border: 4rpx solid var(--theme-color);
+}
+
+.avatar-badge {
+  position: absolute;
+  right: -4rpx;
+  bottom: 4rpx;
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 22rpx;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.15);
+}
+
+.badge-text {
+  font-size: 24rpx;
 }
 
 .profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.name-row {
   display: flex;
-  flex-direction: column;
-  gap: 12rpx;
+  align-items: center;
+  gap: 8rpx;
+  margin-bottom: 6rpx;
 }
 
 .profile-name {
-  font-size: 40rpx;
+  font-size: 36rpx;
   font-weight: 700;
-  color: #fff;
+  color: var(--c-text);
+  max-width: 400rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.profile-school {
+.profile-name--verified {
+  color: #7b1fa2;
+}
+
+.verified-badge {
+  font-size: 32rpx;
+}
+
+.profile-uid {
+  display: block;
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+  margin-bottom: 6rpx;
+  font-family: monospace;
+}
+
+.profile-sig {
+  display: block;
   font-size: 24rpx;
-  color: rgba(255,255,255,0.80);
+  color: var(--theme-light);
+  font-style: italic;
 }
 
-/* ===== 统计卡片 ===== */
+.profile-hint {
+  display: block;
+  font-size: 22rpx;
+  color: #b0bec5;
+}
+
+/* ===== 数据统计 ===== */
 .stats-card {
-  background: #fff;
-  border-radius: 24rpx;
-  margin: -36rpx 28rpx 24rpx;
-  padding: 36rpx 0;
   display: flex;
   align-items: center;
-  box-shadow: 0 6rpx 36rpx rgba(106,0,95,0.12);
-  position: relative;
-  z-index: 10;
+  background: #fff;
+  margin: 0 28rpx 20rpx;
+  border-radius: 20rpx;
+  padding: 24rpx 28rpx;
+  box-shadow: var(--shadow-card);
 }
 
 .stat-item {
@@ -62,24 +167,31 @@ page {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8rpx;
+  gap: 4rpx;
 }
 
 .stat-num {
-  font-size: 44rpx;
-  font-weight: 700;
+  font-size: 36rpx;
+  font-weight: 800;
   color: var(--theme-color);
 }
 
 .stat-label {
-  font-size: 24rpx;
-  color: #7a8fa8;
+  font-size: 22rpx;
+  color: var(--c-text-sub);
 }
 
 .stat-divider {
-  width: 1rpx;
-  height: 60rpx;
-  background: #e8edf5;
+  width: 2rpx;
+  height: 48rpx;
+  background: var(--c-border);
+}
+
+.stat-arrow {
+  font-size: 40rpx;
+  color: #d0daea;
+  margin-left: 12rpx;
+  font-weight: 300;
 }
 
 /* ===== 菜单组 ===== */
@@ -88,26 +200,28 @@ page {
   border-radius: 20rpx;
   margin: 0 28rpx 20rpx;
   overflow: hidden;
-  box-shadow: 0 2rpx 12rpx rgba(106,0,95,0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .menu-group-title {
   display: block;
   font-size: 22rpx;
-  color: #b0bec5;
+  color: var(--c-text-sub);
   font-weight: 600;
-  letter-spacing: 1rpx;
   padding: 20rpx 28rpx 12rpx;
   background: #fafbfd;
-  text-transform: uppercase;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
   padding: 28rpx;
-  border-top: 1rpx solid #f0f4f8;
+  border-top: 1rpx solid var(--c-border);
   gap: 20rpx;
+}
+
+.menu-item--last {
+  border-bottom: none;
 }
 
 .menu-icon {
@@ -119,20 +233,39 @@ page {
 
 .menu-label {
   flex: 1;
-  font-size: 30rpx;
-  color: #1a2a4a;
+  font-size: 28rpx;
+  color: var(--c-text);
+}
+
+.menu-tag {
+  font-size: 20rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  background: var(--bg-page);
+  color: var(--c-text-sub);
+  flex-shrink: 0;
+}
+
+.menu-tag--verified {
+  background: rgba(106, 0, 95, 0.08);
+  color: var(--theme-color);
+}
+
+.menu-tag--disabled {
+  background: #fff3e0;
+  color: #f57c00;
 }
 
 .menu-arrow {
-  font-size: 44rpx;
+  font-size: 40rpx;
   color: #d0daea;
   font-weight: 300;
 }
 
-/* ===== 退出按钮 ===== */
+/* ===== 退出 ===== */
 .logout-wrap {
   padding: 0 28rpx;
-  margin-top: 8rpx;
+  margin-top: 24rpx;
 }
 
 .logout-btn {
@@ -141,15 +274,14 @@ page {
   line-height: 88rpx;
   background: transparent;
   color: #e57373;
-  font-size: 30rpx;
+  font-size: 28rpx;
   border-radius: 44rpx;
   border: 2rpx solid #ffcdd2;
   text-align: center;
 }
 
-/* ===== 底部 ===== */
+/* ===== 页脚 ===== */
 .footer {
-  margin-top: auto;
   padding: 40rpx 0 60rpx;
   text-align: center;
 }

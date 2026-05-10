@@ -1,20 +1,29 @@
 {
-        "pages": [
+  "pages": [
     "pages/hall/hall",
+    "pages/ai/ai",
     "pages/profile/profile",
     "pages/viewer/viewer",
     "pages/publish/publish",
+    "pages/data-center/data-center",
+    "pages/edit-profile/edit-profile",
+    "pages/settings/settings",
+    "pages/privacy-settings/privacy-settings",
+    "pages/verification/verification",
+    "pages/index/index",
     "pages/login/login",
-    "pages/logs/logs"
+    "pages/logs/logs",
+    "pages/edit-work/edit-work",
+    "pages/admin/admin"
   ],
-    "window": {
+  "window": {
     "navigationBarTextStyle": "white",
     "navigationBarTitleText": "健雄书院",
     "navigationBarBackgroundColor": "#6A005F",
     "backgroundColor": "#F5F5F7",
     "enablePullDownRefresh": false
   },
-    "tabBar": {
+  "tabBar": {
     "color": "#7a8fa8",
     "selectedColor": "#6A005F",
     "backgroundColor": "#ffffff",
@@ -25,6 +34,12 @@
         "text": "大厅",
         "iconPath": "assets/icons/hall.png",
         "selectedIconPath": "assets/icons/hall_active.png"
+      },
+      {
+        "pagePath": "pages/ai/ai",
+        "text": "AI",
+        "iconPath": "assets/icons/ai.png",
+        "selectedIconPath": "assets/icons/ai_active.png"
       },
       {
         "pagePath": "pages/profile/profile",
@@ -39,7 +54,6 @@
     "skyline": {
       "defaultDisplayBlock": true,
       "defaultContentBox": true,
-      "tagNameStyleIsolation": "legacy",
       "disableABTest": true,
       "sdkVersionBegin": "3.0.0",
       "sdkVersionEnd": "15.255.255"

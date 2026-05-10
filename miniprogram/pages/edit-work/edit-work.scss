@@ -1,0 +1,377 @@
+/** pages/edit-work/edit-work.scss — 编辑作品页面 */
+
+page {
+  background: var(--bg-page);
+}
+
+.page {
+  min-height: 100vh;
+  padding-bottom: 60rpx;
+}
+
+/* ===== 加载状态 ===== */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 200rpx 0;
+  gap: 20rpx;
+}
+
+.loading-icon {
+  font-size: 64rpx;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: var(--c-text-sub);
+}
+
+/* ===== Section 容器 ===== */
+.section {
+  background: #fff;
+  border-radius: 20rpx;
+  margin: 0 28rpx 24rpx;
+  padding: 28rpx;
+  box-shadow: var(--shadow-card);
+}
+
+.section-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--c-text);
+  margin-bottom: 20rpx;
+}
+
+.section-sub {
+  font-size: 22rpx;
+  font-weight: 400;
+  color: var(--c-text-sub);
+}
+
+.required {
+  color: var(--c-danger);
+}
+
+/* ===== 类型选择网格 ===== */
+.type-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.type-card {
+  flex: 1;
+  min-width: calc(33.33% - 12rpx);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24rpx 12rpx;
+  border-radius: 16rpx;
+  background: var(--bg-page);
+  border: 2rpx solid transparent;
+  gap: 6rpx;
+}
+
+.type-card--active {
+  border-color: var(--theme-color);
+  background: rgba(106, 0, 95, 0.06);
+}
+
+.type-icon {
+  font-size: 40rpx;
+}
+
+.type-name {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.type-desc {
+  font-size: 20rpx;
+  color: var(--c-text-sub);
+  text-align: center;
+}
+
+/* ===== 输入框 ===== */
+.input-field {
+  width: 100%;
+  height: 72rpx;
+  line-height: 72rpx;
+  background: var(--bg-page);
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  color: var(--c-text);
+  box-sizing: border-box;
+}
+
+.textarea-field {
+  width: 100%;
+  min-height: 120rpx;
+  background: var(--bg-page);
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  font-size: 28rpx;
+  color: var(--c-text);
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+
+/* ===== 标签 ===== */
+.tag-input-row {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.tag-input {
+  flex: 1;
+  height: 64rpx;
+  line-height: 64rpx;
+  background: var(--bg-page);
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  font-size: 26rpx;
+  color: var(--c-text);
+}
+
+.tag-add-btn {
+  height: 64rpx;
+  line-height: 64rpx;
+  padding: 0 32rpx;
+  background: var(--theme-color);
+  color: #fff;
+  font-size: 26rpx;
+  border-radius: 32rpx;
+  flex-shrink: 0;
+  border: none;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.tag-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
+  background: rgba(106, 0, 95, 0.08);
+  color: var(--theme-color);
+  font-size: 24rpx;
+}
+
+.tag-remove {
+  font-size: 20rpx;
+  opacity: 0.6;
+}
+
+/* ===== 上传区域 ===== */
+/* 图片网格 */
+.image-upload-area {
+  width: 100%;
+}
+
+.image-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.image-preview-item {
+  position: relative;
+  width: calc(33.33% - 12rpx);
+  aspect-ratio: 1;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.image-preview {
+  width: 100%;
+  height: 100%;
+}
+
+.image-remove {
+  position: absolute;
+  top: 4rpx;
+  right: 4rpx;
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 18rpx;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  font-size: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-upload-btn {
+  width: calc(33.33% - 12rpx);
+  aspect-ratio: 1;
+  border-radius: 12rpx;
+  border: 2rpx dashed var(--c-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-page);
+  gap: 8rpx;
+}
+
+.upload-btn-icon {
+  font-size: 48rpx;
+  color: var(--c-text-sub);
+}
+
+.upload-btn-text {
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+}
+
+/* 文件上传 */
+.file-upload-area {
+  width: 100%;
+}
+
+.file-preview {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx;
+  background: var(--bg-page);
+  border-radius: 12rpx;
+}
+
+.file-preview-icon {
+  font-size: 40rpx;
+}
+
+.file-preview-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.file-preview-label {
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+}
+
+.file-preview-name {
+  font-size: 26rpx;
+  color: var(--c-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reupload-btn {
+  flex-shrink: 0;
+  font-size: 22rpx;
+  color: var(--theme-color);
+  background: transparent;
+  border: 2rpx solid var(--theme-color);
+  border-radius: 24rpx;
+  padding: 4rpx 16rpx;
+}
+
+.upload-btn {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: var(--bg-page);
+  color: var(--theme-color);
+  font-size: 28rpx;
+  border-radius: 12rpx;
+  border: 2rpx dashed var(--c-border);
+  text-align: center;
+}
+
+/* ===== 状态选择 ===== */
+.status-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.status-radio {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  background: var(--bg-page);
+  border: 2rpx solid transparent;
+}
+
+.status-radio--active {
+  border-color: var(--theme-color);
+  background: rgba(106, 0, 95, 0.04);
+}
+
+.status-radio radio {
+  margin-top: 4rpx;
+}
+
+.status-radio-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.status-radio-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.status-radio-desc {
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+}
+
+/* ===== 操作按钮 ===== */
+.action-wrap {
+  padding: 0 28rpx;
+  margin-top: 8rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.save-btn {
+  width: 100%;
+  height: 96rpx;
+  line-height: 96rpx;
+  background: var(--theme-gradient);
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 600;
+  border-radius: 48rpx;
+  box-shadow: 0 8rpx 28rpx rgba(66,0,59,0.20);
+  letter-spacing: 2rpx;
+  border: none;
+}
+
+.delete-btn {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: transparent;
+  color: #e57373;
+  font-size: 28rpx;
+  border-radius: 44rpx;
+  border: 2rpx solid #ffcdd2;
+  text-align: center;
+  margin-bottom: 40rpx;
+}

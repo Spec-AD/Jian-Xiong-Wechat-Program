@@ -1,5 +1,10 @@
 /* pages/login/login.wxss */
 
+/* 全局 page 背景设为渐变，防止加载白块闪烁 */
+page {
+  background: linear-gradient(160deg, var(--theme-color) 0%, var(--theme-light) 50%, #F5F5F5 100%);
+}
+
 .login-page {
   min-height: 100vh;
   display: flex;

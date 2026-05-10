@@ -1,0 +1,331 @@
+/** pages/data-center/data-center.scss — 数据中心样式 */
+
+page {
+  background: var(--bg-page);
+}
+
+.page {
+  min-height: 100vh;
+  padding-bottom: 40rpx;
+}
+
+/* ===== Tab 栏 ===== */
+.tab-bar {
+  display: flex;
+  background: #fff;
+  padding: 0 20rpx;
+  border-bottom: 1rpx solid var(--c-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 0 16rpx;
+  position: relative;
+  gap: 4rpx;
+}
+
+.tab-item--active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 4rpx;
+  background: var(--theme-gradient);
+  border-radius: 2rpx;
+}
+
+.tab-icon {
+  font-size: 32rpx;
+}
+
+.tab-name {
+  font-size: 24rpx;
+  color: var(--c-text-sub);
+}
+
+.tab-item--active .tab-name {
+  color: var(--theme-color);
+  font-weight: 600;
+}
+
+/* ===== 内容区域 ===== */
+.content-wrap {
+  padding: 24rpx 28rpx;
+}
+
+/* ===== Section ===== */
+.section {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: var(--shadow-card);
+}
+
+.section-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--c-text);
+  margin-bottom: 24rpx;
+}
+
+/* ===== 总览网格 ===== */
+.overview-grid {
+  display: flex;
+  gap: 20rpx;
+}
+
+.overview-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-page);
+  border-radius: 16rpx;
+  padding: 24rpx 12rpx;
+}
+
+.overview-num {
+  font-size: 48rpx;
+  font-weight: 800;
+  color: var(--theme-color);
+  margin-bottom: 8rpx;
+}
+
+.overview-num--pink { color: #e57373; }
+.overview-num--blue { color: #4a90e2; }
+
+.overview-label {
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+}
+
+/* ===== 周卡片 ===== */
+.week-card {
+  flex: 1;
+  background: var(--bg-page);
+  border-radius: 16rpx;
+  padding: 20rpx 16rpx;
+}
+
+.week-num {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 800;
+  color: var(--theme-color);
+  margin-bottom: 4rpx;
+}
+
+.week-num--pink { color: #e57373; }
+.week-num--blue { color: #4a90e2; }
+
+.week-label {
+  display: block;
+  font-size: 20rpx;
+  color: var(--c-text-sub);
+  margin-bottom: 12rpx;
+}
+
+.week-bar {
+  height: 8rpx;
+  border-radius: 4rpx;
+  background: var(--theme-light);
+  transition: width 0.5s ease;
+}
+
+.week-bar--pink { background: #e57373; }
+.week-bar--blue { background: #4a90e2; }
+
+/* ===== 统计主数字 ===== */
+.stat-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16rpx 0;
+}
+
+.stat-hero-num {
+  font-size: 72rpx;
+  font-weight: 800;
+  color: var(--theme-color);
+}
+
+.stat-hero-num--pink { color: #e57373; }
+.stat-hero-num--blue { color: #4a90e2; }
+
+.stat-hero-label {
+  font-size: 24rpx;
+  color: var(--c-text-sub);
+  margin-top: 8rpx;
+}
+
+/* ===== Tag 云 ===== */
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.tag-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 24rpx;
+  background: rgba(106, 0, 95, 0.06);
+  border-radius: 40rpx;
+}
+
+.tag-name {
+  font-size: 26rpx;
+  color: var(--theme-color);
+  font-weight: 600;
+}
+
+.tag-count {
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+}
+
+/* ===== 类型分布 ===== */
+.type-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.type-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.type-name {
+  width: 80rpx;
+  font-size: 24rpx;
+  color: var(--c-text);
+  flex-shrink: 0;
+}
+
+.type-bar-bg {
+  flex: 1;
+  height: 20rpx;
+  background: var(--bg-page);
+  border-radius: 10rpx;
+  overflow: hidden;
+}
+
+.type-bar-fill {
+  height: 100%;
+  background: var(--theme-gradient);
+  border-radius: 10rpx;
+  transition: width 0.5s ease;
+}
+
+.type-count {
+  width: 60rpx;
+  text-align: right;
+  font-size: 24rpx;
+  color: var(--c-text-sub);
+  flex-shrink: 0;
+}
+
+/* ===== 趋势图 ===== */
+.trend-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 12rpx;
+  height: 280rpx;
+  padding: 12rpx 0 0;
+}
+
+.trend-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.trend-bar {
+  width: 100%;
+  max-width: 60rpx;
+  background: var(--theme-gradient);
+  border-radius: 8rpx 8rpx 0 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 4rpx;
+  min-height: 12rpx;
+  transition: height 0.5s ease;
+}
+
+.trend-bar--pink {
+  background: linear-gradient(135deg, #e57373, #ef9a9a);
+}
+
+.trend-bar--blue {
+  background: linear-gradient(135deg, #4a90e2, #7eb1f0);
+}
+
+.trend-val {
+  font-size: 20rpx;
+  color: #fff;
+  font-weight: 600;
+}
+
+.trend-label {
+  font-size: 20rpx;
+  color: var(--c-text-sub);
+  margin-top: 8rpx;
+}
+
+/* ===== 热门作品排行 ===== */
+.top-work-row {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid var(--c-border);
+  gap: 16rpx;
+}
+
+.top-work-row:last-child {
+  border-bottom: none;
+}
+
+.top-work-rank {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 20rpx;
+  background: var(--theme-color);
+  color: #fff;
+  font-size: 22rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.top-work-title {
+  flex: 1;
+  font-size: 26rpx;
+  color: var(--c-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-work-count {
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+  flex-shrink: 0;
+}

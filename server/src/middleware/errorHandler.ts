@@ -18,6 +18,49 @@ export class AppError extends Error {
 }
 
 /**
+ * 错误码映射表
+ */
+const ERROR_CODES: Record<string, { code: number; statusCode: number; message: string }> = {
+  CastError: {
+    code: 40004,
+    statusCode: 400,
+    message: '无效的资源标识符',
+  },
+  SyntaxError: {
+    code: 40005,
+    statusCode: 400,
+    message: '请求体格式错误（无效的 JSON）',
+  },
+  ValidationError: {
+    code: 40001,
+    statusCode: 400,
+    message: '数据验证失败',
+  },
+  JsonWebTokenError: {
+    code: 40101,
+    statusCode: 401,
+    message: '无效的认证凭证',
+  },
+  TokenExpiredError: {
+    code: 40102,
+    statusCode: 401,
+    message: '认证已过期，请重新登录',
+  },
+  MulterError: {
+    code: 40006,
+    statusCode: 400,
+    message: '文件上传错误',
+  },
+}
+
+/**
+ * 统一的错误响应构建函数
+ */
+function buildErrorResponse(code: number, message: string): ApiResponse {
+  return { code, message, data: null }
+}
+
+/**
  * 统一错误处理中间件
  */
 export function errorHandler(
@@ -26,74 +69,67 @@ export function errorHandler(
   res: Response,
   _next: NextFunction,
 ): void {
-  // 记录错误日志
+  // 记录错误日志（包含完整堆栈）
   logger.error('请求处理错误', {
+    name: err.name,
     message: err.message,
     stack: err.stack,
-    name: err.name,
   })
 
-  // 处理已知的应用错误
+  // ─── 1. 已知的应用错误（AppError） ───
   if (err instanceof AppError) {
-    const response: ApiResponse = {
-      code: err.code,
-      message: err.message,
-      data: null,
-    }
-    res.status(err.statusCode).json(response)
+    res.status(err.statusCode).json(buildErrorResponse(err.code, err.message))
     return
   }
 
-  // 处理 Mongoose 验证错误
-  if (err.name === 'ValidationError') {
-    const response: ApiResponse = {
-      code: 40001,
-      message: `数据验证失败: ${err.message}`,
-      data: null,
-    }
-    res.status(400).json(response)
-    return
-  }
-
-  // 处理 Mongoose 重复键错误
+  // ─── 2. Mongoose 重复键错误（code 11000） ───
   if ((err as any).code === 11000) {
-    const response: ApiResponse = {
-      code: 40002,
-      message: '数据已存在，请勿重复操作',
-      data: null,
-    }
-    res.status(409).json(response)
+    const keyValue = (err as any).keyValue || {}
+    const keyStr = Object.keys(keyValue).join(', ')
+    res.status(409).json(buildErrorResponse(
+      40002,
+      `数据已存在：${keyStr} 已被占用`,
+    ))
     return
   }
 
-  // 处理 JWT 错误
-  if (err.name === 'JsonWebTokenError') {
-    const response: ApiResponse = {
-      code: 40101,
-      message: '无效的认证凭证',
-      data: null,
+  // ─── 3. 已知错误类型（通过错误名映射） ───
+  if (err.name in ERROR_CODES) {
+    const errorConfig = ERROR_CODES[err.name]
+    let message = errorConfig.message
+
+    // 为特定错误类型补充详细信息
+    if (err.name === 'CastError') {
+      const castErr = err as any
+      message = `无效的 ${castErr.path || '资源'} 标识符`
+      if (castErr.value) {
+        message += `：${castErr.value}`
+      }
+    } else if (err.name === 'MulterError') {
+      const multerErr = err as any
+      switch (multerErr.code) {
+        case 'LIMIT_FILE_SIZE':
+          message = '文件大小超过限制（最大 50MB）'
+          break
+        case 'LIMIT_UNEXPECTED_FILE':
+          message = '上传字段名称不正确'
+          break
+        default:
+          message = multerErr.message || '文件上传错误'
+      }
+    } else if (err.name === 'ValidationError') {
+      // Mongoose 验证错误附带字段信息
+      message = `数据验证失败: ${err.message}`
     }
-    res.status(401).json(response)
+
+    res.status(errorConfig.statusCode).json(buildErrorResponse(errorConfig.code, message))
     return
   }
 
-  if (err.name === 'TokenExpiredError') {
-    const response: ApiResponse = {
-      code: 40102,
-      message: '认证已过期，请重新登录',
-      data: null,
-    }
-    res.status(401).json(response)
-    return
-  }
-
-  // 兜底：未知错误
-  const response: ApiResponse = {
-    code: 50000,
-    message: process.env.NODE_ENV === 'production'
-      ? '服务器内部错误'
-      : err.message,
-    data: null,
-  }
-  res.status(500).json(response)
+  // ─── 4. 兜底：未知错误 ───
+  const isProduction = process.env.NODE_ENV === 'production'
+  res.status(500).json(buildErrorResponse(
+    50000,
+    isProduction ? '服务器内部错误' : err.message,
+  ))
 }

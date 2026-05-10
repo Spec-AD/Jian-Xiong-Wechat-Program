@@ -109,7 +109,7 @@
     <!-- 非图片类型：单文件 -->
     <view wx:else class="file-upload-area">
       <view wx:if="{{uploadedUrl}}" class="file-preview">
-        <text class="file-preview-icon">{{selectedType === 'video' ? '🎬' : selectedType === 'audio' ? '🎵' : '📄'}}</text>
+        <text class="file-preview-icon"></text>
         <text class="file-preview-name">{{uploadedName || '已上传'}}</text>
         <button class="reupload-btn" bindtap="onChooseFile" size="mini">重新选择</button>
       </view>

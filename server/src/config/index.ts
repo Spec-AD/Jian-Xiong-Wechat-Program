@@ -31,6 +31,16 @@ const config = {
     region: process.env.COS_REGION || 'ap-nanjing',
   },
 
+  // DeepSeek AI
+  deepseek: {
+    apiKey: process.env.DEEPSEEK_API_KEY || '',
+    apiUrl: 'https://api.deepseek.com/chat/completions',
+    // 常规对话模型（快速响应）
+    chatModel: 'deepseek-chat',
+    // 思考模式模型（展示推理过程）
+    reasonerModel: 'deepseek-reasoner',
+  },
+
   // 是否开发模式
   get isDev(): boolean {
     return this.env === 'development'

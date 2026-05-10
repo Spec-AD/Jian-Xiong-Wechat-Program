@@ -104,7 +104,7 @@ export async function createWork(req: AuthRequest, res: Response, next: NextFunc
  */
 export async function updateWork(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    const work = await workService.updateWork(req.params.id, req.user!.id, req.body)
+    const work = await workService.updateWork(req.params.id, req.user!.id, req.user!.role, req.body)
     success(res, { id: work._id.toString() }, '更新成功')
   } catch (error) {
     next(error)
@@ -117,7 +117,7 @@ export async function updateWork(req: AuthRequest, res: Response, next: NextFunc
  */
 export async function deleteWork(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    await workService.deleteWork(req.params.id, req.user!.id)
+    await workService.deleteWork(req.params.id, req.user!.id, req.user!.role)
     success(res, null, '删除成功')
   } catch (error) {
     next(error)

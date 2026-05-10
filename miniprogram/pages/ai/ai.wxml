@@ -1,0 +1,130 @@
+<view class="page">
+
+  <!-- ===== 顶部导航 ===== -->
+  <view class="header">
+    <view class="header-left">
+      <text class="header-icon"></text>
+      <text class="header-title">健雄 AI 助手</text>
+    </view>
+    <view class="header-right">
+      <!-- 思考模式开关 -->
+      <view class="thinking-toggle" bindtap="onToggleThinking">
+        <text class="toggle-label {{thinkingMode ? 'toggle-label--active' : ''}}">深度思考</text>
+        <view class="toggle-track {{thinkingMode ? 'toggle-track--active' : ''}}">
+          <view class="toggle-thumb {{thinkingMode ? 'toggle-thumb--active' : ''}}"></view>
+        </view>
+      </view>
+      <text wx:if="{{hasChat}}" class="clear-btn" bindtap="onClear">清除</text>
+    </view>
+  </view>
+
+  <!-- ===== 对话区域 ===== -->
+  <scroll-view
+    class="chat-scroll"
+    scroll-y
+    scroll-with-animation
+    scroll-into-view="chat-bottom"
+    upper-threshold="100"
+  >
+    <view class="chat-container">
+
+      <!-- 空状态：快捷引导 -->
+      <view wx:if="{{!hasChat}}" class="welcome">
+        <view class="welcome-icon"></view>
+        <text class="welcome-title">你好！我是健雄书院 AI 助手</text>
+        <text class="welcome-desc">
+          由 DeepSeek 驱动，为你解答关于健雄书院的各类问题
+          <text wx:if="{{thinkingMode}}" class="welcome-tag thinking-tag">深度思考模式已开启</text>
+          <text wx:else class="welcome-tag fast-tag">快速问答模式</text>
+        </text>
+        <view class="quick-grid">
+          <view
+            wx:for="{{quickQuestions}}"
+            wx:key="index"
+            class="quick-item"
+            bindtap="onQuickTap"
+            data-text="{{item}}"
+          >
+            <text class="quick-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 对话消息 -->
+      <view
+        wx:for="{{messages}}"
+        wx:key="id"
+        class="msg-row msg-{{item.role}}"
+      >
+        <!-- AI 头像 -->
+        <view wx:if="{{item.role === 'assistant'}}" class="msg-avatar ai-avatar">
+          <text class="avatar-text"></text>
+        </view>
+
+        <view class="msg-bubble {{item.role === 'user' ? 'msg-bubble--user' : ''}} {{item.streaming ? 'msg-bubble--streaming' : ''}}">
+          <!-- 思考过程（推理内容） -->
+          <view wx:if="{{item.reasoning}}" class="reasoning-block">
+            <view class="reasoning-header" bindtap="onToggleReasoning" data-id="{{item.id}}">
+              <text class="reasoning-icon"></text>
+              <text class="reasoning-title">已深度思考</text>
+              <text class="reasoning-toggle">{{item.showReasoning ? '收起' : '展开'}}</text>
+            </view>
+            <view wx:if="{{item.showReasoning}}" class="reasoning-content">
+              <text class="reasoning-text">{{item.reasoning}}</text>
+            </view>
+          </view>
+
+          <!-- loading 状态 -->
+          <view wx:if="{{item.loading}}" class="loading-dots">
+            <view class="dot"></view>
+            <view class="dot"></view>
+            <view class="dot"></view>
+          </view>
+
+          <!-- 正常消息 -->
+          <text wx:elif="{{!item.loading && item.content}}" class="msg-text">{{item.content}}</text>
+
+          <!-- 流式输出光标 -->
+          <view wx:if="{{item.streaming && !item.loading}}" class="streaming-cursor">
+            <view class="cursor-bar"></view>
+          </view>
+        </view>
+
+        <!-- 用户头像 -->
+        <view wx:if="{{item.role === 'user'}}" class="msg-avatar user-avatar">
+          <image
+            class="avatar-img"
+            src="{{userAvatar}}"
+            mode="aspectFill"
+          />
+        </view>
+      </view>
+
+      <!-- 底部锚点 -->
+      <view id="chat-bottom" class="chat-bottom"></view>
+    </view>
+  </scroll-view>
+
+  <!-- ===== 底部输入栏 ===== -->
+  <view class="input-bar">
+    <view class="input-wrap">
+      <input
+        class="input-field"
+        placeholder="输入你想了解的问题…"
+        value="{{inputText}}"
+        bindinput="onInput"
+        bindconfirm="onSend"
+        confirm-type="send"
+        disabled="{{waiting}}"
+      />
+    </view>
+    <button
+      class="send-btn {{inputText.trim() && !waiting ? 'send-btn--active' : ''}}"
+      bindtap="onSend"
+      disabled="{{!inputText.trim() || waiting}}"
+    >
+      <text class="send-icon"></text>
+    </button>
+  </view>
+
+</view>

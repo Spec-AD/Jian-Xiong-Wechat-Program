@@ -1,8 +1,10 @@
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
+import swaggerUi from 'swagger-ui-express'
 import config from './config'
 import { connectDatabase } from './config/db'
+import { swaggerSpec } from './config/swagger'
 import { requestLogger } from './middleware/logger'
 import { errorHandler } from './middleware/errorHandler'
 import routes from './routes'
@@ -26,6 +28,21 @@ app.use(requestLogger)
 
 // 静态文件（上传的文件）
 app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')))
+
+// Swagger 接口文档
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: '健雄书院 API 文档',
+  customCss: '.swagger-ui .topbar { display: none }',
+  swaggerOptions: {
+    persistAuthorization: true,
+  },
+}))
+
+// Swagger JSON 原始定义
+app.get('/api-docs.json', (_req, res) => {
+  res.setHeader('Content-Type', 'application/json')
+  res.json(swaggerSpec)
+})
 
 // ============ 路由 ============
 
@@ -62,6 +79,7 @@ async function start() {
       console.log(`📡 地址: http://localhost:${config.port}`)
       console.log(`🔧 环境: ${config.env}`)
       console.log(`📚 API 基础路径: http://localhost:${config.port}/api`)
+      console.log(`📖 API 文档:   http://localhost:${config.port}/api-docs`)    
     })
   } catch (error) {
     console.error('❌ 服务启动失败:', error)

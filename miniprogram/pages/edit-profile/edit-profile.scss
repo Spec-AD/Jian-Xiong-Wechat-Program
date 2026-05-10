@@ -1,0 +1,161 @@
+/** pages/edit-profile/edit-profile.scss — 编辑资料 */
+
+page {
+  background: var(--bg-page);
+}
+
+.page {
+  min-height: 100vh;
+  padding-bottom: 40rpx;
+}
+
+/* ===== 头像 ===== */
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48rpx 0 32rpx;
+  background: #fff;
+  margin-bottom: 20rpx;
+}
+
+.avatar-btn {
+  position: relative;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 80rpx;
+  overflow: visible;
+  background: none;
+  padding: 0;
+  line-height: 0;
+}
+
+.avatar-img {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 80rpx;
+  border: 4rpx solid var(--theme-color);
+}
+
+.avatar-badge {
+  position: absolute;
+  right: -4rpx;
+  bottom: 4rpx;
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 24rpx;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.15);
+}
+
+.avatar-hint {
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+  margin-top: 12rpx;
+}
+
+/* ===== 表单 ===== */
+.form-wrap {
+  background: #fff;
+  border-radius: 20rpx;
+  margin: 0 28rpx 24rpx;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  padding: 28rpx;
+  border-bottom: 1rpx solid var(--c-border);
+  min-height: 88rpx;
+}
+
+.form-row:last-child {
+  border-bottom: none;
+}
+
+.form-row--col {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.form-row--textarea {
+  align-items: flex-start;
+  min-height: 120rpx;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: var(--c-text);
+  font-weight: 600;
+  width: 120rpx;
+  flex-shrink: 0;
+}
+
+.form-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: var(--c-text);
+  height: 56rpx;
+  line-height: 56rpx;
+  text-align: right;
+}
+
+.form-value {
+  flex: 1;
+  font-size: 28rpx;
+  color: var(--c-text);
+  text-align: right;
+}
+
+.form-value.readonly {
+  color: var(--c-text-sub);
+}
+
+.form-textarea {
+  flex: 1;
+  font-size: 28rpx;
+  color: var(--c-text);
+  min-height: 80rpx;
+  text-align: right;
+  line-height: 1.6;
+}
+
+.picker-value {
+  color: var(--theme-color);
+}
+
+/* ===== 兴趣标签 ===== */
+.interests-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.interest-tag {
+  padding: 12rpx 28rpx;
+  border-radius: 40rpx;
+  font-size: 26rpx;
+  color: var(--c-text-sub);
+  background: var(--bg-page);
+  border: 2rpx solid var(--c-border);
+}
+
+.interest-tag--active {
+  background: rgba(106, 0, 95, 0.08);
+  color: var(--theme-color);
+  border-color: var(--theme-color);
+  font-weight: 600;
+}
+
+/* ===== 保存按钮 ===== */
+.save-wrap {
+  padding: 0 28rpx;
+  margin-top: 16rpx;
+}

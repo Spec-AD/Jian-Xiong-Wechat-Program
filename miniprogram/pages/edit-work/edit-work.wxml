@@ -1,0 +1,180 @@
+<!--pages/edit-work/edit-work.wxml-->
+<view class="page">
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-screen">
+    <text class="loading-icon"></text>
+    <text class="loading-text">加载作品数据…</text>
+  </view>
+
+  <block wx:else>
+
+    <!-- ===== 作品类型 ===== -->
+    <view class="section">
+      <text class="section-title">作品类型 <text class="required">*</text></text>
+      <view class="type-grid">
+        <view
+          wx:for="{{typeOptions}}"
+          wx:key="id"
+          class="type-card {{selectedType === item.id ? 'type-card--active' : ''}}"
+          bindtap="onTypeSelect"
+          data-id="{{item.id}}"
+        >
+          <text class="type-icon">{{item.icon}}</text>
+          <text class="type-name">{{item.name}}</text>
+          <text class="type-desc">{{item.desc}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ===== 标题 ===== -->
+    <view class="section">
+      <text class="section-title">作品标题 <text class="required">*</text></text>
+      <input
+        class="input-field"
+        placeholder="给你的作品取个名字吧"
+        value="{{title}}"
+        bindinput="onTitleInput"
+        maxlength="50"
+      />
+    </view>
+
+    <!-- ===== 描述 ===== -->
+    <view class="section">
+      <text class="section-title">作品描述</text>
+      <textarea
+        class="textarea-field"
+        placeholder="简要描述你的作品（选填）"
+        value="{{description}}"
+        bindinput="onDescInput"
+        maxlength="500"
+        auto-height
+      />
+    </view>
+
+    <!-- ===== 标签 ===== -->
+    <view class="section">
+      <text class="section-title">标签（最多5个）</text>
+      <view class="tag-input-row">
+        <input
+          class="tag-input"
+          placeholder="输入标签后确认"
+          value="{{tagInput}}"
+          bindinput="onTagInput"
+          bindconfirm="onTagConfirm"
+          maxlength="10"
+        />
+        <button class="tag-add-btn" bindtap="onTagConfirm">添加</button>
+      </view>
+      <view wx:if="{{tags.length > 0}}" class="tag-list">
+        <view
+          wx:for="{{tags}}"
+          wx:key="index"
+          class="tag-item"
+          bindtap="onTagRemove"
+          data-index="{{index}}"
+        >
+          <text>{{item}}</text>
+          <text class="tag-remove">✕</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ===== 文件管理 ===== -->
+    <view class="section">
+      <text class="section-title">作品文件</text>
+
+      <!-- 图片类型 -->
+      <view wx:if="{{selectedType === 'image'}}" class="image-upload-area">
+        <view class="image-grid">
+          <view
+            wx:for="{{imageList}}"
+            wx:key="index"
+            class="image-preview-item"
+          >
+            <image class="image-preview" src="{{item}}" mode="aspectFill" />
+            <view class="image-remove" bindtap="onRemoveImage" data-index="{{index}}">✕</view>
+          </view>
+          <view
+            wx:if="{{imageList.length < 9}}"
+            class="image-upload-btn"
+            bindtap="onChooseFile"
+          >
+            <text class="upload-btn-icon">＋</text>
+            <text class="upload-btn-text">添加图片</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 非图片类型 -->
+      <view wx:else class="file-upload-area">
+        <view class="file-preview" wx:if="{{uploadedUrl}}">
+          <text class="file-preview-icon"></text>
+          <view class="file-preview-info">
+            <text class="file-preview-label">当前文件</text>
+            <text class="file-preview-name">{{uploadedName || '已上传'}}</text>
+          </view>
+          <button class="reupload-btn" bindtap="onChooseFile" size="mini">替换</button>
+        </view>
+        <button
+          wx:else
+          class="upload-btn"
+          loading="{{uploading}}"
+          bindtap="onChooseFile"
+        >
+          上传文件
+        </button>
+      </view>
+    </view>
+
+    <!-- ===== 作品状态 ===== -->
+    <view class="section">
+      <text class="section-title">作品状态</text>
+      <view class="status-radio-group">
+        <label class="status-radio {{status === 'published' ? 'status-radio--active' : ''}}">
+          <radio value="published" checked="{{status === 'published'}}" bindtap="onStatusChange" data-value="published" />
+          <view class="status-radio-body">
+            <text class="status-radio-title">已发布</text>
+            <text class="status-radio-desc">作品公开展示，所有人都能浏览</text>
+          </view>
+        </label>
+        <label class="status-radio {{status === 'hidden' ? 'status-radio--active' : ''}}">
+          <radio value="hidden" checked="{{status === 'hidden'}}" bindtap="onStatusChange" data-value="hidden" />
+          <view class="status-radio-body">
+            <text class="status-radio-title">隐藏</text>
+            <text class="status-radio-desc">仅自己可见，其他人无法浏览</text>
+          </view>
+        </label>
+        <label class="status-radio {{status === 'draft' ? 'status-radio--active' : ''}}">
+          <radio value="draft" checked="{{status === 'draft'}}" bindtap="onStatusChange" data-value="draft" />
+          <view class="status-radio-body">
+            <text class="status-radio-title">草稿</text>
+            <text class="status-radio-desc">未发布，仅自己可见</text>
+          </view>
+        </label>
+      </view>
+    </view>
+
+    <!-- ===== 操作按钮 ===== -->
+    <view class="action-wrap">
+      <button
+        class="save-btn"
+        loading="{{submitting}}"
+        disabled="{{submitting}}"
+        bindtap="onSave"
+      >
+        保存修改
+      </button>
+      <button
+        class="delete-btn"
+        loading="{{submitting}}"
+        disabled="{{submitting}}"
+        bindtap="onDelete"
+      >
+        删除作品
+      </button>
+    </view>
+
+  </block>
+
+</view>

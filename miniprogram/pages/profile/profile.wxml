@@ -1,21 +1,40 @@
-<!--pages/profile/profile.wxml-->
 <view class="page">
 
-  <!-- ===== 用户信息头部 ===== -->
-  <view class="profile-header">
-    <image
-      class="profile-avatar"
-      src="{{userInfo.avatarUrl}}"
-      mode="aspectFill"
-    />
-    <view class="profile-info">
-      <text class="profile-name">{{userInfo.nickName || '书院同学'}}</text>
-      <text class="profile-school">南京大学健雄书院</text>
+  <!-- ===== 首次使用引导 ===== -->
+  <view wx:if="{{firstTime}}" class="guide-overlay">
+    <view class="guide-card">
+      <text class="guide-icon"></text>
+      <text class="guide-title">欢迎来到健雄书院</text>
+      <text class="guide-desc">在这里你可以展示学业、科研、文艺、志愿服务等各方面的优秀成果。点击头像或昵称可同步微信信息。</text>
+      <button class="guide-btn" bindtap="onCloseGuide">我知道了</button>
     </view>
   </view>
 
-  <!-- ===== 数据统计 ===== -->
-  <view class="stats-card">
+  <!-- ===== 用户信息头部 ===== -->
+  <view class="profile-header" bindtap="onSyncWechatInfo">
+    <view class="avatar-wrap">
+      <image
+        class="profile-avatar"
+        src="{{userInfo.avatarUrl || 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'}}"
+        mode="aspectFill"
+      />
+      <view class="avatar-badge">
+        <text class="badge-text"></text>
+      </view>
+    </view>
+    <view class="profile-info">
+      <view class="name-row">
+        <text class="profile-name {{isVerified ? 'profile-name--verified' : ''}}">{{userInfo.nickName || '书院同学'}}</text>
+        <text wx:if="{{isVerified}}" class="verified-badge"></text>
+      </view>
+      <text class="profile-uid">UID: {{uid}}</text>
+      <text wx:if="{{signature}}" class="profile-sig">「{{signature}}」</text>
+      <text wx:else class="profile-hint">点击头像或昵称同步微信信息</text>
+    </view>
+  </view>
+
+  <!-- ===== 数据统计（可点击→数据中心）===== -->
+  <view class="stats-card" bindtap="onMenuTap" data-key="dataCenter">
     <view class="stat-item">
       <text class="stat-num">{{stats.publishCount}}</text>
       <text class="stat-label">发布</text>
@@ -28,50 +47,103 @@
     <view class="stat-divider"></view>
     <view class="stat-item">
       <text class="stat-num">{{stats.viewCount}}</text>
-      <text class="stat-label">浏览量</text>
+      <text class="stat-label">浏览</text>
     </view>
+    <view class="stat-arrow">›</view>
   </view>
 
-  <!-- ===== 功能菜单 ===== -->
+  <!-- ===== 我的内容 ===== -->
   <view class="menu-group">
     <text class="menu-group-title">我的内容</text>
     <view class="menu-item" bindtap="onMenuTap" data-key="myPublish">
-      <text class="menu-icon">📋</text>
+      <text class="menu-icon"></text>
       <text class="menu-label">我的发布</text>
       <text class="menu-arrow">›</text>
     </view>
     <view class="menu-item" bindtap="onMenuTap" data-key="myLike">
-      <text class="menu-icon">❤️</text>
+      <text class="menu-icon"></text>
       <text class="menu-label">我的点赞</text>
       <text class="menu-arrow">›</text>
     </view>
-    <view class="menu-item" bindtap="onMenuTap" data-key="publish">
-      <text class="menu-icon">✏️</text>
-      <text class="menu-label">发布作品</text>
+    <view class="menu-item" bindtap="onMenuTap" data-key="history">
+      <text class="menu-icon"></text>
+      <text class="menu-label">浏览记录</text>
+      <text class="menu-tag">{{historyCount}}</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item menu-item--last" bindtap="onMenuTap" data-key="downloads">
+      <text class="menu-icon"></text>
+      <text class="menu-label">我的下载</text>
       <text class="menu-arrow">›</text>
     </view>
   </view>
 
+  <!-- ===== 创作 ===== -->
   <view class="menu-group">
-    <text class="menu-group-title">关于</text>
-    <view class="menu-item" bindtap="onMenuTap" data-key="about">
-      <text class="menu-icon">🏫</text>
-      <text class="menu-label">关于书院</text>
+    <text class="menu-group-title">创作</text>
+    <view class="menu-item" bindtap="onMenuTap" data-key="publish">
+      <text class="menu-icon"></text>
+      <text class="menu-label">发布作品</text>
+      <view wx:if="{{!canPublish}}" class="menu-tag menu-tag--disabled">暂不可用</view>
       <text class="menu-arrow">›</text>
     </view>
-    <view class="menu-item" bindtap="onMenuTap" data-key="logs">
-      <text class="menu-icon">📝</text>
-      <text class="menu-label">启动日志</text>
+  </view>
+
+  <!-- ===== 账户与设置 ===== -->
+  <view class="menu-group">
+    <text class="menu-group-title">账户与设置</text>
+    <view class="menu-item" bindtap="onMenuTap" data-key="editProfile">
+      <text class="menu-icon"></text>
+      <text class="menu-label">编辑资料</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="onMenuTap" data-key="verification">
+      <text class="menu-icon"></text>
+      <text class="menu-label">实名认证</text>
+      <view class="menu-tag {{isVerified ? 'menu-tag--verified' : ''}}">
+        {{isVerified ? '已认证' : '未认证'}}
+      </view>
       <text class="menu-arrow">›</text>
     </view>
     <view class="menu-item" bindtap="onMenuTap" data-key="privacy">
-      <text class="menu-icon">🔒</text>
-      <text class="menu-label">隐私政策</text>
+      <text class="menu-icon"></text>
+      <text class="menu-label">隐私设置</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item menu-item--last" bindtap="onMenuTap" data-key="settings">
+      <text class="menu-icon"></text>
+      <text class="menu-label">全部设置</text>
       <text class="menu-arrow">›</text>
     </view>
   </view>
 
-  <!-- 退出登录 -->
+  <!-- ===== 管理 ===== -->
+  <view wx:if="{{isAdmin}}" class="menu-group">
+    <text class="menu-group-title">管理</text>
+    <view class="menu-item" bindtap="onMenuTap" data-key="admin">
+      <text class="menu-icon"></text>
+      <text class="menu-label">管理后台</text>
+      <view class="menu-tag menu-tag--verified">管理员</view>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ===== 社区 ===== -->
+  <view class="menu-group">
+    <text class="menu-group-title">社区</text>
+    <view class="menu-item" bindtap="onMenuTap" data-key="github">
+      <text class="menu-icon"></text>
+      <text class="menu-label">GitHub 仓库</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item menu-item--last" bindtap="onMenuTap" data-key="afdian">
+      <text class="menu-icon"></text>
+      <text class="menu-label">爱发电支持</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ===== 退出 ===== -->
   <view class="logout-wrap">
     <button class="logout-btn" bindtap="onLogout">退出登录</button>
   </view>

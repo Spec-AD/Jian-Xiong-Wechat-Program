@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import * as workController from '../controllers/work.controller'
 import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth'
-import { createWorkValidator, updateWorkValidator } from '../validators/work.validator'
+import { createWorkValidator, updateWorkValidator, listWorksValidator, paginationValidator, objectIdParamValidator } from '../validators/work.validator'
 import { validate } from './index'
 
 const router = Router()
@@ -12,7 +12,7 @@ const router = Router()
  * GET /api/works
  * 作品列表（分页+分类+搜索）
  */
-router.get('/', optionalAuthMiddleware, workController.getWorks)
+router.get('/', optionalAuthMiddleware, listWorksValidator, validate, workController.getWorks)
 
 /**
  * GET /api/works/banner
@@ -24,13 +24,13 @@ router.get('/banner', workController.getBannerWorks)
  * GET /api/works/:id
  * 作品详情
  */
-router.get('/:id', optionalAuthMiddleware, workController.getWorkById)
+router.get('/:id', optionalAuthMiddleware, objectIdParamValidator, validate, workController.getWorkById)
 
 /**
  * POST /api/works/:id/view
  * 记录浏览量
  */
-router.post('/:id/view', workController.recordView)
+router.post('/:id/view', objectIdParamValidator, validate, workController.recordView)
 
 // ============ 需登录接口 ============
 
@@ -44,30 +44,30 @@ router.post('/', authMiddleware, createWorkValidator, validate, workController.c
  * PUT /api/works/:id
  * 编辑作品
  */
-router.put('/:id', authMiddleware, updateWorkValidator, validate, workController.updateWork)
+router.put('/:id', authMiddleware, objectIdParamValidator, updateWorkValidator, validate, workController.updateWork)
 
 /**
  * DELETE /api/works/:id
  * 删除作品
  */
-router.delete('/:id', authMiddleware, workController.deleteWork)
+router.delete('/:id', authMiddleware, objectIdParamValidator, validate, workController.deleteWork)
 
 /**
  * POST /api/works/:id/like
  * 点赞/取消点赞
  */
-router.post('/:id/like', authMiddleware, workController.toggleLike)
+router.post('/:id/like', authMiddleware, objectIdParamValidator, validate, workController.toggleLike)
 
 /**
  * GET /api/works/my
  * 我发布的作品列表
  */
-router.get('/my/list', authMiddleware, workController.getMyWorks)
+router.get('/my/list', authMiddleware, paginationValidator, validate, workController.getMyWorks)
 
 /**
  * GET /api/works/liked
  * 我点赞的作品列表
  */
-router.get('/liked/list', authMiddleware, workController.getLikedWorks)
+router.get('/liked/list', authMiddleware, paginationValidator, validate, workController.getLikedWorks)
 
 export default router

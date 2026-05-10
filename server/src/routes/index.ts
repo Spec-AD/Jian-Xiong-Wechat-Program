@@ -5,6 +5,7 @@ import authRoutes from './auth.routes'
 import userRoutes from './user.routes'
 import workRoutes from './work.routes'
 import uploadRoutes from './upload.routes'
+import aiRoutes from './ai.routes'
 
 const router = Router()
 
@@ -30,6 +31,7 @@ router.use('/auth', authRoutes)
 router.use('/user', userRoutes)
 router.use('/works', workRoutes)
 router.use('/upload', uploadRoutes)
+router.use('/ai', aiRoutes)
 
 /**
  * 健康检查

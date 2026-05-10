@@ -1,129 +1,267 @@
-<!--pages/viewer/viewer.wxml-->
+<!--pages/viewer/viewer.wxml — 素材详情页（含信息卡片 + 评论区）-->
 <view class="page">
 
-  <!-- ===== 视频 ===== -->
-  <view wx:if="{{type === 'video'}}" class="media-wrap">
-    <video
-      class="video-player"
-      src="{{fileUrl}}"
-      controls
-      autoplay="{{false}}"
-      show-fullscreen-btn
-      show-play-btn
-      enable-progress-gesture
-      object-fit="contain"
-      poster=""
-    />
-  </view>
+  <scroll-view class="scroll-content" scroll-y enable-flex>
 
-  <!-- ===== 音频播放器 ===== -->
-  <view wx:elif="{{type === 'audio'}}" class="audio-wrap">
-    <view class="audio-disc {{audioPlaying ? 'audio-disc--spin' : ''}}">
-      <text class="audio-disc-icon">🎵</text>
-    </view>
-    <text class="audio-title">{{title}}</text>
-    <text class="audio-time-row">
-      <text class="audio-cur">{{audioCurrentTime}}</text>
-      <text class="audio-sep"> / </text>
-      <text class="audio-dur">{{audioDurationText}}</text>
-    </text>
-    <slider
-      class="audio-slider"
-      value="{{audioProgress}}"
-      max="{{audioDuration}}"
-      bindchange="onSliderChange"
-      activeColor="#4a90e2"
-      backgroundColor="#e8edf5"
-      block-size="18"
-    />
-    <view class="audio-btn-row">
-      <view class="audio-ctrl-btn" bindtap="onSeekBack">
-        <text class="ctrl-icon">⏪</text>
-        <text class="ctrl-label">15s</text>
-      </view>
-      <view class="audio-play-btn" bindtap="onAudioPlay">
-        <text class="play-icon">{{audioPlaying ? '⏸' : '▶'}}</text>
-      </view>
-      <view class="audio-ctrl-btn" bindtap="onSeekForward">
-        <text class="ctrl-label">15s</text>
-        <text class="ctrl-icon">⏩</text>
-      </view>
-    </view>
-  </view>
+    <!-- ========== 媒体内容区 ========== -->
+    <view class="media-section">
 
-  <!-- ===== 图片（支持长图 + 多图）===== -->
-  <view wx:elif="{{type === 'image'}}" class="image-wrap">
-    <!-- 多图横向滑动 -->
-    <block wx:if="{{imageList.length > 1}}">
-      <scroll-view scroll-x class="image-h-scroll" enable-flex>
-        <view class="image-h-inner">
+      <!-- 视频 -->
+      <view wx:if="{{type === 'video'}}" class="video-wrap">
+        <video
+          class="video-player"
+          src="{{fileUrl}}"
+          controls
+          autoplay="{{false}}"
+          show-fullscreen-btn
+          show-play-btn
+          enable-progress-gesture
+          object-fit="contain"
+        />
+      </view>
+
+      <!-- 音频 -->
+      <view wx:elif="{{type === 'audio'}}" class="audio-wrap">
+        <view class="audio-disc {{audioPlaying ? 'audio-disc--spin' : ''}}">
+          <text class="audio-disc-icon"></text>
+        </view>
+        <text class="audio-title">{{title}}</text>
+        <text class="audio-time-row">
+          <text class="audio-cur">{{audioCurrentTime}}</text>
+          <text class="audio-sep"> / </text>
+          <text class="audio-dur">{{audioDurationText}}</text>
+        </text>
+        <slider
+          class="audio-slider"
+          value="{{audioProgress}}"
+          max="{{audioDuration}}"
+          bindchange="onSliderChange"
+          activeColor="#6A005F"
+          backgroundColor="#e8edf5"
+          block-size="18"
+        />
+        <view class="audio-btn-row">
+          <view class="audio-ctrl-btn" bindtap="onSeekBack">
+            <text class="ctrl-icon"></text>
+            <text class="ctrl-label">15s</text>
+          </view>
+          <view class="audio-play-btn" bindtap="onAudioPlay">
+            <text class="play-icon"></text>
+          </view>
+          <view class="audio-ctrl-btn" bindtap="onSeekForward">
+            <text class="ctrl-label">15s</text>
+            <text class="ctrl-icon"></text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 图片（支持长图 + 多图）-->
+      <view wx:elif="{{type === 'image'}}" class="image-wrap">
+        <block wx:if="{{imageList.length > 1}}">
+          <scroll-view scroll-x class="image-h-scroll" enable-flex>
+            <view class="image-h-inner">
+              <image
+                wx:for="{{imageList}}"
+                wx:key="index"
+                class="image-h-item"
+                src="{{item}}"
+                mode="aspectFill"
+                lazy-load
+                bindtap="onImageTap"
+                data-src="{{item}}"
+              />
+            </view>
+          </scroll-view>
+          <text class="image-hint">← 左右滑动 · 点击全屏</text>
+        </block>
+        <block wx:else>
           <image
-            wx:for="{{imageList}}"
-            wx:key="index"
-            class="image-h-item"
-            src="{{item}}"
-            mode="aspectFill"
+            class="preview-image"
+            src="{{fileUrl}}"
+            mode="widthFix"
             lazy-load
             bindtap="onImageTap"
-            data-src="{{item}}"
+            data-src="{{fileUrl}}"
+            show-menu-by-longpress="{{true}}"
           />
+          <text class="image-hint">长图可上下滚动 · 点击全屏查看</text>
+        </block>
+      </view>
+
+      <!-- 文档（PDF / PPTX / XLSX）-->
+      <view wx:elif="{{type === 'doc'}}" class="doc-wrap">
+        <view class="doc-preview-card">
+          <text class="doc-big-icon"></text>
+          <text class="doc-name">{{title}}</text>
+          <text class="doc-sub">点击下方按钮在微信内预览</text>
         </view>
-      </scroll-view>
-      <text class="image-hint">← 左右滑动查看多图 · 点击全屏</text>
-    </block>
-    <!-- 单图竖向滚动（长图）-->
-    <block wx:else>
-      <scroll-view scroll-y class="image-v-scroll">
-        <image
-          class="preview-image"
-          src="{{fileUrl}}"
-          mode="widthFix"
-          lazy-load
-          bindtap="onImageTap"
-          data-src="{{fileUrl}}"
-        />
-      </scroll-view>
-      <text class="image-hint">支持长图滚动 · 点击全屏查看</text>
-    </block>
-  </view>
+        <button
+          class="doc-open-btn"
+          loading="{{docLoading}}"
+          bindtap="onOpenDoc"
+        >预览文档</button>
+      </view>
 
-  <!-- ===== PDF / 文档 ===== -->
-  <view wx:elif="{{type === 'doc'}}" class="doc-wrap">
-    <view class="doc-preview-card">
-      <text class="doc-big-icon">📄</text>
-      <text class="doc-name">{{title}}</text>
-      <text class="doc-sub">PDF 文档</text>
-    </view>
-    <button
-      class="doc-open-btn"
-      loading="{{docLoading}}"
-      bindtap="onOpenDoc"
-    >在微信内打开文档</button>
-    <text class="doc-tip">文档将在微信内置阅读器中打开\n支持从菜单转发或保存</text>
-  </view>
+      <!-- 不支持格式 -->
+      <view wx:elif="{{type && type !== 'loading'}}" class="unsupported">
+        <text class="unsupported-icon"></text>
+        <text class="unsupported-text">暂不支持在线预览该格式</text>
+        <button class="open-btn" bindtap="onOpenDoc">尝试用其他方式打开</button>
+      </view>
 
-  <!-- ===== 不支持的格式 ===== -->
-  <view wx:else class="unsupported">
-    <text class="unsupported-icon">🔗</text>
-    <text class="unsupported-text">暂不支持该文件格式</text>
-    <button class="open-btn" bindtap="onOpenDoc">尝试打开</button>
-  </view>
+      <!-- 加载中 -->
+      <view wx:if="{{loading}}" class="loading-placeholder">
+        <text class="loading-icon"></text>
+        <text class="loading-text">正在加载作品…</text>
+      </view>
 
-  <!-- ===== 底部操作栏（通用）===== -->
-  <view class="action-bar">
-    <view class="action-btn" bindtap="onLike">
-      <text class="action-icon">{{liked ? '❤️' : '🤍'}}</text>
-      <text class="action-label">{{liked ? '已赞' : '点赞'}}</text>
-      <text class="action-count">{{likesCount || ''}}</text>
     </view>
-    <view class="action-btn" bindtap="onShare">
-      <text class="action-icon">📤</text>
-      <text class="action-label">分享</text>
+
+    <!-- ========== 作品信息卡片 ========== -->
+    <view class="info-card" wx:if="{{!loading}}">
+
+      <!-- 标题 + 管理员/作者操作 -->
+      <view class="info-title-row">
+        <text class="info-title">{{title}}</text>
+        <view wx:if="{{canEdit}}" class="info-admin-actions">
+          <button class="admin-btn admin-btn--edit" bindtap="onEdit">编辑</button>
+          <button class="admin-btn admin-btn--delete" bindtap="onDelete">删除</button>
+        </view>
+      </view>
+
+      <!-- 作者信息 -->
+      <view class="info-author-row">
+        <image class="info-avatar" src="{{authorAvatar || '/assets/icons/home.png'}}" mode="aspectFill" />
+        <view class="info-author-text">
+          <text class="info-author-name">{{author}}</text>
+          <text class="info-author-id" wx:if="{{authorStudentId}}">{{authorStudentId}}</text>
+        </view>
+      </view>
+
+      <!-- 标签 -->
+      <view class="info-tags" wx:if="{{tags && tags.length > 0}}">
+        <text class="info-tag" wx:for="{{tags}}" wx:key="index">{{item}}</text>
+      </view>
+
+      <!-- 分割线 -->
+      <view class="info-divider"></view>
+
+      <!-- 作品简介 -->
+      <view class="info-desc-section" wx:if="{{description}}">
+        <text class="info-desc-label">作品简介</text>
+        <text class="info-desc-text">{{description}}</text>
+      </view>
+
+      <view class="info-divider" wx:if="{{description}}"></view>
+
+      <!-- 统计数据 -->
+      <view class="info-stats">
+        <view class="stat-item">
+          <text class="stat-value">{{viewsDisplay}}</text>
+          <text class="stat-label">浏览量</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-value">{{likesCountDisplay}}</text>
+          <text class="stat-label">点赞数</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-value">{{commentsCountDisplay}}</text>
+          <text class="stat-label">评论数</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-value">{{dateDisplay}}</text>
+          <text class="stat-label">发布日期</text>
+        </view>
+      </view>
+
     </view>
-    <view class="action-btn" bindtap="onDownload">
-      <text class="action-icon">⬇️</text>
-      <text class="action-label">下载</text>
+
+    <!-- ========== 文档正文区（仅文档类型，置于简介下方、评论上方）========== -->
+    <view class="body-section" wx:if="{{!loading && type === 'doc' && description}}">
+      <view class="body-header">
+        <text class="body-title">文档正文</text>
+      </view>
+      <view class="body-content">
+        <text class="body-text">{{description}}</text>
+      </view>
     </view>
+
+    <!-- ========== 评论区 ========== -->
+    <view class="comments-section" wx:if="{{!loading}}">
+
+      <view class="comments-header">
+        <text class="comments-title">评论</text>
+        <text class="comments-count">{{commentsCount || 0}} 条</text>
+      </view>
+
+      <!-- 评论列表 -->
+      <view wx:if="{{comments.length > 0}}" class="comments-list">
+        <view class="comment-item" wx:for="{{comments}}" wx:key="id">
+          <image class="comment-avatar" src="{{item.authorAvatar || '/assets/icons/home.png'}}" mode="aspectFill" />
+          <view class="comment-body">
+            <view class="comment-meta">
+              <text class="comment-author">{{item.author}}</text>
+              <text class="comment-time">{{item.relativeTime}}</text>
+            </view>
+            <text class="comment-content">{{item.content}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 空评论 -->
+      <view wx:else class="comments-empty">
+        <text class="comments-empty-icon"></text>
+        <text class="comments-empty-text">暂无评论，快来写下第一条评论吧</text>
+      </view>
+
+    </view>
+
+    <!-- 底部留白 -->
+    <view class="scroll-bottom"></view>
+
+  </scroll-view>
+
+  <!-- ========== 固定底部操作栏（含评论输入）========== -->
+  <view class="bottom-bar" wx:if="{{!loading}}">
+
+    <!-- 点赞 -->
+    <view class="bottom-action bottom-like" bindtap="onLike">
+      <text class="bottom-action-icon"></text>
+      <text class="bottom-action-label">{{liked ? '已赞' : '点赞'}}</text>
+    </view>
+
+    <!-- 分享 -->
+    <view class="bottom-action" bindtap="onShare">
+      <text class="bottom-action-icon"></text>
+      <text class="bottom-action-label">分享</text>
+    </view>
+
+    <!-- 下载 -->
+    <view class="bottom-action" bindtap="onDownload">
+      <text class="bottom-action-icon"></text>
+      <text class="bottom-action-label">下载</text>
+    </view>
+
+    <!-- 评论输入框 -->
+    <view class="bottom-comment">
+      <input
+        class="comment-input"
+        placeholder="写评论…"
+        bindfocus="onCommentFocus"
+        bindblur="onCommentBlur"
+        bindconfirm="onCommentConfirm"
+        value="{{commentText}}"
+        data-input="comment"
+        confirm-type="send"
+      />
+      <view
+        class="comment-send {{commentText.trim() ? 'comment-send--active' : ''}}"
+        bindtap="onSendComment"
+      >
+        <text class="send-icon"></text>
+      </view>
+    </view>
+
   </view>
 
 </view>

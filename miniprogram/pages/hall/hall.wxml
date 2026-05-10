@@ -4,7 +4,7 @@
   <!-- ===== 顶部搜索栏 ===== -->
   <view class="search-bar">
     <view class="search-inner">
-      <text class="search-icon">🔍</text>
+      <text class="search-icon"></text>
       <input
         class="search-input"
         placeholder="搜索作品、作者、标签…"
@@ -98,8 +98,8 @@
         <view class="card-meta">
           <text class="card-date">{{item.date}}</text>
           <view class="card-stats">
-            <text class="stat-text">👁 {{item.views}}</text>
-            <text class="stat-text">♥ {{item.likes}}</text>
+            <text class="stat-text">{{item.views}}</text>
+            <text class="stat-text">{{item.likes}}</text>
           </view>
         </view>
       </view>
@@ -113,7 +113,7 @@
 
   <!-- 空状态 -->
   <view wx:if="{{!loading && works.length === 0}}" class="empty">
-    <text class="empty-icon">🔭</text>
+    <text class="empty-icon"></text>
     <text class="empty-text">{{mode === 'my' ? '还没有发布作品哦' : mode === 'liked' ? '还没有点赞过作品' : '暂无相关作品'}}</text>
   </view>
 

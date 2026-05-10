@@ -1,0 +1,311 @@
+/** pages/admin/admin.scss — 管理员后台 */
+
+page {
+  background: var(--bg-page);
+}
+
+.page {
+  min-height: 100vh;
+  padding-bottom: 40rpx;
+}
+
+/* ===== 加载 ===== */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 200rpx 0;
+  gap: 20rpx;
+}
+
+.loading-icon {
+  font-size: 64rpx;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: var(--c-text-sub);
+}
+
+/* ===== Header ===== */
+.admin-header {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 32rpx 28rpx 20rpx;
+}
+
+.admin-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.admin-badge {
+  font-size: 20rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  background: var(--theme-color);
+  color: #fff;
+}
+
+.admin-refresh {
+  margin-left: auto;
+  font-size: 40rpx;
+  padding: 8rpx;
+}
+
+/* ===== Tab ===== */
+.tab-bar {
+  display: flex;
+  margin: 0 28rpx 20rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  border-bottom: 4rpx solid transparent;
+}
+
+.tab-item--active {
+  border-bottom-color: var(--theme-color);
+}
+
+.tab-text {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.tab-item--active .tab-text {
+  color: var(--theme-color);
+}
+
+/* ===== 仪表盘 ===== */
+.stats-section {
+  padding: 0 28rpx;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+  margin-bottom: 28rpx;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.stat-icon {
+  font-size: 40rpx;
+}
+
+.stat-value {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: var(--c-text-sub);
+}
+
+.quick-actions {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  box-shadow: var(--shadow-card);
+}
+
+.quick-title {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--c-text);
+  margin-bottom: 16rpx;
+}
+
+.quick-grid {
+  display: flex;
+  gap: 16rpx;
+}
+
+.quick-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  padding: 20rpx;
+  background: var(--bg-page);
+  border-radius: 12rpx;
+}
+
+.quick-icon {
+  font-size: 36rpx;
+}
+
+.quick-label {
+  font-size: 24rpx;
+  color: var(--c-text);
+}
+
+/* ===== 作品管理 ===== */
+.works-section {
+  padding: 0 28rpx;
+}
+
+.search-bar {
+  margin-bottom: 16rpx;
+}
+
+.search-input {
+  width: 100%;
+  height: 72rpx;
+  line-height: 72rpx;
+  background: #fff;
+  border-radius: 36rpx;
+  padding: 0 28rpx;
+  font-size: 26rpx;
+  color: var(--c-text);
+  box-sizing: border-box;
+  box-shadow: var(--shadow-card);
+}
+
+.filter-scroll {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+  white-space: nowrap;
+  padding-bottom: 8rpx;
+}
+
+.filter-chip {
+  display: inline-block;
+  padding: 12rpx 24rpx;
+  border-radius: 28rpx;
+  background: #fff;
+  font-size: 24rpx;
+  color: var(--c-text-sub);
+  margin-right: 12rpx;
+  box-shadow: var(--shadow-card);
+  flex-shrink: 0;
+}
+
+.filter-chip--active {
+  background: var(--theme-color);
+  color: #fff;
+}
+
+/* 作品列表 */
+.work-list {
+  background: #fff;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.work-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 28rpx;
+  border-bottom: 1rpx solid var(--c-border);
+}
+
+.work-item:last-child {
+  border-bottom: none;
+}
+
+.work-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  min-width: 0;
+}
+
+.work-type-icon {
+  font-size: 36rpx;
+  flex-shrink: 0;
+}
+
+.work-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.work-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--c-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.work-sub {
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.work-actions {
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+.work-edit-btn {
+  font-size: 22rpx;
+  padding: 8rpx 24rpx;
+  background: var(--theme-color);
+  color: #fff;
+  border-radius: 24rpx;
+  line-height: 1.6;
+  border: none;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  padding: 100rpx 0;
+}
+
+.empty-icon {
+  font-size: 64rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: var(--c-text-sub);
+}
+
+/* 加载更多 */
+.loading-more {
+  text-align: center;
+  padding: 24rpx;
+  color: var(--c-text-sub);
+  font-size: 24rpx;
+}

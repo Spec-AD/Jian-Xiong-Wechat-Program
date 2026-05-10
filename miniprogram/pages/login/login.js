@@ -1,49 +1,71 @@
-// pages/login/login.js
-const app = getApp()
-
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+// pages/login/login.ts — 登录页（生产级）
+const api_1 = require("../../utils/api");
+const app = getApp();
 Page({
-  data: {
-    loading: false
-  },
-
-  // ───── 静默登录 ─────
-  handleQuickLogin() {
-    this.setData({ loading: true })
-
-    wx.login({
-      success: (res) => {
-        // 生成默认用户信息
-        const rand = Math.floor(1000 + Math.random() * 9000)
-        const userInfo = {
-          nickName: '建雄用户_' + rand,
-          avatarUrl: '/assets/images/default_avatar.png',
-          loginCode: res.code || '',
-          loginTime: Date.now(),
-          isLogin: true
+    data: {
+        loading: false,
+        errorMsg: '',
+    },
+    onShow() {
+        // 如果已经有用户信息，直接跳转（使用 reLaunch 避免闪白）
+        if (app.globalData.userInfo && (0, api_1.getToken)()) {
+            wx.reLaunch({ url: '/pages/profile/profile' });
+            return;
         }
-
-        // 持久化保存
-        app.saveUserInfo(userInfo)
-        this.setData({ loading: false })
-
-        // 跳转到「我的」
-        wx.switchTab({ url: '/pages/profile/profile' })
-      },
-      fail: () => {
-        // wx.login 失败时的兜底
-        const rand = Math.floor(1000 + Math.random() * 9000)
-        const userInfo = {
-          nickName: '建雄用户_' + rand,
-          avatarUrl: '/assets/images/default_avatar.png',
-          loginCode: '',
-          loginTime: Date.now(),
-          isLogin: true
-        }
-
-        app.saveUserInfo(userInfo)
-        this.setData({ loading: false })
-        wx.switchTab({ url: '/pages/profile/profile' })
-      }
-    })
-  }
-})
+    },
+    /**
+     * 一键登录（生产流程）
+     * 1. wx.login() 获取临时 code
+     * 2. 发送 code 到后端 /api/auth/login 换取 token + openid + 用户信息
+     * 3. 保存 token 和用户信息到 globalData 和缓存
+     * 4. 跳转到「我的」页面
+     */
+    handleQuickLogin() {
+        return __awaiter(this, void 0, void 0, function* () {
+            // 防止重复点击
+            if (this.data.loading)
+                return;
+            this.setData({ loading: true, errorMsg: '' });
+            try {
+                // 1. wx.login 获取临时 code
+                const loginRes = yield wx.login();
+                if (!loginRes.code) {
+                    throw new Error('获取登录凭证失败，请重试');
+                }
+                // 2. 发送 code 到后端
+                const authRes = yield (0, api_1.loginWithCode)(loginRes.code);
+                // 3. 保存 token
+                (0, api_1.setToken)(authRes.token);
+                app.globalData.openid = authRes.openid;
+                // 4. 保存用户信息
+                if (authRes.user) {
+                    app.saveUserInfo({
+                        nickName: authRes.user.nickName,
+                        avatarUrl: authRes.user.avatarUrl,
+                    });
+                }
+                // 5. 跳转到「我的」（使用 reLaunch 避免页面切换闪白）
+                wx.reLaunch({ url: '/pages/profile/profile' });
+            }
+            catch (err) {
+                const msg = err.message || '登录失败，请检查网络后重试';
+                this.setData({ errorMsg: msg });
+                console.error('[Login] 登录失败:', msg);
+            }
+            finally {
+                this.setData({ loading: false });
+            }
+        });
+    },
+});

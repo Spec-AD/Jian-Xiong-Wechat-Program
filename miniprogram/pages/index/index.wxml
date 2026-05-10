@@ -26,7 +26,7 @@
     <!-- 头像选择（微信新规）-->
     <button class="avatar-wrapper" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
       <image class="avatar-placeholder" src="{{userInfo.avatarUrl}}" mode="aspectFill" />
-      <view class="avatar-edit-badge">📷</view>
+      <view class="avatar-edit-badge"></view>
     </button>
 
     <!-- 昵称输入（type=nickname 触发微信键盘昵称推荐）-->

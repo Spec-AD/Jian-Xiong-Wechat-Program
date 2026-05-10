@@ -1,0 +1,154 @@
+<!--pages/admin/admin.wxml-->
+<view class="page">
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-screen">
+    <text class="loading-icon"></text>
+    <text class="loading-text">验证权限…</text>
+  </view>
+
+  <block wx:else>
+
+    <!-- ===== Header ===== -->
+    <view class="admin-header">
+      <text class="admin-title">管理后台</text>
+      <view class="admin-badge">管理员</view>
+      <view class="admin-refresh" bindtap="onRefresh">
+        <text></text>
+      </view>
+    </view>
+
+    <!-- ===== Tab 切换 ===== -->
+    <view class="tab-bar">
+      <view
+        class="tab-item {{activeTab === 'stats' ? 'tab-item--active' : ''}}"
+        bindtap="onTabChange"
+        data-tab="stats"
+      >
+        <text class="tab-text">仪表盘</text>
+      </view>
+      <view
+        class="tab-item {{activeTab === 'works' ? 'tab-item--active' : ''}}"
+        bindtap="onTabChange"
+        data-tab="works"
+      >
+        <text class="tab-text">作品管理</text>
+      </view>
+    </view>
+
+    <!-- ===== 仪表盘 ===== -->
+    <view wx:if="{{activeTab === 'stats'}}" class="stats-section">
+      <view class="stats-grid">
+        <view class="stat-card">
+          <text class="stat-icon"></text>
+          <text class="stat-value">{{stats.totalWorks}}</text>
+          <text class="stat-label">作品总数</text>
+        </view>
+        <view class="stat-card">
+          <text class="stat-icon"></text>
+          <text class="stat-value">{{stats.totalUsers}}</text>
+          <text class="stat-label">用户总数</text>
+        </view>
+        <view class="stat-card">
+          <text class="stat-icon"></text>
+          <text class="stat-value">{{stats.todayViews}}</text>
+          <text class="stat-label">今日浏览</text>
+        </view>
+        <view class="stat-card">
+          <text class="stat-icon"></text>
+          <text class="stat-value">{{stats.totalLikes}}</text>
+          <text class="stat-label">总点赞数</text>
+        </view>
+      </view>
+
+      <view class="quick-actions">
+        <text class="quick-title">快捷操作</text>
+        <view class="quick-grid">
+          <view class="quick-item" bindtap="onTabChange" data-tab="works">
+            <text class="quick-icon"></text>
+            <text class="quick-label">管理作品</text>
+          </view>
+          <view class="quick-item" bindtap="onRefresh">
+            <text class="quick-icon"></text>
+            <text class="quick-label">刷新数据</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- ===== 作品管理 ===== -->
+    <view wx:elif="{{activeTab === 'works'}}" class="works-section">
+
+      <!-- 搜索 -->
+      <view class="search-bar">
+        <input
+          class="search-input"
+          placeholder="搜索作品标题…"
+          value="{{keyword}}"
+          bindinput="onSearch"
+          confirm-type="search"
+        />
+      </view>
+
+      <!-- 筛选 -->
+      <scroll-view class="filter-scroll" scroll-x enable-flex>
+        <view
+          class="filter-chip {{filterType === 'all' ? 'filter-chip--active' : ''}}"
+          bindtap="onFilterType"
+          data-type="all"
+        >全部</view>
+        <view
+          class="filter-chip {{filterType === 'video' ? 'filter-chip--active' : ''}}"
+          bindtap="onFilterType"
+          data-type="video"
+        >视频</view>
+        <view
+          class="filter-chip {{filterType === 'audio' ? 'filter-chip--active' : ''}}"
+          bindtap="onFilterType"
+          data-type="audio"
+        >音频</view>
+        <view
+          class="filter-chip {{filterType === 'image' ? 'filter-chip--active' : ''}}"
+          bindtap="onFilterType"
+          data-type="image"
+        >图片</view>
+        <view
+          class="filter-chip {{filterType === 'doc' ? 'filter-chip--active' : ''}}"
+          bindtap="onFilterType"
+          data-type="doc"
+        >文档</view>
+      </scroll-view>
+
+      <!-- 列表 -->
+      <view wx:if="{{works.length > 0}}" class="work-list">
+        <view class="work-item" wx:for="{{works}}" wx:key="_id">
+          <view class="work-info" bindtap="onViewWork" data-id="{{item._id}}">
+            <text class="work-type-icon"></text>
+            <view class="work-meta">
+              <text class="work-title">{{item.title}}</text>
+              <text class="work-sub">
+                {{item.author || '未知作者'}} · {{item.date || ''}} · {{item.views || 0}} 次浏览
+              </text>
+            </view>
+          </view>
+          <view class="work-actions">
+            <button class="work-edit-btn" bindtap="onEditWork" data-id="{{item._id}}">编辑</button>
+          </view>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view wx:else class="empty-state">
+        <text class="empty-icon"></text>
+        <text class="empty-text">暂无作品数据</text>
+      </view>
+
+      <!-- 加载更多 -->
+      <view wx:if="{{refreshing}}" class="loading-more">
+        <text>加载中…</text>
+      </view>
+    </view>
+
+  </block>
+
+</view>

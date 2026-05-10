@@ -1,0 +1,131 @@
+/** pages/settings/settings.scss — 设置中心 */
+
+page {
+  background: var(--bg-page);
+}
+
+.page {
+  min-height: 100vh;
+  padding-bottom: 40rpx;
+}
+
+/* ===== 用户卡片 ===== */
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 36rpx 28rpx;
+  margin-bottom: 20rpx;
+  background: #fff;
+}
+
+.user-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 60rpx;
+  border: 4rpx solid var(--theme-color);
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-name {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--c-text);
+  margin-bottom: 8rpx;
+}
+
+.user-hint {
+  font-size: 24rpx;
+  color: var(--c-text-sub);
+}
+
+/* ===== 菜单组 ===== */
+.menu-group {
+  background: #fff;
+  border-radius: 20rpx;
+  margin: 0 28rpx 20rpx;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.menu-group-title {
+  display: block;
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+  font-weight: 600;
+  padding: 20rpx 28rpx 12rpx;
+  background: #fafbfd;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx;
+  border-top: 1rpx solid var(--c-border);
+  gap: 20rpx;
+}
+
+.menu-icon {
+  font-size: 36rpx;
+  width: 48rpx;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.menu-label {
+  flex: 1;
+  font-size: 30rpx;
+  color: var(--c-text);
+}
+
+.menu-tag {
+  font-size: 22rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  background: var(--bg-page);
+  color: var(--c-text-sub);
+}
+
+.menu-tag--verified {
+  background: rgba(106, 0, 95, 0.08);
+  color: var(--theme-color);
+}
+
+.menu-arrow {
+  font-size: 44rpx;
+  color: #d0daea;
+  font-weight: 300;
+}
+
+/* ===== 退出 ===== */
+.logout-wrap {
+  padding: 0 28rpx;
+  margin-top: 24rpx;
+}
+
+.logout-btn {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: transparent;
+  color: #e57373;
+  font-size: 30rpx;
+  border-radius: 44rpx;
+  border: 2rpx solid #ffcdd2;
+  text-align: center;
+}
+
+.footer {
+  padding: 40rpx 0 60rpx;
+  text-align: center;
+}
+
+.footer-text {
+  font-size: 22rpx;
+  color: #b0bec5;
+}

@@ -1,0 +1,111 @@
+<view class="page">
+
+  <!-- ===== 状态 BANNER ===== -->
+  <view class="status-banner status-{{status}}">
+    <text class="status-icon">
+      
+    </text>
+    <text class="status-text">
+      {{status === 'none' ? '南京大学实名认证' : ''}}
+      {{status === 'verified' ? '认证通过' : ''}}
+      {{status === 'pending' ? '审核中…' : ''}}
+      {{status === 'rejected' ? '认证未通过' : ''}}
+    </text>
+    <text class="status-desc">
+      {{status === 'none' ? '认证后昵称显示紫色标识' : ''}}
+      {{status === 'verified' ? '你的昵称已显示为紫色认证标识' : ''}}
+      {{status === 'pending' ? '请耐心等待管理员审核（1-3个工作日）' : ''}}
+      {{status === 'rejected' ? '请修改信息后重新提交' : ''}}
+    </text>
+  </view>
+
+  <!-- ===== 已认证：展示信息 ===== -->
+  <view wx:if="{{status === 'verified'}}" class="info-card">
+    <view class="info-row">
+      <text class="info-label">真实姓名</text>
+      <text class="info-value">{{form.realName}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">学号</text>
+      <text class="info-value">{{form.studentId}}</text>
+    </view>
+    <view class="info-note">
+      <text>你的个人信息仅用于身份验证，不会对外公开。</text>
+    </view>
+  </view>
+
+  <!-- ===== 未认证：表单 ===== -->
+  <view wx:elif="{{status === 'none' || status === 'rejected'}}" class="form-card">
+    <view class="form-row">
+      <text class="form-label">真实姓名</text>
+      <input
+        class="form-input"
+        placeholder="请输入真实姓名"
+        value="{{form.realName}}"
+        bindinput="onInput"
+        data-field="realName"
+        maxlength="20"
+      />
+    </view>
+    <view class="form-row">
+      <text class="form-label">学号</text>
+      <input
+        class="form-input"
+        placeholder="请输入学号"
+        value="{{form.studentId}}"
+        bindinput="onInput"
+        data-field="studentId"
+        maxlength="20"
+      />
+    </view>
+    <view class="form-row">
+      <text class="form-label">身份证号</text>
+      <input
+        class="form-input"
+        placeholder="请输入身份证号（保密存储）"
+        value="{{form.idCard}}"
+        bindinput="onInput"
+        data-field="idCard"
+        maxlength="18"
+      />
+    </view>
+    <view class="form-row">
+      <text class="form-label">邮箱（选填）</text>
+      <input
+        class="form-input"
+        placeholder="用于接收审核通知"
+        value="{{form.email}}"
+        bindinput="onInput"
+        data-field="email"
+        type="email"
+      />
+    </view>
+
+    <!-- 错误提示 -->
+    <view wx:if="{{error}}" class="error-tip">
+      <text>{{error}}</text>
+    </view>
+
+    <!-- 提交按钮 -->
+    <button
+      class="g-btn-primary"
+      loading="{{submitting}}"
+      disabled="{{submitting}}"
+      bindtap="onSubmit"
+    >提交认证</button>
+
+    <view class="form-note">
+      <text>你的个人信息仅用于南京大学身份验证，采用加密存储，不会对外公开。</text>
+    </view>
+  </view>
+
+  <!-- ===== 审核中：等待 ===== -->
+  <view wx:elif="{{status === 'pending'}}" class="info-card">
+    <view class="pending-wait">
+      <text class="pending-icon"></text>
+      <text class="pending-text">你的认证申请正在审核中</text>
+      <text class="pending-sub">管理员将在 1-3 个工作日内完成审核</text>
+    </view>
+  </view>
+
+</view>

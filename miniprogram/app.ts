@@ -11,7 +11,10 @@ App<IAppOption>({
     hallMode: 'hall' as 'hall' | 'my' | 'liked',
   },
 
-  onLaunch() {
+    onLaunch() {
+    // ── 加载全局自定义字体 ──
+    this.loadCustomFont()
+
     // ── 恢复本地缓存用户信息 ──
     const cached = wx.getStorageSync('userInfo')
     if (cached) {
@@ -37,13 +40,29 @@ App<IAppOption>({
     }
   },
 
-  /** 登录：wx.login → 后端换取 token → 获取用户信息 */
-  async doLogin() {
+        /** 加载全局自定义字体（Torus-Semi-Bold） */
+  loadCustomFont() {
+    try {
+      wx.loadFontFace({
+        family: 'Torus-Semi-Bold',
+        source: 'url("https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/Torus-Semi-Bold.otf")',
+        global: true,
+        fail: () => console.warn('[App] Torus-Semi-Bold 加载失败'),
+      })
+    } catch (err) {
+      // 低版本基础库不支持 loadFontFace，静默忽略
+    }
+  },
+
+    /** 登录：wx.login → 后端换取 token → 获取用户信息
+   *  @returns 登录成功返回 true，失败返回 false
+   */
+  async doLogin(): Promise<boolean> {
     // 如果已有 token，直接获取用户信息
     if (getToken()) {
       console.log('[App] 已有 token，直接获取用户信息')
-      this.fetchAndSaveUser()
-      return
+      await this.fetchAndSaveUser()
+      return true
     }
 
     try {
@@ -51,23 +70,33 @@ App<IAppOption>({
       const loginRes = await wx.login()
       if (!loginRes.code) {
         console.error('[App] wx.login 失败：未获取到 code')
-        return
+        return false
       }
       this.globalData.loginCode = loginRes.code
-      console.log('[App] wx.login code:', loginRes.code)
 
-      // 2. 发送 code 到后端换取 token + openid
+      // 2. 发送 code 到后端换取 token + openid + 用户信息
       const authRes = await loginWithCode(loginRes.code)
-      console.log('[App] 登录成功，openid:', authRes.openid)
 
       // 3. 保存 token 和 openid
       setToken(authRes.token)
       this.globalData.openid = authRes.openid
 
-      // 4. 获取用户信息
-      await this.fetchAndSaveUser()
+      // 4. 直接从登录响应中保存用户信息（避免额外 API 调用）
+      if (authRes.user) {
+        this.saveUserInfo({
+          nickName: authRes.user.nickName,
+          avatarUrl: authRes.user.avatarUrl,
+        })
+        console.log('[App] 登录成功，用户:', authRes.user.nickName)
+      } else {
+        // 降级：通过 getUserProfile 获取
+        await this.fetchAndSaveUser()
+      }
+
+      return true
     } catch (err: any) {
       console.error('[App] 登录流程失败:', err.message || err)
+      return false
     }
   },
 

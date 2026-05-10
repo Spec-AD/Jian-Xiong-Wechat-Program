@@ -178,6 +178,53 @@ export async function deleteFile(key: string): Promise<void> {
 }
 
 /**
+ * 上传文件到 COS（保留原始文件名作为 COS Key）
+ *
+ * @param filePath   本地文件路径
+ * @param originalname  原始文件名（用作 COS 对象 key）
+ * @param contentType   MIME 类型
+ * @param keyPrefix    可选，自定义前缀目录（默认 resources）
+ * @returns 可公开访问的文件 URL
+ */
+export async function uploadFileWithKey(
+  filePath: string,
+  originalname: string,
+  contentType: string,
+  keyPrefix = 'resources',
+): Promise<string> {
+  if (!isCosConfigured()) {
+    return saveToLocal(fs.readFileSync(filePath), originalname)
+  }
+
+  const cos = getCosClient()
+  // 使用原始文件名作为 COS key，保留目录前缀
+  const key = `${keyPrefix}/${originalname}`
+
+  return new Promise<string>((resolve, reject) => {
+    cos.putObject(
+      {
+        Bucket: config.cos.bucket,
+        Region: config.cos.region,
+        Key: key,
+        Body: fs.createReadStream(filePath),
+        ContentType: contentType,
+      },
+      (err, data) => {
+        if (err) {
+          logger.error('[COS] 上传失败:', err)
+          logger.warn('[COS] 降级到本地存储')
+          resolve(saveToLocal(fs.readFileSync(filePath), originalname))
+          return
+        }
+        const cosUrl = `https://${data.Location}`
+        logger.info(`[COS] 上传成功: ${cosUrl}`)
+        resolve(cosUrl)
+      },
+    )
+  })
+}
+
+/**
  * 从 COS URL 中提取对象 key
  * @example
  *   'https://bucket.cos.ap-nanjing.myqcloud.com/works/2026/05/09/abc.jpg'

@@ -1,0 +1,84 @@
+﻿<view class="page">
+
+  <!-- ===== 用户简要信息 ===== -->
+  <view class="user-card" bindtap="onMenuTap" data-key="editProfile">
+    <image
+      class="user-avatar"
+      src="{{userAvatar}}"
+      mode="aspectFill"
+    />
+    <view class="user-info">
+      <text class="user-name">{{userName}}</text>
+      <text class="user-hint">点击编辑资料 ›</text>
+    </view>
+  </view>
+
+  <!-- ===== 账户相关 ===== -->
+  <view class="menu-group">
+    <text class="menu-group-title">账号与安全</text>
+    <view class="menu-item" bindtap="onMenuTap" data-key="editProfile">
+      <text class="menu-icon"></text>
+      <text class="menu-label">编辑资料</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="onMenuTap" data-key="verification">
+      <text class="menu-icon"></text>
+      <text class="menu-label">实名认证</text>
+      <view class="menu-tag {{isVerified ? 'menu-tag--verified' : ''}}">
+        {{isVerified ? '已认证' : '未认证'}}
+      </view>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="onMenuTap" data-key="privacy">
+      <text class="menu-icon"></text>
+      <text class="menu-label">隐私设置</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ===== 管理 ===== -->
+  <view wx:if="{{isAdmin}}" class="menu-group">
+    <text class="menu-group-title">管理</text>
+    <view class="menu-item" bindtap="onMenuTap" data-key="admin">
+      <text class="menu-icon"></text>
+      <text class="menu-label">管理后台</text>
+      <view class="menu-tag menu-tag--verified">管理员</view>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ===== 其他 ===== -->
+  <view class="menu-group">
+    <text class="menu-group-title">其他</text>
+    <view class="menu-item" bindtap="onMenuTap" data-key="github">
+      <text class="menu-icon"></text>
+      <text class="menu-label">GitHub 仓库</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="onMenuTap" data-key="afdian">
+      <text class="menu-icon"></text>
+      <text class="menu-label">爱发电支持</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="onMenuTap" data-key="about">
+      <text class="menu-icon"></text>
+      <text class="menu-label">关于书院</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="onClearCache">
+      <text class="menu-icon"></text>
+      <text class="menu-label">清除缓存</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ===== 退出 ===== -->
+  <view class="logout-wrap">
+    <button class="logout-btn" bindtap="onLogout">退出登录</button>
+  </view>
+
+  <view class="footer">
+    <text class="footer-text">健雄书院 · {{version}}</text>
+  </view>
+
+</view>

@@ -1,4 +1,4 @@
-/**app.scss — 健雄书院全局样式（南大紫主题）**/
+﻿/** app.scss — 健雄书院全局样式（南大紫主题）**/
 
 /* ===== 南大紫主题 CSS 变量 ===== */
 page {
@@ -27,7 +27,7 @@ page {
   --c-border:         #e8edf5;
   --c-danger:         #e57373;
   --radius-card:      24rpx;
-  --shadow-card:      0 4rpx 24rpx rgba(66,0,59,0.06);   /* 基于 --theme-dark 的柔和阴影 */
+  --shadow-card:      0 4rpx 24rpx rgba(66,0,59,0.06);
   --shadow-elevated:  0 8rpx 40rpx rgba(66,0,59,0.10);
 
   /* ── 向下兼容的旧变量名 ── */
@@ -40,7 +40,7 @@ page {
 
   box-sizing: border-box;
   background: var(--bg-page);
-  font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  font-family: 'Torus-Semi-Bold', -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
   color: var(--c-text);
   font-size: 28rpx;
   line-height: 1.6;
@@ -149,3 +149,4 @@ button {
   color: var(--c-text-sub);
   font-size: 26rpx;
 }
+

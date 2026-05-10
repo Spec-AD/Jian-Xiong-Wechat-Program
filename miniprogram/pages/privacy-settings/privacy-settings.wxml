@@ -1,0 +1,53 @@
+<view class="page">
+
+  <!-- ===== 加载中 ===== -->
+  <view wx:if="{{loading}}" class="g-loading">
+    <text>加载中...</text>
+  </view>
+
+  <!-- ===== 隐私开关列表 ===== -->
+  <view wx:else class="list-wrap">
+    <view
+      wx:for="{{items}}"
+      wx:key="key"
+      class="privacy-row"
+    >
+      <view class="privacy-info">
+        <text class="privacy-label">{{item.label}}</text>
+        <text class="privacy-desc">{{item.desc}}</text>
+      </view>
+      <switch
+        class="privacy-switch"
+        checked="{{item.visible}}"
+        data-key="{{item.key}}"
+        bindchange="onSwitchChange"
+        color="#6A005F"
+      />
+    </view>
+
+    <!-- 分割线 -->
+    <view class="g-divider"></view>
+
+    <!-- UID 搜索开关 -->
+    <view class="privacy-row">
+      <view class="privacy-info">
+        <text class="privacy-label">允许 UID 搜索</text>
+        <text class="privacy-desc">允许其他用户通过 UID 找到你的主页</text>
+      </view>
+      <switch
+        class="privacy-switch"
+        checked="{{allowSearchByUid}}"
+        data-key="allowSearchByUid"
+        bindchange="onSwitchChange"
+        color="#6A005F"
+      />
+    </view>
+
+    <!-- 说明 -->
+    <view class="privacy-note">
+      <text class="note-icon"></text>
+      <text class="note-text">你的个人资料只有你自己和管理员可以完全查看。其他用户只能看到你公开的信息。</text>
+    </view>
+  </view>
+
+</view>

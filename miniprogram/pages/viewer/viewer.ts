@@ -1,6 +1,8 @@
-// pages/viewer/viewer.ts — 作品详情页（真实 API 版）
-import { formatDuration, toast } from '../../utils/util'
-import { getWorkDetail, toggleLike, request } from '../../utils/api'
+// pages/viewer/viewer.ts — 素材详情页（信息卡片 + 评论区 + 统一模板）
+import { formatDuration, formatRelativeTime, toast } from '../../utils/util'
+import { getWorkDetail, toggleLike, request, getWorkComments, addWorkComment, deleteWork } from '../../utils/api'
+
+const app = getApp<IAppOption>()
 
 Page({
   data: {
@@ -10,6 +12,7 @@ Page({
     title: '' as string,
     author: '' as string,
     authorAvatar: '' as string,
+    authorStudentId: '' as string,
     description: '' as string,
     date: '' as string,
     tags: [] as string[],
@@ -17,16 +20,39 @@ Page({
     imageList: [] as string[],
     // 音频
     audioPlaying: false,
-    audioProgress: 0,         // 当前秒数
-    audioDuration: 100,       // 总秒数（slider max）
+    audioProgress: 0,
+    audioDuration: 100,
     audioCurrentTime: '00:00',
     audioDurationText: '00:00',
     // 操作
     liked: false,
     likesCount: 0,
     views: 0,
+    commentsCount: 0,
+    // 格式化后的显示值
+    viewsDisplay: '0',
+    likesCountDisplay: '0',
+    commentsCountDisplay: '0',
+    dateDisplay: '',
     docLoading: false,
     loading: true,
+    // 评论
+    comments: [] as Array<{
+      id: string
+      author: string
+      authorAvatar: string
+      content: string
+      createdAt: string
+      relativeTime: string
+    }>,
+    commentText: '',
+    sendingComment: false,
+    commentInputFocused: false,
+    // 权限控制
+    canEdit: false,
+    // 多文件模式下用于跳转
+    fileIndex: 0,
+    totalFiles: 0,
   },
 
   _audio: null as WechatMiniprogram.InnerAudioContext | null,
@@ -39,33 +65,64 @@ Page({
     this.setData({ id, loading: true })
 
     try {
-      // 1. 从后端加载作品详情
-      const detail = await getWorkDetail(id)
+      // 1. 并发加载作品详情 + 评论
+      const [detail, commentsData] = await Promise.all([
+        getWorkDetail(id),
+        getWorkComments(id).catch(() => ({ list: [] })),
+      ])
+
+      // 2. 组装作品数据
+      const rawViews = detail.views || 0
+      const rawLikes = detail.likes || 0
+      const rawCommentsCount = (commentsData as any)?.list?.length || detail.commentsCount || 0
 
       this.setData({
         type: detail.type || '',
         fileUrl: detail.fileUrl || '',
-        title: detail.title || '文件预览',
+        title: detail.title || '作品预览',
         author: detail.author || '',
         authorAvatar: detail.authorAvatar || '',
+        authorStudentId: detail.authorStudentId || '',
         description: detail.description || '',
-        date: detail.date || '',
+        date: detail.date || detail.createdAt || '',
         tags: detail.tags || [],
         imageList: detail.imageList || [],
         liked: detail.liked || false,
-        likesCount: detail.likes || 0,
-        views: detail.views || 0,
+        likesCount: rawLikes,
+        views: rawViews,
+        commentsCount: rawCommentsCount,
+        // 预计算格式化显示值
+        viewsDisplay: this._formatCount(rawViews),
+        likesCountDisplay: this._formatCount(rawLikes),
+        commentsCountDisplay: this._formatCount(rawCommentsCount),
+        dateDisplay: this._formatDate(detail.date || detail.createdAt),
         loading: false,
       })
 
-      wx.setNavigationBarTitle({ title: detail.title || '文件预览' })
+      // 3. 处理评论列表（添加相对时间）
+      const rawComments = (commentsData as any)?.list || []
+      this.setData({
+        comments: rawComments.map((c: any) => ({
+          id: c.id,
+          author: c.author,
+          authorAvatar: c.authorAvatar,
+          content: c.content,
+          createdAt: c.createdAt,
+          relativeTime: formatRelativeTime(c.createdAt),
+        })),
+      })
 
-      // 2. 如果是音频则初始化播放器
+      wx.setNavigationBarTitle({ title: detail.title || '作品预览' })
+
+      // 4. 检查编辑权限（管理员 或 作品作者）
+      this._checkEditPermission(detail)
+
+      // 5. 如果是音频则初始化播放器
       if (detail.type === 'audio' && detail.fileUrl) {
         this._initAudio(detail.fileUrl)
       }
 
-      // 3. 异步记录浏览量（不阻塞）
+      // 6. 异步记录浏览量
       this._recordView(id)
     } catch (err: any) {
       console.error('[Viewer] 加载失败:', err)
@@ -74,11 +131,40 @@ Page({
     }
   },
 
+  // ─── 工具函数：格式化大数字（1234 → 1.2k）─────
+  _formatCount(val: number): string {
+    if (!val && val !== 0) return '0'
+    if (val >= 10000) return (val / 10000).toFixed(1) + 'w'
+    if (val >= 1000) return (val / 1000).toFixed(1) + 'k'
+    return String(val)
+  },
+
+  /** 格式化时间为 YYYY-MM-DD HH:mm */
+  _formatDate(val: string | undefined): string {
+    if (!val) return ''
+    try {
+      const d = new Date(val)
+      if (isNaN(d.getTime())) return val
+      const Y = d.getFullYear()
+      const M = String(d.getMonth() + 1).padStart(2, '0')
+      const D = String(d.getDate()).padStart(2, '0')
+      const h = String(d.getHours()).padStart(2, '0')
+      const m = String(d.getMinutes()).padStart(2, '0')
+      return `${Y}-${M}-${D} ${h}:${m}`
+    } catch {
+      return val
+    }
+  },
+
   /** 异步记录浏览量 */
   async _recordView(id: string) {
     try {
       await request({ url: `/works/${id}/view`, method: 'POST', needAuth: false })
-      this.setData({ views: this.data.views + 1 })
+      const newViews = this.data.views + 1
+      this.setData({ 
+        views: newViews,
+        viewsDisplay: this._formatCount(newViews),
+      })
     } catch { /* 静默 */ }
   },
 
@@ -93,7 +179,7 @@ Page({
   onShareAppMessage() {
     return {
       title: this.data.title,
-      path: `/pages/viewer/viewer?type=${this.data.type}&url=${encodeURIComponent(this.data.fileUrl)}&title=${encodeURIComponent(this.data.title)}`,
+      path: `/pages/viewer/viewer?id=${this._workId}`,
     }
   },
 
@@ -152,7 +238,7 @@ Page({
     wx.previewImage({ urls, current: src || fileUrl, showmenu: true })
   },
 
-  // ─── 文档（PDF）───────────────────────────────────────
+  // ─── 文档预览 ───────────────────────────────────────────
   onOpenDoc() {
     const { fileUrl } = this.data
     if (!fileUrl) { toast('暂无文件链接'); return }
@@ -181,24 +267,81 @@ Page({
     })
   },
 
-  // ─── 操作栏 ─────────────────────────────────────────────
+  // ─── 点赞 ───────────────────────────────────────────────
   async onLike() {
     try {
       const result = await toggleLike(this._workId)
       this.setData({
         liked: result.liked,
         likesCount: result.likesCount,
+        likesCountDisplay: this._formatCount(result.likesCount),
       })
-      toast(result.liked ? '已点赞 ❤️' : '已取消点赞')
+      toast(result.liked ? '已点赞' : '已取消点赞')
     } catch (err: any) {
       toast('操作失败，请重试')
     }
   },
 
+  // ─── 分享 ───────────────────────────────────────────────
   onShare() {
     wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage'] })
   },
 
+  // ─── 编辑作品（管理员/作者） ───────────────────────────
+  onEdit() {
+    wx.navigateTo({ url: `/pages/edit-work/edit-work?id=${this._workId}` })
+  },
+
+  /** 删除作品（管理员/作者） */
+  onDelete() {
+    const { title } = this.data
+
+    wx.showModal({
+      title: '确认删除',
+      content: `确定要删除「${title || '作品'}」吗？此操作不可恢复。`,
+      confirmColor: '#e57373',
+      confirmText: '删除',
+      success: async (res) => {
+        if (res.confirm) {
+          wx.showLoading({ title: '删除中…', mask: true })
+          try {
+            await deleteWork(this._workId)
+            wx.hideLoading()
+            toast('已删除', 'success')
+            wx.navigateBack()
+          } catch (err: any) {
+            wx.hideLoading()
+            toast(err.message || '删除失败')
+          }
+        }
+      },
+    })
+  },
+
+  /** 检查当前用户是否有编辑权限 */
+  async _checkEditPermission(detail: any) {
+    try {
+      const token = wx.getStorageSync('jianxiong_token')
+      if (!token) return
+
+      const profile = await request<{ id: string; role: string }>({
+        url: '/user/profile',
+        method: 'GET',
+      })
+
+      // 管理员 或 作品作者 可以编辑
+      const isAdmin = profile.role === 'admin'
+      const isOwner = profile.id === detail.userId
+
+      if (isAdmin || isOwner) {
+        this.setData({ canEdit: true })
+      }
+    } catch {
+      // 未登录/无权限，静默
+    }
+  },
+
+  // ─── 下载 ───────────────────────────────────────────────
   onDownload() {
     const { fileUrl, type } = this.data
     if (!fileUrl) { toast('暂无可下载文件'); return }
@@ -227,5 +370,69 @@ Page({
       },
       fail: () => { wx.hideLoading(); toast('下载失败') },
     })
+  },
+
+  // ─── 评论功能 ───────────────────────────────────────────
+
+  /** 输入框聚焦 */
+  onCommentFocus() {
+    this.setData({ commentInputFocused: true })
+  },
+
+  /** 输入框失焦 */
+  onCommentBlur(e: any) {
+    this.setData({
+      commentInputFocused: false,
+      commentText: e.detail.value || '',
+    })
+  },
+
+  /** 键盘发送（confirm-type="send"） */
+  onCommentConfirm(e: any) {
+    const text = (e.detail.value || '').trim()
+    if (text) {
+      this.setData({ commentText: text })
+      this._submitComment(text)
+    }
+  },
+
+  /** 点击发送按钮 */
+  onSendComment() {
+    const text = this.data.commentText.trim()
+    if (text) {
+      this._submitComment(text)
+    }
+  },
+
+  /** 提交评论 */
+  async _submitComment(content: string) {
+    if (this.data.sendingComment) return
+    this.setData({ sendingComment: true })
+
+    try {
+      const result = await addWorkComment(this._workId, content)
+
+      // 将新评论插入列表顶部
+      const newComment = {
+        id: result.comment.id,
+        author: result.comment.author,
+        authorAvatar: result.comment.authorAvatar,
+        content: result.comment.content,
+        createdAt: result.comment.createdAt,
+        relativeTime: '刚刚',
+      }
+
+      this.setData({
+        comments: [newComment, ...this.data.comments],
+        commentsCount: this.data.commentsCount + 1,
+        commentText: '',
+        sendingComment: false,
+      })
+
+      toast('评论成功', 'success')
+    } catch (err: any) {
+      toast('评论发送失败，请重试')
+      this.setData({ sendingComment: false })
+    }
   },
 })

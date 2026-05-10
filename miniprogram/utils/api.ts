@@ -139,10 +139,18 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
 
 /**
  * 微信登录 — POST /api/auth/login
- * 发送 code 到后端，返回 token + openid
+ * 发送 code 到后端，返回 token + openid + 用户信息
  */
-export function loginWithCode(code: string): Promise<{ token: string; openid: string }> {
-  return request<{ token: string; openid: string }>({
+export function loginWithCode(code: string): Promise<{
+  token: string
+  openid: string
+  user: { id: string; nickName: string; avatarUrl: string }
+}> {
+  return request<{
+    token: string
+    openid: string
+    user: { id: string; nickName: string; avatarUrl: string }
+  }>({
     url: '/auth/login',
     method: 'POST',
     data: { code },
@@ -172,6 +180,10 @@ export function getUserProfile(): Promise<{
 export function updateUserProfile(data: {
   nickName?: string
   avatarUrl?: string
+  signature?: string
+  birthday?: string
+  region?: string[]
+  interests?: string[]
 }): Promise<{
   id: string
   nickName: string
@@ -344,5 +356,76 @@ export function createWork(data: {
     url: '/works',
     method: 'POST',
     data,
+  })
+}
+
+/**
+ * 更新作品 — PUT /api/works/:id
+ */
+export function updateWork(id: string, data: {
+  title?: string
+  description?: string
+  type?: string
+  categoryId?: string
+  fileUrl?: string
+  cover?: string
+  imageList?: string[]
+  tags?: string[]
+  status?: string
+}): Promise<any> {
+  return request({
+    url: `/works/${id}`,
+    method: 'PUT',
+    data,
+  })
+}
+
+/**
+ * 删除作品 — DELETE /api/works/:id
+ */
+export function deleteWork(id: string): Promise<any> {
+  return request({
+    url: `/works/${id}`,
+    method: 'DELETE',
+  })
+}
+
+// ========== 评论 API ==========
+
+/**
+ * 获取作品评论列表 — GET /api/works/:id/comments
+ */
+export function getWorkComments(workId: string): Promise<{
+  list: Array<{
+    id: string
+    author: string
+    authorAvatar: string
+    content: string
+    createdAt: string
+  }>
+}> {
+  return request({
+    url: `/works/${workId}/comments`,
+    method: 'GET',
+    needAuth: false,
+  })
+}
+
+/**
+ * 添加评论 — POST /api/works/:id/comments
+ */
+export function addWorkComment(workId: string, content: string): Promise<{
+  comment: {
+    id: string
+    author: string
+    authorAvatar: string
+    content: string
+    createdAt: string
+  }
+}> {
+  return request({
+    url: `/works/${workId}/comments`,
+    method: 'POST',
+    data: { content },
   })
 }

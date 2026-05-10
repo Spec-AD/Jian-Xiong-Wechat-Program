@@ -418,8 +418,8 @@ const viewCount = await Work.aggregate([
 | 步骤 | 内容 | 产出 |
 |------|------|------|
 | 5.1 | 实现浏览量统计 `POST /works/:id/view` | 作品访问计数 |
-| 5.2 | 全局错误处理 + 接口参数校验 | 稳定性提升 |
-| 5.3 | 接口文档生成（Swagger） | 文档可查阅 |
+| 5.2 ✅ | 全局错误处理 + 接口参数校验 | 稳定性提升 |
+| 5.3 ✅ | 接口文档生成（Swagger） | ✅ 已完成 — 访问 http://localhost:3000/api-docs |
 | 5.4 | 全流程联调测试 | 无 Mock 依赖 |
 
 ---
@@ -601,6 +601,20 @@ pm2 startup
 | `viewer.ts` → `onLike` 中的 toggle | 调后端持久化 | `POST /works/:id/like` |
 | `profile.ts` → `_loadStats` 中的 mock 数据 | 调后端获取 | `GET /user/stats` |
 | `app.ts` → `wx.login` success 中的 TODO | 调后端登录 | `POST /auth/login` |
+
+### 新增 Swagger 依赖
+```json
+{
+  "dependencies": {
+    "swagger-jsdoc": "^6.2.0",
+    "swagger-ui-express": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/swagger-jsdoc": "^6.0.0",
+    "@types/swagger-ui-express": "^4.1.0"
+  }
+}
+```
 
 ## 附录 B：关键依赖清单
 

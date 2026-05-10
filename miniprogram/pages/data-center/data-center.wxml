@@ -1,0 +1,245 @@
+<view class="page">
+
+  <!-- ===== Tab 切换 ===== -->
+  <view class="tab-bar">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="id"
+      class="tab-item {{activeTab === item.id ? 'tab-item--active' : ''}}"
+      bindtap="onTabTap"
+      data-id="{{item.id}}"
+    >
+      <text class="tab-icon"></text>
+      <text class="tab-name">{{item.name}}</text>
+    </view>
+  </view>
+
+  <!-- ===== 加载中 ===== -->
+  <view wx:if="{{loading}}" class="g-loading">
+    <text>数据加载中...</text>
+  </view>
+
+  <!-- ============================================================ -->
+  <!-- ===== 总览 Tab ===== -->
+  <!-- ============================================================ -->
+  <block wx:elif="{{activeTab === 'overview'}}">
+    <view class="content-wrap">
+
+      <!-- 总览卡片 -->
+      <view class="section">
+        <text class="section-title">累计数据</text>
+        <view class="overview-grid">
+          <view class="overview-card">
+            <text class="overview-num">{{overview.totalPublish}}</text>
+            <text class="overview-label">总发布数</text>
+          </view>
+          <view class="overview-card">
+            <text class="overview-num overview-num--pink">{{overview.totalLikes}}</text>
+            <text class="overview-label">总获赞量</text>
+          </view>
+          <view class="overview-card">
+            <text class="overview-num overview-num--blue">{{overview.totalViews}}</text>
+            <text class="overview-label">总浏览数</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 本周数据 -->
+      <view class="section">
+        <text class="section-title">本周数据</text>
+        <view class="overview-grid">
+          <view class="week-card">
+            <text class="week-num">{{overview.weekPublish}}</text>
+            <text class="week-label">本周发布</text>
+            <view class="week-bar week-bar--purple" style="width: {{overview.weekPublish > 0 ? (overview.weekPublish / 10) * 100 : 10}}%"></view>
+          </view>
+          <view class="week-card">
+            <text class="week-num week-num--pink">{{overview.weekLikes}}</text>
+            <text class="week-label">本周获赞</text>
+            <view class="week-bar week-bar--pink" style="width: {{overview.weekLikes > 0 ? (overview.weekLikes / 50) * 100 : 10}}%"></view>
+          </view>
+          <view class="week-card">
+            <text class="week-num week-num--blue">{{overview.weekViews}}</text>
+            <text class="week-label">本周浏览</text>
+            <view class="week-bar week-bar--blue" style="width: {{overview.weekViews > 0 ? (overview.weekViews / 200) * 100 : 10}}%"></view>
+          </view>
+        </view>
+      </view>
+
+    </view>
+  </block>
+
+  <!-- ============================================================ -->
+  <!-- ===== 发布 Tab ===== -->
+  <!-- ============================================================ -->
+  <block wx:elif="{{activeTab === 'publish'}}">
+    <view class="content-wrap">
+
+      <view class="section">
+        <text class="section-title">发布概览</text>
+        <view class="stat-hero">
+          <text class="stat-hero-num">{{publishStats.total}}</text>
+          <text class="stat-hero-label">累计发布</text>
+        </view>
+      </view>
+
+      <!-- Tag 分布 -->
+      <view class="section">
+        <text class="section-title">Tag 分布</text>
+        <view class="tag-cloud">
+          <view
+            wx:for="{{publishStats.tags}}"
+            wx:key="index"
+            class="tag-item"
+          >
+            <text class="tag-name">{{item.name}}</text>
+            <text class="tag-count">{{item.count}} 篇</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 文件类型 -->
+      <view class="section">
+        <text class="section-title">文件类型</text>
+        <view class="type-list">
+          <view
+            wx:for="{{publishStats.types}}"
+            wx:key="index"
+            class="type-row"
+          >
+            <text class="type-name">{{item.name}}</text>
+            <view class="type-bar-bg">
+              <view class="type-bar-fill" style="width: {{publishStats.total > 0 ? (item.count / publishStats.total) * 100 : 0}}%"></view>
+            </view>
+            <text class="type-count">{{item.count}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 发布趋势 -->
+      <view class="section">
+        <text class="section-title">发布趋势（本周）</text>
+        <view class="trend-chart">
+          <view
+            wx:for="{{publishStats.trend}}"
+            wx:key="index"
+            class="trend-bar-wrap"
+          >
+            <view class="trend-bar" style="height: {{item.value * 20}}rpx; min-height: 12rpx;">
+              <text class="trend-val">{{item.value}}</text>
+            </view>
+            <text class="trend-label">{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+
+    </view>
+  </block>
+
+  <!-- ============================================================ -->
+  <!-- ===== 获赞 Tab ===== -->
+  <!-- ============================================================ -->
+  <block wx:elif="{{activeTab === 'likes'}}">
+    <view class="content-wrap">
+
+      <view class="section">
+        <text class="section-title">获赞概览</text>
+        <view class="stat-hero">
+          <text class="stat-hero-num stat-hero-num--pink">{{likesStats.total}}</text>
+          <text class="stat-hero-label">累计获赞</text>
+        </view>
+      </view>
+
+      <!-- 获赞趋势 -->
+      <view class="section">
+        <text class="section-title">获赞趋势（本周）</text>
+        <view class="trend-chart">
+          <view
+            wx:for="{{likesStats.trend}}"
+            wx:key="index"
+            class="trend-bar-wrap"
+          >
+            <view class="trend-bar trend-bar--pink" style="height: {{item.value * 15}}rpx; min-height: 12rpx;">
+              <text class="trend-val">{{item.value}}</text>
+            </view>
+            <text class="trend-label">{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 热门作品 -->
+      <view class="section">
+        <text class="section-title">热门作品（按获赞）</text>
+        <view wx:if="{{likesStats.topWorks.length > 0}}">
+          <view
+            wx:for="{{likesStats.topWorks}}"
+            wx:key="index"
+            class="top-work-row"
+          >
+            <text class="top-work-rank">{{index + 1}}</text>
+            <text class="top-work-title">{{item.title}}</text>
+            <text class="top-work-count">{{item.count}}</text>
+          </view>
+        </view>
+        <view wx:else class="g-empty">
+          <text class="g-empty-text">暂无数据</text>
+        </view>
+      </view>
+
+    </view>
+  </block>
+
+  <!-- ============================================================ -->
+  <!-- ===== 浏览 Tab ===== -->
+  <!-- ============================================================ -->
+  <block wx:elif="{{activeTab === 'views'}}">
+    <view class="content-wrap">
+
+      <view class="section">
+        <text class="section-title">浏览概览</text>
+        <view class="stat-hero">
+          <text class="stat-hero-num stat-hero-num--blue">{{viewsStats.total}}</text>
+          <text class="stat-hero-label">累计浏览</text>
+        </view>
+      </view>
+
+      <!-- 浏览趋势 -->
+      <view class="section">
+        <text class="section-title">浏览趋势（本周）</text>
+        <view class="trend-chart">
+          <view
+            wx:for="{{viewsStats.trend}}"
+            wx:key="index"
+            class="trend-bar-wrap"
+          >
+            <view class="trend-bar trend-bar--blue" style="height: {{item.value * 15}}rpx; min-height: 12rpx;">
+              <text class="trend-val">{{item.value}}</text>
+            </view>
+            <text class="trend-label">{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 热门作品 -->
+      <view class="section">
+        <text class="section-title">热门作品（按浏览）</text>
+        <view wx:if="{{viewsStats.topWorks.length > 0}}">
+          <view
+            wx:for="{{viewsStats.topWorks}}"
+            wx:key="index"
+            class="top-work-row"
+          >
+            <text class="top-work-rank">{{index + 1}}</text>
+            <text class="top-work-title">{{item.title}}</text>
+            <text class="top-work-count">{{item.count}}</text>
+          </view>
+        </view>
+        <view wx:else class="g-empty">
+          <text class="g-empty-text">暂无数据</text>
+        </view>
+      </view>
+
+    </view>
+  </block>
+
+</view>

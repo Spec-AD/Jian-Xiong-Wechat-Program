@@ -1,0 +1,73 @@
+/** pages/privacy-settings/privacy-settings.scss — 隐私设置 */
+
+page {
+  background: var(--bg-page);
+}
+
+.page {
+  min-height: 100vh;
+}
+
+.list-wrap {
+  background: #fff;
+  border-radius: 20rpx;
+  margin: 28rpx;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.privacy-row {
+  display: flex;
+  align-items: center;
+  padding: 28rpx;
+  border-bottom: 1rpx solid var(--c-border);
+  gap: 20rpx;
+}
+
+.privacy-row:last-child {
+  border-bottom: none;
+}
+
+.privacy-info {
+  flex: 1;
+}
+
+.privacy-label {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--c-text);
+  margin-bottom: 6rpx;
+}
+
+.privacy-desc {
+  display: block;
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+  line-height: 1.5;
+}
+
+.privacy-switch {
+  flex-shrink: 0;
+  transform: scale(0.85);
+}
+
+.privacy-note {
+  display: flex;
+  gap: 16rpx;
+  padding: 28rpx;
+  background: #fafbfd;
+  align-items: flex-start;
+}
+
+.note-icon {
+  font-size: 32rpx;
+  flex-shrink: 0;
+  margin-top: 2rpx;
+}
+
+.note-text {
+  font-size: 24rpx;
+  color: var(--c-text-sub);
+  line-height: 1.6;
+}

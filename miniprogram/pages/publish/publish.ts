@@ -11,12 +11,12 @@ interface TypeOption {
 }
 
 const TYPE_OPTIONS: TypeOption[] = [
-  { id: 'video', name: '视频', icon: '🎬', desc: 'mp4/mov/avi 等' },
-  { id: 'audio', name: '音频', icon: '🎵', desc: 'mp3/wav/flac 等' },
-  { id: 'image', name: '图片', icon: '🖼️', desc: 'jpg/png/gif 等，支持多图' },
-  { id: 'doc', name: '文档', icon: '📄', desc: 'pdf/doc/ppt 等' },
-  { id: 'research', name: '科研', icon: '🔬', desc: '论文/报告/专利' },
-  { id: 'volunteer', name: '志愿', icon: '🤝', desc: '社会实践/志愿服务' },
+  { id: 'video', name: '视频', icon: '', desc: 'mp4/mov/avi 等' },
+  { id: 'audio', name: '音频', icon: '', desc: 'mp3/wav/flac 等' },
+  { id: 'image', name: '图片', icon: '', desc: 'jpg/png/gif 等，支持多图' },
+  { id: 'doc', name: '文档', icon: '', desc: 'pdf/doc/ppt 等' },
+  { id: 'research', name: '科研', icon: '', desc: '论文/报告/专利' },
+  { id: 'volunteer', name: '志愿', icon: '', desc: '社会实践/志愿服务' },
 ]
 
 const TAG_COLORS = ['#4a90e2', '#e57373', '#81c784', '#ffb74d', '#ba68c8', '#4db6ac']

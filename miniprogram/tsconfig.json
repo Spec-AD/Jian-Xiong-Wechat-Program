@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES2015",
+    "allowJs": true,
+    "checkJs": false,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strictPropertyInitialization": false,
+    "lib": ["ES2017"],
+    "typeRoots": ["../typings"],
+    "skipLibCheck": true,
+    "outDir": "./"
+  },
+  "include": [
+    "./**/*.ts",
+    "../typings/**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

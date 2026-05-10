@@ -282,10 +282,12 @@ export async function createWork(
 
 /**
  * 更新作品
+ * 管理员可以编辑任何作品，普通用户只能编辑自己的
  */
 export async function updateWork(
   workId: string,
   userId: string,
+  userRole: string,
   data: Partial<{
     title: string
     description: string
@@ -303,7 +305,9 @@ export async function updateWork(
   if (!work) {
     throw new AppError('作品不存在', 404, 40402)
   }
-  if (work.userId.toString() !== userId) {
+  
+  // 管理员可以编辑任何作品，普通用户只能编辑自己的
+  if (userRole !== 'admin' && work.userId.toString() !== userId) {
     throw new AppError('无权编辑此作品', 403, 40300)
   }
 
@@ -314,13 +318,16 @@ export async function updateWork(
 
 /**
  * 删除作品
+ * 管理员可以删除任何作品，普通用户只能删除自己的
  */
-export async function deleteWork(workId: string, userId: string) {
+export async function deleteWork(workId: string, userId: string, userRole: string) {
   const work = await Work.findById(workId)
   if (!work) {
     throw new AppError('作品不存在', 404, 40402)
   }
-  if (work.userId.toString() !== userId) {
+  
+  // 管理员可以删除任何作品，普通用户只能删除自己的
+  if (userRole !== 'admin' && work.userId.toString() !== userId) {
     throw new AppError('无权删除此作品', 403, 40300)
   }
 

@@ -54,9 +54,9 @@ export const getFileTypeLabel = (type: FileType): string => {
 /** 文件类型 → Emoji 图标 */
 export const getFileTypeIcon = (type: FileType): string => {
   const map: Record<FileType, string> = {
-    video: '🎬', audio: '🎵', image: '🖼️', doc: '📄', unknown: '🔗',
+    video: '', audio: '', image: '', doc: '', unknown: '',
   }
-  return map[type] ?? '🔗'
+  return map[type] ?? ''
 }
 
 /**
@@ -82,6 +82,25 @@ export const toast = (title: string, icon: 'success' | 'error' | 'loading' | 'no
   wx.showToast({ title, icon, duration: 2000 })
 }
 
+/**
+ * 格式化相对时间（刚刚 / N分钟前 / N小时前 / N天前）
+ */
+export const formatRelativeTime = (val: string | number | Date): string => {
+  const now = Date.now()
+  const ts = val instanceof Date ? val.getTime() : new Date(val).getTime()
+  if (isNaN(ts)) return '未知'
+  const diff = now - ts
+  const seconds = Math.floor(diff / 1000)
+  if (seconds < 60) return '刚刚'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}分钟前`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}小时前`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days}天前`
+  return formatDate(val)
+}
+
 /** 成果分类配置 */
 export interface Category {
   id: string
@@ -90,13 +109,13 @@ export interface Category {
 }
 
 export const WORK_CATEGORIES: Category[] = [
-  { id: 'all',       name: '全部', icon: '🏛️' },
-  { id: 'video',     name: '视频', icon: '🎬' },
-  { id: 'audio',     name: '音频', icon: '🎵' },
-  { id: 'image',     name: '图片', icon: '🖼️' },
-  { id: 'doc',       name: '文档', icon: '📄' },
-  { id: 'research',  name: '科研', icon: '🔬' },
-  { id: 'volunteer', name: '志愿', icon: '🤝' },
+  { id: 'all',       name: '全部', icon: '' },
+  { id: 'video',     name: '视频', icon: '' },
+  { id: 'audio',     name: '音频', icon: '' },
+  { id: 'image',     name: '图片', icon: '' },
+  { id: 'doc',       name: '文档', icon: '' },
+  { id: 'research',  name: '科研', icon: '' },
+  { id: 'volunteer', name: '志愿', icon: '' },
 ]
 
 /**

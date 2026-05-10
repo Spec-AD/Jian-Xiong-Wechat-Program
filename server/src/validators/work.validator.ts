@@ -1,7 +1,50 @@
-import { body } from 'express-validator'
+import { body, query, param } from 'express-validator'
 
 /**
- * 创建/更新作品校验
+ * 通用分页参数校验
+ */
+export const paginationValidator = [
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('页码必须是正整数'),
+  query('pageSize')
+    .optional()
+    .isInt({ min: 1, max: 50 })
+    .withMessage('每页条数必须在 1-50 之间'),
+]
+
+/**
+ * 作品列表查询参数校验
+ */
+export const listWorksValidator = [
+  ...paginationValidator,
+  query('category')
+    .optional()
+    .isString()
+    .withMessage('分类必须是字符串'),
+  query('keyword')
+    .optional()
+    .isString()
+    .withMessage('关键词必须是字符串')
+    .isLength({ max: 100 })
+    .withMessage('关键词最长 100 个字符')
+    .trim(),
+]
+
+/**
+ * MongoDB ObjectId 参数校验
+ */
+export const objectIdParamValidator = [
+  param('id')
+    .notEmpty()
+    .withMessage('ID 不能为空')
+    .isMongoId()
+    .withMessage('无效的 ID 格式'),
+]
+
+/**
+ * 创建作品校验
  */
 export const createWorkValidator = [
   body('title')
@@ -36,6 +79,18 @@ export const createWorkValidator = [
     .optional()
     .isArray()
     .withMessage('图片列表必须是数组'),
+  body('fileUrl')
+    .optional()
+    .isString()
+    .withMessage('文件 URL 必须是字符串'),
+  body('cover')
+    .optional()
+    .isString()
+    .withMessage('封面 URL 必须是字符串'),
+  body('isBanner')
+    .optional()
+    .isBoolean()
+    .withMessage('Banner 标识必须是布尔值'),
 ]
 
 export const updateWorkValidator = [
