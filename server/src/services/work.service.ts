@@ -238,6 +238,7 @@ export async function getUserLikedWorks(userId: string, page: number, pageSize: 
         author: work.userId?.nickName || '',
         likes: work.likesCount,
         views: work.views,
+        createdAt: work.createdAt,
         likedAt: l.createdAt,
       }
     })
@@ -281,8 +282,7 @@ export async function createWork(
 }
 
 /**
- * 更新作品
- * 管理员可以编辑任何作品，普通用户只能编辑自己的
+ * 更新作品（开发阶段：任何人可改）
  */
 export async function updateWork(
   workId: string,
@@ -305,11 +305,6 @@ export async function updateWork(
   if (!work) {
     throw new AppError('作品不存在', 404, 40402)
   }
-  
-  // 管理员可以编辑任何作品，普通用户只能编辑自己的
-  if (userRole !== 'admin' && work.userId.toString() !== userId) {
-    throw new AppError('无权编辑此作品', 403, 40300)
-  }
 
   Object.assign(work, data)
   await work.save()
@@ -317,18 +312,12 @@ export async function updateWork(
 }
 
 /**
- * 删除作品
- * 管理员可以删除任何作品，普通用户只能删除自己的
+ * 删除作品（开发阶段：任何人可删）
  */
 export async function deleteWork(workId: string, userId: string, userRole: string) {
   const work = await Work.findById(workId)
   if (!work) {
     throw new AppError('作品不存在', 404, 40402)
-  }
-  
-  // 管理员可以删除任何作品，普通用户只能删除自己的
-  if (userRole !== 'admin' && work.userId.toString() !== userId) {
-    throw new AppError('无权删除此作品', 403, 40300)
   }
 
   // 同时删除相关的点赞记录

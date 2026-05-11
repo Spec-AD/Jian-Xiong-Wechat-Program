@@ -13,6 +13,7 @@ import fs from 'fs'
 import path from 'path'
 import config from '../config'
 import logger from '../middleware/logger'
+import { Work } from '../models/work.model'
 
 /** COS 客户端单例 */
 let cosInstance: COS | null = null
@@ -233,4 +234,156 @@ export async function uploadFileWithKey(
 export function extractKeyFromUrl(url: string): string {
   const parts = url.split('.myqcloud.com/')
   return parts[1] || ''
+}
+
+/**
+ * COS 对象信息
+ */
+export interface CosObjectInfo {
+  key: string        // COS 对象键 (如 'resources/example.mp4')
+  url: string        // 完整访问 URL
+  size: number       // 文件大小（字节）
+  lastModified: string // 最后修改时间
+  ext: string        // 文件扩展名（小写，如 '.mp4'）
+  fileName: string   // 文件名（不含目录，如 'example.mp4'）
+}
+
+/**
+ * 根据文件名后缀判断资源类型
+ */
+function detectResourceType(ext: string): string {
+  const extLower = ext.toLowerCase()
+  if (['.mp4', '.mov', '.avi', '.mkv', '.flv', '.m4v'].includes(extLower)) return 'video'
+  if (['.mp3', '.wav', '.aac', '.flac', '.ogg', '.m4a'].includes(extLower)) return 'audio'
+  if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.heic'].includes(extLower)) return 'image'
+  if (['.pdf', '.doc', '.docx', '.ppt', '.pptx', '.xls', '.xlsx'].includes(extLower)) return 'doc'
+  return 'unknown'
+}
+
+/**
+ * 获取 COS 客户端（公开，供其他模块复用）
+ */
+export function getCosClientInstance(): COS {
+  return getCosClient()
+}
+
+/**
+ * 列出 COS 存储桶中指定前缀下的所有对象
+ *
+ * @param prefix 对象键前缀（如 'resources/'）
+ * @param maxKeys 每页最大返回数（默认 100，最大 1000）
+ * @param marker 分页游标
+ * @returns 对象列表 + 分页标记
+ */
+export async function listCosObjects(
+  prefix: string,
+  maxKeys = 100,
+  marker?: string,
+): Promise<{
+  objects: CosObjectInfo[]
+  isTruncated: boolean
+  nextMarker: string | undefined
+}> {
+  if (!isCosConfigured()) {
+    throw new Error('COS 未配置，无法列取资源')
+  }
+
+  const cos = getCosClient()
+
+  return new Promise((resolve, reject) => {
+    cos.getBucket({
+      Bucket: config.cos.bucket,
+      Region: config.cos.region,
+      Prefix: prefix,
+      MaxKeys: maxKeys,
+      Marker: marker,
+    }, (err, data) => {
+      if (err) {
+        logger.error('[COS] 列取对象失败:', err)
+        reject(err)
+        return
+      }
+
+      const objects: CosObjectInfo[] = (data.Contents || [])
+        .filter(item => item.Key && !item.Key.endsWith('/')) // 排除目录
+        .map(item => {
+          const key = item.Key!
+          const ext = path.extname(key).toLowerCase()
+          const fileName = path.basename(key)
+          return {
+            key,
+            url: `https://${config.cos.bucket}.cos.${config.cos.region}.myqcloud.com/${key}`,
+            size: Number(item.Size) || 0,
+            lastModified: item.LastModified || '',
+            ext,
+            fileName,
+          }
+        })
+
+      resolve({
+        objects,
+        isTruncated: data.IsTruncated === 'true' || false,
+        nextMarker: data.NextMarker || data.Marker,
+      })
+    })
+  })
+}
+
+/**
+ * 将 COS 对象批量导入为 Work 作品记录
+ *
+ * @param objectKeys 要导入的 COS 对象键列表
+ * @param adminUserId 执行导入的管理员用户 ID
+ * @param defaultCategoryId 默认分类 ID（可选，会用类型检测自动推断）
+ * @returns 成功导入的数量
+ */
+export async function importCosObjectsAsWorks(
+  objectKeys: string[],
+  adminUserId: string,
+  defaultCategoryId?: string,
+): Promise<{ imported: number; skipped: number; errors: string[] }> {
+  let imported = 0
+  let skipped = 0
+  const errors: string[] = []
+
+  for (const key of objectKeys) {
+    try {
+      // 检查是否已导入（避免重复）
+      const existing = await Work.findOne({ fileUrl: { $regex: key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$' } })
+      if (existing) {
+        skipped++
+        continue
+      }
+
+      const ext = path.extname(key).toLowerCase()
+      const fileName = path.basename(key, ext)
+      const type = detectResourceType(ext) as any
+      const cosUrl = `https://${config.cos.bucket}.cos.${config.cos.region}.myqcloud.com/${key}`
+
+      // 自动判断分类
+      const categoryId = defaultCategoryId || type
+
+      await Work.create({
+        userId: adminUserId,
+        title: fileName, // 用文件名（不含扩展名）作为默认标题
+        description: `从 COS 资源目录自动导入：${key}`,
+        type,
+        categoryId,
+        fileUrl: cosUrl,
+        cover: type === 'image' ? cosUrl : '', // 图片用自身做封面
+        imageList: type === 'image' ? [cosUrl] : [],
+        tags: ['COS导入'],
+        isBanner: false,
+        status: 'published',
+      })
+
+      imported++
+      logger.info(`[COS导入] 成功导入: ${key} → ${type}`)
+    } catch (err: any) {
+      errors.push(`${key}: ${err.message}`)
+      logger.error(`[COS导入] 导入失败: ${key}`, err)
+    }
+  }
+
+  return { imported, skipped, errors }
 }

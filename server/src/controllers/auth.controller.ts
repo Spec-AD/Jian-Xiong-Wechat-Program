@@ -10,8 +10,8 @@ import { success } from '../utils/response'
  */
 export async function login(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    const { code } = req.body
-    const result = await authService.loginWithWechat(code)
+    const { code, nickName, avatarUrl } = req.body
+    const result = await authService.loginWithWechat(code, nickName, avatarUrl)
     success(res, result, '登录成功')
   } catch (error) {
     next(error)

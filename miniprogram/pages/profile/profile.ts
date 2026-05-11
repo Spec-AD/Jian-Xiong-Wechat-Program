@@ -1,4 +1,4 @@
-// pages/profile/profile.ts — 个人主页（大重构版：数据中心、编辑资料、隐私设置、认证、浏览记录）
+﻿// pages/profile/profile.ts — 个人主页（图标配置版）
 import { getUserStats, request } from '../../utils/api'
 import { toast } from '../../utils/util'
 
@@ -49,7 +49,8 @@ Page({
 
     this._loadProfile()
     this._loadStats()
-    this._loadHistoryCount()
+
+    // this._loadHistoryCount() — 后端尚未实现 /user/history 接口
     this._checkFirstTime()
     this._checkAdmin()
   },
@@ -88,7 +89,7 @@ Page({
       }>({ url: '/user/profile', method: 'GET' })
       this.setData({
         signature: profileData.signature || '',
-        canPublish: profileData.canPublish ?? false,
+        canPublish: profileData.canPublish !== null && profileData.canPublish !== void 0 ? profileData.canPublish : false,
       })
     } catch {
       // 静默降级
@@ -104,39 +105,23 @@ Page({
     }
   },
 
-  async _loadHistoryCount() {
-    try {
-      const data = await request<{ count: number }>({
-        url: '/user/history',
-        method: 'GET',
-      })
-      this.setData({ historyCount: data.count || 0 })
-    } catch {
-      this.setData({ historyCount: 0 })
-    }
-  },
 
-  onSyncWechatInfo() {
-    wx.getUserProfile({
-      desc: '用于展示个人资料',
-      success: (res) => {
-        const { nickName, avatarUrl } = res.userInfo
-        app.saveUserInfo({ nickName, avatarUrl } as AppUserInfo)
-        request({
-          url: '/user/profile',
-          method: 'PUT',
-          data: { nickName, avatarUrl },
-        }).catch(() => {})
-        this.setData({
-          userInfo: { ...this.data.userInfo, nickName, avatarUrl },
-        } as any)
-        toast('已同步微信信息', 'success')
-      },
-      fail: () => {
-        toast('需要授权才能同步')
-      },
-    })
-  },
+
+
+
+
+
+
+
+
+
+
+  // _loadHistoryCount — 暂未启用，后端 /user/history 接口未实现
+  // 待浏览记录功能上线后启用
+
+  // ── onSyncWechatInfo 已移除 ──
+  // wx.getUserProfile() 在 2.32.3+ 基础库中已废弃
+  // 微信信息在登录时已自动获取并保存，此处不再需要手动同步,
 
   onMenuTap(e: any) {
     const key: string = e.currentTarget.dataset.key
@@ -177,21 +162,15 @@ Page({
       case 'editProfile':
         wx.navigateTo({ url: '/pages/edit-profile/edit-profile' })
         break
-      case 'verification':
-        wx.navigateTo({ url: '/pages/verification/verification' })
-        break
-      case 'privacy':
-        wx.navigateTo({ url: '/pages/privacy-settings/privacy-settings' })
-        break
       case 'github':
         wx.setClipboardData({
-          data: 'https://github.com/jianxiong-academy',
+          data: 'https://github.com/Spec-AD/Jian-Xiong-Wechat-Program',
           success: () => toast('GitHub 链接已复制', 'success'),
         })
         break
       case 'afdian':
         wx.setClipboardData({
-          data: 'https://afdian.com/@jianxiong',
+          data: 'https://afdian.com/a/purebeat',
           success: () => toast('爱发电链接已复制', 'success'),
         })
         break
@@ -217,8 +196,8 @@ Page({
       confirmColor: '#e57373',
       success: (res) => {
         if (res.confirm) {
-          app.clearUserInfo()
-          wx.reLaunch({ url: '/pages/index/index' })
+                    app.clearUserInfo()
+          wx.reLaunch({ url: '/pages/login/login' })
         }
       },
     })

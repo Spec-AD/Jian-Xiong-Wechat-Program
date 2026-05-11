@@ -1,12 +1,12 @@
 // app.ts
-import { loginWithCode, getUserProfile, setToken, getToken, removeToken } from './utils/api'
+import { getUserProfile, getToken, removeToken } from './utils/api'
 
 App<IAppOption>({
     globalData: {
     userInfo: null as AppUserInfo | null,
     openid: '',
     loginCode: '',
-    baseUrl: 'http://localhost:3000/api',
+    baseUrl: 'http://10.6.66.128:3000/api',
     /** hall 页面的展示模式：hall | my | liked */
     hallMode: 'hall' as 'hall' | 'my' | 'liked',
   },
@@ -21,8 +21,12 @@ App<IAppOption>({
       this.globalData.userInfo = cached
     }
 
-    // ── 微信登录流程 ──
-    this.doLogin()
+        // ── 恢复登录态（仅当有缓存 token 时） ──
+        // 不自动调用 wx.login()，避免在用户无操作时创建随机账号
+        // 由登录页面的「一键登录」按钮手动触发完整登录流程
+        if (getToken()) {
+          this.doLogin()
+        }
 
     // ── 小程序更新检测 ──
     if (wx.canIUse('getUpdateManager')) {
@@ -54,51 +58,20 @@ App<IAppOption>({
     }
   },
 
-    /** 登录：wx.login → 后端换取 token → 获取用户信息
-   *  @returns 登录成功返回 true，失败返回 false
-   */
-  async doLogin(): Promise<boolean> {
-    // 如果已有 token，直接获取用户信息
-    if (getToken()) {
-      console.log('[App] 已有 token，直接获取用户信息')
-      await this.fetchAndSaveUser()
-      return true
-    }
-
-    try {
-      // 1. wx.login 获取临时 code
-      const loginRes = await wx.login()
-      if (!loginRes.code) {
-        console.error('[App] wx.login 失败：未获取到 code')
-        return false
-      }
-      this.globalData.loginCode = loginRes.code
-
-      // 2. 发送 code 到后端换取 token + openid + 用户信息
-      const authRes = await loginWithCode(loginRes.code)
-
-      // 3. 保存 token 和 openid
-      setToken(authRes.token)
-      this.globalData.openid = authRes.openid
-
-      // 4. 直接从登录响应中保存用户信息（避免额外 API 调用）
-      if (authRes.user) {
-        this.saveUserInfo({
-          nickName: authRes.user.nickName,
-          avatarUrl: authRes.user.avatarUrl,
-        })
-        console.log('[App] 登录成功，用户:', authRes.user.nickName)
-      } else {
-        // 降级：通过 getUserProfile 获取
+    /** 恢复登录态：从已有 token 获取用户信息
+     *  由 pages/login/login.ts 的 handleQuickLogin 在用户点击「一键登录」后触发完整登录流程
+     *  @returns 恢复成功返回 true，失败（无 token）返回 false
+     */
+    async doLogin(): Promise<boolean> {
+      // 如果已有 token，尝试恢复用户信息
+      if (getToken()) {
+        console.log('[App] 已有 token，尝试恢复用户信息')
         await this.fetchAndSaveUser()
+        return true
       }
-
-      return true
-    } catch (err: any) {
-      console.error('[App] 登录流程失败:', err.message || err)
+      console.log('[App] 无 token，等待用户手动登录')
       return false
-    }
-  },
+    },
 
   /** 从后端获取用户信息并保存到 globalData 和缓存 */
   async fetchAndSaveUser() {
@@ -112,7 +85,7 @@ App<IAppOption>({
       console.log('[App] 用户信息已加载:', userInfo.nickName)
     } catch (err: any) {
       // token 失效则清除
-      if (err.message?.includes('401') || err.message?.includes('未登录')) {
+      if (err.message && (err.message.includes('401') || err.message.includes('未登录'))) {
         removeToken()
       }
       console.warn('[App] 获取用户信息失败:', err.message || err)

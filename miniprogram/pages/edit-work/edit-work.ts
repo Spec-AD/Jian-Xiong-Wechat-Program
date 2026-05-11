@@ -175,7 +175,7 @@ Page({
         await this._doUpload(res.tempFiles[0].path, res.tempFiles[0].name)
       }
     } catch (err: any) {
-      if (err.errMsg?.includes('cancel')) return
+      if (err.errMsg && err.errMsg.includes('cancel')) return
       console.error('[EditWork] chooseFile error:', err)
       toast('选择文件失败')
     }

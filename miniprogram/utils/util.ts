@@ -35,7 +35,8 @@ export type FileType = 'video' | 'audio' | 'image' | 'doc' | 'unknown'
 
 export const getFileType = (filename: string): FileType => {
   if (!filename) return 'unknown'
-  const ext = filename.split('.').pop()?.toLowerCase() ?? ''
+  const parts = filename.split('.')
+  const ext = (parts.length > 1 ? parts[parts.length - 1] : '').toLowerCase()
   if (['mp4','mov','avi','mkv','flv','m4v'].includes(ext))          return 'video'
   if (['mp3','wav','aac','flac','ogg','m4a'].includes(ext))         return 'audio'
   if (['jpg','jpeg','png','gif','webp','bmp','heic'].includes(ext)) return 'image'
@@ -48,7 +49,7 @@ export const getFileTypeLabel = (type: FileType): string => {
   const map: Record<FileType, string> = {
     video: '视频', audio: '音频', image: '图片', doc: '文档', unknown: '其他',
   }
-  return map[type] ?? '其他'
+  return map[type] !== null && map[type] !== void 0 ? map[type] : '其他'
 }
 
 /** 文件类型 → Emoji 图标 */
@@ -56,7 +57,7 @@ export const getFileTypeIcon = (type: FileType): string => {
   const map: Record<FileType, string> = {
     video: '', audio: '', image: '', doc: '', unknown: '',
   }
-  return map[type] ?? ''
+  return (map[type] !== null && map[type] !== void 0) ? map[type] : ''
 }
 
 /**

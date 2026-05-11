@@ -6,33 +6,19 @@ import { validate } from './index'
 
 const router = Router()
 
-// ============ 公开接口（无需登录） ============
+// ============ 需登录接口（优先注册，避免被 /:id 路由抢占） ============
 
 /**
- * GET /api/works
- * 作品列表（分页+分类+搜索）
+ * GET /api/works/my/list
+ * 我发布的作品列表
  */
-router.get('/', optionalAuthMiddleware, listWorksValidator, validate, workController.getWorks)
+router.get('/my/list', authMiddleware, paginationValidator, validate, workController.getMyWorks)
 
 /**
- * GET /api/works/banner
- * Banner 推荐作品
+ * GET /api/works/liked/list
+ * 我点赞的作品列表
  */
-router.get('/banner', workController.getBannerWorks)
-
-/**
- * GET /api/works/:id
- * 作品详情
- */
-router.get('/:id', optionalAuthMiddleware, objectIdParamValidator, validate, workController.getWorkById)
-
-/**
- * POST /api/works/:id/view
- * 记录浏览量
- */
-router.post('/:id/view', objectIdParamValidator, validate, workController.recordView)
-
-// ============ 需登录接口 ============
+router.get('/liked/list', authMiddleware, paginationValidator, validate, workController.getLikedWorks)
 
 /**
  * POST /api/works
@@ -58,16 +44,30 @@ router.delete('/:id', authMiddleware, objectIdParamValidator, validate, workCont
  */
 router.post('/:id/like', authMiddleware, objectIdParamValidator, validate, workController.toggleLike)
 
-/**
- * GET /api/works/my
- * 我发布的作品列表
- */
-router.get('/my/list', authMiddleware, paginationValidator, validate, workController.getMyWorks)
+// ============ 公开接口（无需登录） ============
 
 /**
- * GET /api/works/liked
- * 我点赞的作品列表
+ * GET /api/works
+ * 作品列表（分页+分类+搜索）
  */
-router.get('/liked/list', authMiddleware, paginationValidator, validate, workController.getLikedWorks)
+router.get('/', optionalAuthMiddleware, listWorksValidator, validate, workController.getWorks)
+
+/**
+ * GET /api/works/banner
+ * Banner 推荐作品
+ */
+router.get('/banner', workController.getBannerWorks)
+
+/**
+ * GET /api/works/:id
+ * 作品详情（必须放在 /my/list、/liked/list、/banner 之后）
+ */
+router.get('/:id', optionalAuthMiddleware, objectIdParamValidator, validate, workController.getWorkById)
+
+/**
+ * POST /api/works/:id/view
+ * 记录浏览量
+ */
+router.post('/:id/view', objectIdParamValidator, validate, workController.recordView)
 
 export default router

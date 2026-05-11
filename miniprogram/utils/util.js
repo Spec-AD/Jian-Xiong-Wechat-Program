@@ -28,10 +28,10 @@ const formatDate = (val) => {
 };
 exports.formatDate = formatDate;
 const getFileType = (filename) => {
-    var _a, _b;
     if (!filename)
         return 'unknown';
-    const ext = (_b = (_a = filename.split('.').pop()) === null || _a === void 0 ? void 0 : _a.toLowerCase()) !== null && _b !== void 0 ? _b : '';
+    const parts = filename.split('.');
+    const ext = (parts.length > 1 ? parts[parts.length - 1] : '').toLowerCase();
     if (['mp4', 'mov', 'avi', 'mkv', 'flv', 'm4v'].includes(ext))
         return 'video';
     if (['mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a'].includes(ext))
@@ -45,20 +45,18 @@ const getFileType = (filename) => {
 exports.getFileType = getFileType;
 /** 文件类型 → 中文标签 */
 const getFileTypeLabel = (type) => {
-    var _a;
     const map = {
         video: '视频', audio: '音频', image: '图片', doc: '文档', unknown: '其他',
     };
-    return (_a = map[type]) !== null && _a !== void 0 ? _a : '其他';
+    return map[type] !== null && map[type] !== void 0 ? map[type] : '其他';
 };
 exports.getFileTypeLabel = getFileTypeLabel;
 /** 文件类型 → Emoji 图标 */
 const getFileTypeIcon = (type) => {
-    var _a;
     const map = {
         video: '', audio: '', image: '', doc: '', unknown: '',
     };
-    return (_a = map[type]) !== null && _a !== void 0 ? _a : '';
+    return map[type] !== null && map[type] !== void 0 ? map[type] : '';
 };
 exports.getFileTypeIcon = getFileTypeIcon;
 /**

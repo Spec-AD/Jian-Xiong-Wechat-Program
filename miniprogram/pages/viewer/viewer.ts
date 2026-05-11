@@ -74,7 +74,8 @@ Page({
       // 2. 组装作品数据
       const rawViews = detail.views || 0
       const rawLikes = detail.likes || 0
-      const rawCommentsCount = (commentsData as any)?.list?.length || detail.commentsCount || 0
+      const commentsAny = (commentsData as any)
+      const rawCommentsCount = (commentsAny && commentsAny.list && commentsAny.list.length) || detail.commentsCount || 0
 
       this.setData({
         type: detail.type || '',
@@ -100,7 +101,8 @@ Page({
       })
 
       // 3. 处理评论列表（添加相对时间）
-      const rawComments = (commentsData as any)?.list || []
+      const commentsAny2 = (commentsData as any)
+      const rawComments = (commentsAny2 && commentsAny2.list) || []
       this.setData({
         comments: rawComments.map((c: any) => ({
           id: c.id,
@@ -114,8 +116,8 @@ Page({
 
       wx.setNavigationBarTitle({ title: detail.title || '作品预览' })
 
-      // 4. 检查编辑权限（管理员 或 作品作者）
-      this._checkEditPermission(detail)
+      // 4. 开发阶段：任何人可编辑
+      this.setData({ canEdit: true })
 
       // 5. 如果是音频则初始化播放器
       if (detail.type === 'audio' && detail.fileUrl) {
@@ -216,7 +218,7 @@ Page({
   },
 
   onSliderChange(e: any) {
-    this._audio?.seek(e.detail.value)
+    if (this._audio) { this._audio.seek(e.detail.value) }
   },
 
   onSeekBack() {
@@ -318,27 +320,10 @@ Page({
     })
   },
 
-  /** 检查当前用户是否有编辑权限 */
+  /** 开发阶段：任何人可编辑 */
   async _checkEditPermission(detail: any) {
-    try {
-      const token = wx.getStorageSync('jianxiong_token')
-      if (!token) return
-
-      const profile = await request<{ id: string; role: string }>({
-        url: '/user/profile',
-        method: 'GET',
-      })
-
-      // 管理员 或 作品作者 可以编辑
-      const isAdmin = profile.role === 'admin'
-      const isOwner = profile.id === detail.userId
-
-      if (isAdmin || isOwner) {
-        this.setData({ canEdit: true })
-      }
-    } catch {
-      // 未登录/无权限，静默
-    }
+    // 开发阶段不限制，任何人可编辑/删除
+    this.setData({ canEdit: true })
   },
 
   // ─── 下载 ───────────────────────────────────────────────

@@ -128,9 +128,8 @@ Page({
     /** 保存所有资料 */
     onSave() {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
             const { profile } = this.data;
-            if (!((_a = profile.nickName) === null || _a === void 0 ? void 0 : _a.trim())) {
+            if (!(profile.nickName && profile.nickName.trim())) {
                 (0, util_1.toast)('请输入昵称');
                 return;
             }

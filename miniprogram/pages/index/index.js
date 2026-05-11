@@ -52,7 +52,7 @@ Component({
             });
         },
         _isComplete(nickName, avatarUrl) {
-            return !!((nickName === null || nickName === void 0 ? void 0 : nickName.trim()) && avatarUrl && avatarUrl !== DEFAULT_AVATAR);
+            return !!(nickName && nickName.trim() && avatarUrl && avatarUrl !== DEFAULT_AVATAR);
         },
         /** 确认登录 → 同步用户信息到后端 */
         onLogin() {

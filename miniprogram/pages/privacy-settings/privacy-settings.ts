@@ -42,11 +42,11 @@ Page({
       if (settings) {
         const items = this.data.items.map(item => ({
           ...item,
-          visible: settings[item.key] ?? item.visible,
+          visible: settings[item.key] !== null && settings[item.key] !== void 0 ? settings[item.key] : item.visible,
         }))
         this.setData({
           items,
-          allowSearchByUid: settings.allowSearchByUid ?? true,
+          allowSearchByUid: settings.allowSearchByUid !== null && settings.allowSearchByUid !== void 0 ? settings.allowSearchByUid : true,
         })
       }
     } catch {

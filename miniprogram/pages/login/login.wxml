@@ -22,8 +22,8 @@
       <text>{{errorMsg}}</text>
     </view>
 
-    <!-- 一键登录 -->
-    <button class="btn-primary" bindtap="handleQuickLogin" loading="{{loading}}" disabled="{{loading}}">
+        <!-- 一键登录（使用 open-type="getUserInfo" 弹出授权窗口） -->
+    <button class="btn-primary" open-type="getUserInfo" bindgetuserinfo="handleQuickLogin" loading="{{loading}}" disabled="{{loading}}">
       一键登录
     </button>
 

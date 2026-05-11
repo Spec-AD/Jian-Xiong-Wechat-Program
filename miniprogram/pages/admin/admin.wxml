@@ -34,6 +34,13 @@
       >
         <text class="tab-text">作品管理</text>
       </view>
+      <view
+        class="tab-item {{activeTab === 'cos-import' ? 'tab-item--active' : ''}}"
+        bindtap="onTabChange"
+        data-tab="cos-import"
+      >
+        <text class="tab-text">COS导入</text>
+      </view>
     </view>
 
     <!-- ===== 仪表盘 ===== -->
@@ -147,6 +154,113 @@
       <view wx:if="{{refreshing}}" class="loading-more">
         <text>加载中…</text>
       </view>
+    </view>
+
+    <!-- ===== COS 资源导入 ===== -->
+    <view wx:elif="{{activeTab === 'cos-import'}}" class="cos-section">
+      
+      <!-- 加载状态 -->
+      <view wx:if="{{cosLoading}}" class="loading-state">
+        <text class="loading-text">正在列取 COS 资源…</text>
+      </view>
+
+      <block wx:else>
+        <!-- 统计概览 -->
+        <view class="cos-stats-row" wx:if="{{cosStats}}">
+          <view class="cos-stat-card">
+            <text class="cos-stat-value">{{cosStats.totalFiles}}</text>
+            <text class="cos-stat-label">总文件数</text>
+          </view>
+          <view class="cos-stat-card">
+            <text class="cos-stat-value">{{cosStats.totalSizeFormatted}}</text>
+            <text class="cos-stat-label">总大小</text>
+          </view>
+          <view class="cos-stat-card" wx:for="{{['video','image','doc']}}" wx:key="*">
+            <text class="cos-stat-value">{{cosStats.categoryCount[item]}}</text>
+            <text class="cos-stat-label">{{item === 'video' ? '视频' : item === 'image' ? '图片' : '文档'}}</text>
+          </view>
+        </view>
+
+        <!-- 操作栏 -->
+        <view class="cos-toolbar">
+          <view class="cos-search-bar">
+            <input
+              class="cos-search-input"
+              placeholder="搜索文件名…"
+              value="{{cosSearchText}}"
+              bindinput="onCosSearch"
+            />
+          </view>
+          <scroll-view class="cos-filter-scroll" scroll-x enable-flex>
+            <view class="cos-filter-chip {{cosFilterType === 'all' ? 'cos-filter-chip--active' : ''}}" bindtap="onCosFilterType" data-type="all">全部</view>
+            <view class="cos-filter-chip {{cosFilterType === 'mp4' ? 'cos-filter-chip--active' : ''}}" bindtap="onCosFilterType" data-type="mp4">MP4</view>
+            <view class="cos-filter-chip {{cosFilterType === 'mov' ? 'cos-filter-chip--active' : ''}}" bindtap="onCosFilterType" data-type="mov">MOV</view>
+            <view class="cos-filter-chip {{cosFilterType === 'jpg' ? 'cos-filter-chip--active' : ''}}" bindtap="onCosFilterType" data-type="jpg">JPG</view>
+            <view class="cos-filter-chip {{cosFilterType === 'png' ? 'cos-filter-chip--active' : ''}}" bindtap="onCosFilterType" data-type="png">PNG</view>
+            <view class="cos-filter-chip {{cosFilterType === 'pdf' ? 'cos-filter-chip--active' : ''}}" bindtap="onCosFilterType" data-type="pdf">PDF</view>
+            <view class="cos-filter-chip {{cosFilterType === 'xlsx' ? 'cos-filter-chip--active' : ''}}" bindtap="onCosFilterType" data-type="xlsx">XLSX</view>
+          </scroll-view>
+        </view>
+
+        <!-- 批量操作 -->
+        <view class="cos-batch-bar" wx:if="{{cosObjects.length > 0}}">
+          <view class="cos-select-all" bindtap="onCosSelectAll">
+            <text class="cos-checkbox {{cosSelectAll ? 'cos-checkbox--checked' : ''}}"></text>
+            <text class="cos-select-label">{{cosSelectAll ? '取消全选' : '全选'}}</text>
+          </view>
+          <text class="cos-selected-count">已选 {{cosSelectedKeys.length}} / {{filteredCosObjects.length}} 项</text>
+          <button
+            class="cos-import-btn {{cosSelectedKeys.length === 0 ? 'cos-import-btn--disabled' : ''}}"
+            disabled="{{cosSelectedKeys.length === 0 || cosImporting}}"
+            loading="{{cosImporting}}"
+            bindtap="onCosImport"
+          >
+            导入选中
+          </button>
+        </view>
+
+        <!-- 导入结果提示 -->
+        <view wx:if="{{cosImportResult}}" class="cos-result">
+          <text class="cos-result-text">
+            ✅ 导入完成：成功 {{cosImportResult.imported}} 个，跳过 {{cosImportResult.skipped}} 个
+          </text>
+          <text wx:if="{{cosImportResult.errors.length > 0}}" class="cos-result-error">
+            ❌ 失败 {{cosImportResult.errors.length}} 个
+          </text>
+        </view>
+
+        <!-- 资源列表 -->
+        <view wx:if="{{cosObjects.length > 0}}" class="cos-list">
+          <view
+            class="cos-item {{cosSelectedKeys.indexOf(item.key) > -1 ? 'cos-item--selected' : ''}}"
+            wx:for="{{filteredCosObjects}}"
+            wx:key="key"
+            bindtap="onCosSelect"
+            data-key="{{item.key}}"
+          >
+            <view class="cos-checkbox-wrap">
+              <text class="cos-checkbox {{cosSelectedKeys.indexOf(item.key) > -1 ? 'cos-checkbox--checked' : ''}}"></text>
+            </view>
+            <view class="cos-item-icon">
+              <text class="cos-ext-badge">{{item.ext.replace('.','')}}</text>
+            </view>
+            <view class="cos-item-info">
+              <text class="cos-item-name">{{item.fileName}}</text>
+              <text class="cos-item-meta">
+                {{_getExtLabel(item.ext)}} · {{_formatSize(item.size)}} · {{item.lastModified.slice(0,10)}}
+              </text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 空状态 -->
+        <view wx:else class="empty-state">
+          <text class="empty-icon"></text>
+          <text class="empty-text">COS 中暂无资源文件</text>
+          <text class="empty-hint">请确认文件已上传到 COS 的 resources/ 目录下</text>
+        </view>
+      </block>
+
     </view>
 
   </block>

@@ -15,3 +15,9 @@ Thumbs.db
 
 .vscode/
 *.log
+
+# 本地开发临时文件
+Users/
+tmp/
+body.txt
+curr_problem.md

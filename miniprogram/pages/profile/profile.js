@@ -39,6 +39,8 @@ Page({
         firstTime: false,
         canPublish: false,
         historyCount: 0,
+        /** 是否管理员 */
+        isAdmin: false,
     },
     onShow() {
         const userInfo = app.globalData.userInfo;
@@ -55,6 +57,22 @@ Page({
         this._loadStats();
         this._loadHistoryCount();
         this._checkFirstTime();
+        this._checkAdmin();
+    },
+    /** 检查是否为管理员 */
+    _checkAdmin() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const profile = yield (0, api_1.request)({
+                    url: '/user/profile',
+                    method: 'GET',
+                });
+                this.setData({ isAdmin: profile.role === 'admin' });
+            }
+            catch (_a) {
+                // 静默降级
+            }
+        });
     },
     _checkFirstTime() {
         const shown = wx.getStorageSync('profile_first_time_shown');
@@ -68,15 +86,14 @@ Page({
     },
     _loadProfile() {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
             try {
                 const profileData = yield (0, api_1.request)({ url: '/user/profile', method: 'GET' });
                 this.setData({
                     signature: profileData.signature || '',
-                    canPublish: (_a = profileData.canPublish) !== null && _a !== void 0 ? _a : false,
+                    canPublish: profileData.canPublish !== null && profileData.canPublish !== void 0 ? profileData.canPublish : false,
                 });
             }
-            catch (_b) {
+            catch (_a) {
                 // 静默降级
             }
         });
@@ -106,27 +123,9 @@ Page({
             }
         });
     },
-    onSyncWechatInfo() {
-        wx.getUserProfile({
-            desc: '用于展示个人资料',
-            success: (res) => {
-                const { nickName, avatarUrl } = res.userInfo;
-                app.saveUserInfo({ nickName, avatarUrl });
-                (0, api_1.request)({
-                    url: '/user/profile',
-                    method: 'PUT',
-                    data: { nickName, avatarUrl },
-                }).catch(() => { });
-                this.setData({
-                    userInfo: Object.assign(Object.assign({}, this.data.userInfo), { nickName, avatarUrl }),
-                });
-                (0, util_1.toast)('已同步微信信息', 'success');
-            },
-            fail: () => {
-                (0, util_1.toast)('需要授权才能同步');
-            },
-        });
-    },
+    // ── onSyncWechatInfo 已移除 ──
+    // wx.getUserProfile() 在 2.32.3+ 基础库中已废弃
+    // 微信信息在登录时已自动获取并保存，此处不再需要手动同步,
     onMenuTap(e) {
         const key = e.currentTarget.dataset.key;
         switch (key) {
@@ -174,13 +173,13 @@ Page({
                 break;
             case 'github':
                 wx.setClipboardData({
-                    data: 'https://github.com/jianxiong-academy',
+                    data: 'https://github.com/Spec-AD/Jian-Xiong-Wechat-Program',
                     success: () => (0, util_1.toast)('GitHub 链接已复制', 'success'),
                 });
                 break;
             case 'afdian':
                 wx.setClipboardData({
-                    data: 'https://afdian.com/@jianxiong',
+                    data: 'https://afdian.com/a/purebeat',
                     success: () => (0, util_1.toast)('爱发电链接已复制', 'success'),
                 });
                 break;
@@ -192,6 +191,9 @@ Page({
                     confirmText: '了解',
                 });
                 break;
+            case 'admin':
+                wx.navigateTo({ url: '/pages/admin/admin' });
+                break;
         }
     },
     onLogout() {
@@ -202,7 +204,7 @@ Page({
             success: (res) => {
                 if (res.confirm) {
                     app.clearUserInfo();
-                    wx.reLaunch({ url: '/pages/index/index' });
+                    wx.reLaunch({ url: '/pages/login/login' });
                 }
             },
         });

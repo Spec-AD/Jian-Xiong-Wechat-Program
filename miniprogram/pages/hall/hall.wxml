@@ -34,7 +34,13 @@
       data-item="{{item}}"
     >
       <view class="banner-item">
-        <view class="banner-placeholder">
+        <image
+          wx:if="{{item.cover || (item.type === 'image' && item.fileUrl)}}"
+          class="banner-img"
+          src="{{item.cover || item.fileUrl}}"
+          mode="aspectFill"
+        />
+        <view wx:else class="banner-placeholder">
           <text class="banner-icon">{{item.typeIcon}}</text>
         </view>
         <view class="banner-overlay">
@@ -76,12 +82,19 @@
       bindtap="onWorkTap"
       data-item="{{item}}"
     >
-      <!-- 封面 -->
+      <!-- 封面（cover 优先，图片类型无 cover 时用 fileUrl 兜底） -->
       <view class="card-cover">
         <image
           wx:if="{{item.cover}}"
           class="cover-img"
           src="{{item.cover}}"
+          mode="aspectFill"
+          lazy-load
+        />
+        <image
+          wx:elif="{{item.type === 'image' && item.fileUrl}}"
+          class="cover-img"
+          src="{{item.fileUrl}}"
           mode="aspectFill"
           lazy-load
         />

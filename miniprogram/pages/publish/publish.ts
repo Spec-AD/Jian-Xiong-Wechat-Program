@@ -138,7 +138,7 @@ Page({
         await this._doUpload(res.tempFiles[0].path, res.tempFiles[0].name)
       }
     } catch (err: any) {
-      if (err.errMsg?.includes('cancel')) return // 用户取消
+      if (err.errMsg && err.errMsg.includes('cancel')) return // 用户取消
       console.error('[Publish] chooseFile error:', err)
       toast('选择文件失败')
     }

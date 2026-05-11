@@ -9,10 +9,17 @@ page {
   overflow: hidden;
 }
 
+/* ===== AI 页面容器（含淡色背景图） ===== */
 .page {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  position: relative;
+  background-image: url('https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/%E4%B8%BA%E6%88%91%E7%94%9F%E6%88%90%E4%B8%80%E4%B8%AA%E7%AB%96%E7%89%88%E7%9A%84%EF%BC%8C%E9%A2%9C%E8%89%B2%E8%BE%83%E6%B7%A1%E7%9A%84%EF%BC%8C%E9%80%82%E4%BA%8E%E6%9D%A5%E4%BD%9C%E5%BA%95%E5%9B%BE%E7%9A%84%E5%9B%BE%E7%89%87%EF%BC%8C%E8%A6%81%E6%B1%82%E7%BA%BF%E6%9D%A1_2026-05-10_19-24-13.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 /* ===== 顶部导航 ===== */
@@ -48,57 +55,6 @@ page {
   gap: 16rpx;
 }
 
-/* ===== 思考模式切换开关 ===== */
-.thinking-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  padding: 6rpx 12rpx;
-  border-radius: 30rpx;
-  background: var(--bg-page);
-  border: 2rpx solid var(--c-border);
-}
-
-.toggle-label {
-  font-size: 22rpx;
-  color: var(--c-text-sub);
-  transition: color 0.2s;
-}
-
-.toggle-label--active {
-  color: var(--theme-color);
-  font-weight: 600;
-}
-
-.toggle-track {
-  width: 52rpx;
-  height: 28rpx;
-  border-radius: 14rpx;
-  background: #e0e0e0;
-  position: relative;
-  transition: background 0.25s;
-}
-
-.toggle-track--active {
-  background: var(--theme-color);
-}
-
-.toggle-thumb {
-  position: absolute;
-  top: 3rpx;
-  left: 3rpx;
-  width: 22rpx;
-  height: 22rpx;
-  border-radius: 11rpx;
-  background: #fff;
-  box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.2);
-  transition: transform 0.25s;
-}
-
-.toggle-thumb--active {
-  transform: translateX(24rpx);
-}
-
 .clear-btn {
   font-size: 24rpx;
   color: var(--c-text-sub);
@@ -110,6 +66,7 @@ page {
   flex: 1;
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
+  background: transparent;
 }
 
 .chat-container {
@@ -124,11 +81,6 @@ page {
   padding: 80rpx 0 40rpx;
 }
 
-.welcome-icon {
-  font-size: 100rpx;
-  margin-bottom: 24rpx;
-}
-
 .welcome-title {
   font-size: 36rpx;
   font-weight: 700;
@@ -137,37 +89,15 @@ page {
   text-align: center;
 }
 
-.welcome-desc {
-  font-size: 26rpx;
-  color: var(--c-text-sub);
-  text-align: center;
-  line-height: 1.6;
-  margin-bottom: 48rpx;
-  padding: 0 40rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12rpx;
-}
-
-.welcome-tag {
+/* ===== 吴健雄语录（第二行提示语，字体比第一行小、颜色略淡） ===== */
+.quote-line {
   font-size: 24rpx;
-  padding: 8rpx 20rpx;
-  border-radius: 20rpx;
-  display: inline-block;
-  margin-top: 8rpx;
-}
-
-.thinking-tag {
-  background: #FFF3E0;
-  color: #E65100;
-  border: 1rpx solid #FFCC80;
-}
-
-.fast-tag {
-  background: #E8F5E9;
-  color: #2E7D32;
-  border: 1rpx solid #A5D6A7;
+  color: var(--c-text-sub);
+  line-height: 1.5;
+  text-align: center;
+  padding: 0 20rpx;
+  margin-bottom: 40rpx;
+  max-width: 90%;
 }
 
 .quick-grid {
@@ -208,7 +138,8 @@ page {
 }
 
 .msg-user {
-  flex-direction: row-reverse;
+  flex-direction: row;
+  justify-content: flex-end;
 }
 
 .msg-avatar {
@@ -266,22 +197,35 @@ page {
 }
 
 .msg-text {
-  white-space: pre-wrap;
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+/* rich-text 内部 img 自适应 */
+.msg-text img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8rpx;
+}
+
+/* rich-text 内部代码块滚动 */
+.msg-text pre {
+  overflow-x: auto;
+  max-width: 100%;
 }
 
 /* ===== 推理内容块（思考模式） ===== */
 .reasoning-block {
   margin-bottom: 16rpx;
-  border: 1rpx solid #FFE0B2;
   border-radius: 12rpx;
   overflow: hidden;
-  background: #FFFBF0;
 }
 
 .reasoning-header {
   display: flex;
   align-items: center;
-  padding: 12rpx 16rpx;
+  padding: 8rpx 0;
   gap: 8rpx;
   cursor: pointer;
 }
@@ -294,7 +238,7 @@ page {
   flex: 1;
   font-size: 24rpx;
   font-weight: 600;
-  color: #E65100;
+  color: var(--c-text-sub);
 }
 
 .reasoning-toggle {
@@ -306,17 +250,29 @@ page {
 }
 
 .reasoning-content {
-  padding: 0 16rpx 16rpx;
-  border-top: 1rpx solid #FFE0B2;
-  padding-top: 12rpx;
-  margin-top: 0;
+  padding: 12rpx 0;
+  border-top: 1rpx solid var(--c-border);
+  margin-top: 4rpx;
 }
 
 .reasoning-text {
+  display: block;
+  width: 100%;
   font-size: 24rpx;
   line-height: 1.6;
-  color: #795548;
-  white-space: pre-wrap;
+  color: var(--c-text-sub);
+}
+
+/* reasoning rich-text 内部样式 */
+.reasoning-text pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.reasoning-text img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6rpx;
 }
 
 /* ===== 流式输出光标 ===== */
@@ -369,16 +325,69 @@ page {
   height: 1rpx;
 }
 
-/* ===== 输入栏 ===== */
+/* ===== 底部输入区域（含思考模式开关 + 输入栏） ===== */
+.input-area {
+  flex-shrink: 0;
+  background: #fff;
+  border-top: 1rpx solid var(--c-border);
+  padding-bottom: calc(0rpx + env(safe-area-inset-bottom));
+}
+
+/* 思考模式开关置于聊天框上边缘 */
+.input-area .thinking-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6rpx;
+  padding: 8rpx 28rpx 4rpx;
+}
+
+.input-area .toggle-label {
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+  transition: color 0.2s;
+}
+
+.input-area .toggle-label--active {
+  color: var(--theme-color);
+  font-weight: 600;
+}
+
+.input-area .toggle-track {
+  width: 48rpx;
+  height: 26rpx;
+  border-radius: 13rpx;
+  background: #e0e0e0;
+  position: relative;
+  transition: background 0.25s;
+}
+
+.input-area .toggle-track--active {
+  background: var(--theme-color);
+}
+
+.input-area .toggle-thumb {
+  position: absolute;
+  top: 3rpx;
+  left: 3rpx;
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 10rpx;
+  background: #fff;
+  box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.2);
+  transition: transform 0.25s;
+}
+
+.input-area .toggle-thumb--active {
+  transform: translateX(22rpx);
+}
+
+/* ===== 输入栏（全宽） ===== */
 .input-bar {
   display: flex;
   align-items: center;
-  padding: 16rpx 28rpx;
-  background: #fff;
-  border-top: 1rpx solid var(--c-border);
+  padding: 8rpx 28rpx 16rpx;
   gap: 16rpx;
-  flex-shrink: 0;
-  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
 }
 
 .input-wrap {
@@ -397,16 +406,14 @@ page {
 }
 
 .send-btn {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 40rpx;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
   background: var(--c-border);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 0;
-  padding: 0;
 }
 
 .send-btn--active {
@@ -414,6 +421,6 @@ page {
 }
 
 .send-icon {
-  font-size: 36rpx;
+  font-size: 32rpx;
   color: #fff;
 }

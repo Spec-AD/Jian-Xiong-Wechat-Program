@@ -9,4 +9,12 @@ export const loginValidator = [
     .withMessage('登录 code 不能为空')
     .isString()
     .withMessage('登录 code 必须是字符串'),
+  body('nickName')
+    .optional()
+    .isString()
+    .withMessage('nickName 必须是字符串'),
+  body('avatarUrl')
+    .optional()
+    .isString()
+    .withMessage('avatarUrl 必须是字符串'),
 ]

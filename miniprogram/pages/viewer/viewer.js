@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // pages/viewer/viewer.ts — 素材详情页（信息卡片 + 评论区 + 统一模板）
 const util_1 = require("../../utils/util");
 const api_1 = require("../../utils/api");
+const app = getApp();
 Page({
     data: {
         id: '',
@@ -49,12 +50,16 @@ Page({
         commentText: '',
         sendingComment: false,
         commentInputFocused: false,
+        // 权限控制
+        canEdit: false,
+        // 多文件模式下用于跳转
+        fileIndex: 0,
+        totalFiles: 0,
     },
     _audio: null,
     _workId: '',
     onLoad(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
             const id = options.id || '';
             if (!id) {
                 (0, util_1.toast)('作品ID无效');
@@ -71,7 +76,8 @@ Page({
                 // 2. 组装作品数据
                 const rawViews = detail.views || 0;
                 const rawLikes = detail.likes || 0;
-                const rawCommentsCount = ((_a = commentsData === null || commentsData === void 0 ? void 0 : commentsData.list) === null || _a === void 0 ? void 0 : _a.length) || detail.commentsCount || 0;
+                const commentsAny = commentsData;
+                const rawCommentsCount = (commentsAny && commentsAny.list && commentsAny.list.length) || detail.commentsCount || 0;
                 this.setData({
                     type: detail.type || '',
                     fileUrl: detail.fileUrl || '',
@@ -95,7 +101,8 @@ Page({
                     loading: false,
                 });
                 // 3. 处理评论列表（添加相对时间）
-                const rawComments = (commentsData === null || commentsData === void 0 ? void 0 : commentsData.list) || [];
+                const commentsAny2 = commentsData;
+                const rawComments = (commentsAny2 && commentsAny2.list) || [];
                 this.setData({
                     comments: rawComments.map((c) => ({
                         id: c.id,
@@ -107,11 +114,13 @@ Page({
                     })),
                 });
                 wx.setNavigationBarTitle({ title: detail.title || '作品预览' });
-                // 4. 如果是音频则初始化播放器
+                // 4. 开发阶段：任何人可编辑
+                this.setData({ canEdit: true });
+                // 5. 如果是音频则初始化播放器
                 if (detail.type === 'audio' && detail.fileUrl) {
                     this._initAudio(detail.fileUrl);
                 }
-                // 5. 异步记录浏览量
+                // 6. 异步记录浏览量
                 this._recordView(id);
             }
             catch (err) {
@@ -208,8 +217,9 @@ Page({
         this.data.audioPlaying ? audio.pause() : audio.play();
     },
     onSliderChange(e) {
-        var _a;
-        (_a = this._audio) === null || _a === void 0 ? void 0 : _a.seek(e.detail.value);
+        if (this._audio) {
+            this._audio.seek(e.detail.value);
+        }
     },
     onSeekBack() {
         if (!this._audio)
@@ -281,6 +291,42 @@ Page({
     // ─── 分享 ───────────────────────────────────────────────
     onShare() {
         wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage'] });
+    },
+    // ─── 编辑作品（管理员/作者） ───────────────────────────
+    onEdit() {
+        wx.navigateTo({ url: `/pages/edit-work/edit-work?id=${this._workId}` });
+    },
+    /** 删除作品（管理员/作者） */
+    onDelete() {
+        const { title } = this.data;
+        wx.showModal({
+            title: '确认删除',
+            content: `确定要删除「${title || '作品'}」吗？此操作不可恢复。`,
+            confirmColor: '#e57373',
+            confirmText: '删除',
+            success: (res) => __awaiter(this, void 0, void 0, function* () {
+                if (res.confirm) {
+                    wx.showLoading({ title: '删除中…', mask: true });
+                    try {
+                        yield (0, api_1.deleteWork)(this._workId);
+                        wx.hideLoading();
+                        (0, util_1.toast)('已删除', 'success');
+                        wx.navigateBack();
+                    }
+                    catch (err) {
+                        wx.hideLoading();
+                        (0, util_1.toast)(err.message || '删除失败');
+                    }
+                }
+            }),
+        });
+    },
+    /** 开发阶段：任何人可编辑 */
+    _checkEditPermission(detail) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // 开发阶段不限制，任何人可编辑/删除
+            this.setData({ canEdit: true });
+        });
     },
     // ─── 下载 ───────────────────────────────────────────────
     onDownload() {

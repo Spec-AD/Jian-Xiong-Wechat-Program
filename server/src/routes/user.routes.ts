@@ -28,4 +28,11 @@ router.put('/profile', updateProfileValidator, validate, userController.updatePr
  */
 router.get('/stats', userController.getStats)
 
+/**
+ * GET /api/user/history
+ * 获取用户浏览记录数量
+ * （功能即将上线，目前返回 0）
+ */
+router.get('/history', userController.getHistory)
+
 export default router

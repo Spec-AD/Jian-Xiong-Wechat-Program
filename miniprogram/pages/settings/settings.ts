@@ -59,27 +59,12 @@ Page({
       case 'privacy':
         wx.navigateTo({ url: '/pages/privacy-settings/privacy-settings' })
         break
-      case 'verification':
-        wx.navigateTo({ url: '/pages/verification/verification' })
-        break
       case 'about':
         wx.showModal({
           title: '关于健雄书院',
           content: '健雄书院是南京大学于2021年成立的住宿制学院，以「砺学修身·致知力行」为院训。\n\n本平台 v1.0.0 展示书院学生在学业、科研、文艺、体育、志愿服务等方面的优秀成果。',
           showCancel: false,
           confirmText: '了解',
-        })
-        break
-      case 'github':
-        wx.setClipboardData({
-          data: 'https://github.com/jianxiong-academy',
-          success: () => toast('GitHub 链接已复制', 'success'),
-        })
-        break
-      case 'afdian':
-        wx.setClipboardData({
-          data: 'https://afdian.com/@jianxiong',
-          success: () => toast('爱发电链接已复制', 'success'),
         })
         break
       case 'admin':

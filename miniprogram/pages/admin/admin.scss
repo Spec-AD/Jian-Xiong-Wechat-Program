@@ -309,3 +309,267 @@ page {
   color: var(--c-text-sub);
   font-size: 24rpx;
 }
+
+/* ===== COS 资源导入 ===== */
+.cos-section {
+  padding: 0 28rpx;
+}
+
+/* 加载状态 */
+.loading-state {
+  text-align: center;
+  padding: 100rpx 0;
+}
+
+.loading-state .loading-text {
+  font-size: 28rpx;
+  color: var(--c-text-sub);
+}
+
+/* 统计概览 */
+.cos-stats-row {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 20rpx;
+  overflow-x: auto;
+  padding-bottom: 8rpx;
+}
+
+.cos-stat-card {
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx 28rpx;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+  min-width: 120rpx;
+}
+
+.cos-stat-value {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.cos-stat-label {
+  font-size: 20rpx;
+  color: var(--c-text-sub);
+}
+
+/* 工具栏 */
+.cos-toolbar {
+  margin-bottom: 16rpx;
+}
+
+.cos-search-bar {
+  margin-bottom: 12rpx;
+}
+
+.cos-search-input {
+  width: 100%;
+  height: 64rpx;
+  line-height: 64rpx;
+  background: #fff;
+  border-radius: 32rpx;
+  padding: 0 24rpx;
+  font-size: 24rpx;
+  color: var(--c-text);
+  box-sizing: border-box;
+  box-shadow: var(--shadow-card);
+}
+
+.cos-filter-scroll {
+  display: flex;
+  gap: 10rpx;
+  white-space: nowrap;
+  padding-bottom: 8rpx;
+}
+
+.cos-filter-chip {
+  display: inline-block;
+  padding: 10rpx 20rpx;
+  border-radius: 24rpx;
+  background: #fff;
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+  margin-right: 10rpx;
+  box-shadow: var(--shadow-card);
+  flex-shrink: 0;
+}
+
+.cos-filter-chip--active {
+  background: var(--theme-color);
+  color: #fff;
+}
+
+/* 批量操作栏 */
+.cos-batch-bar {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 20rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+  box-shadow: var(--shadow-card);
+}
+
+.cos-select-all {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.cos-select-label {
+  font-size: 24rpx;
+  color: var(--c-text);
+}
+
+.cos-selected-count {
+  flex: 1;
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+  text-align: center;
+}
+
+.cos-import-btn {
+  flex-shrink: 0;
+  font-size: 22rpx;
+  padding: 8rpx 28rpx;
+  background: var(--theme-color);
+  color: #fff;
+  border-radius: 24rpx;
+  line-height: 1.6;
+  border: none;
+}
+
+.cos-import-btn--disabled {
+  opacity: 0.5;
+}
+
+/* 导入结果 */
+.cos-result {
+  background: #e8f5e9;
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  margin-bottom: 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.cos-result-text {
+  font-size: 24rpx;
+  color: #2e7d32;
+}
+
+.cos-result-error {
+  font-size: 24rpx;
+  color: #c62828;
+}
+
+/* 资源列表 */
+.cos-list {
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.cos-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid var(--c-border);
+  transition: background 0.2s;
+}
+
+.cos-item:last-child {
+  border-bottom: none;
+}
+
+.cos-item--selected {
+  background: rgba(106, 0, 95, 0.04);
+}
+
+.cos-checkbox-wrap {
+  flex-shrink: 0;
+}
+
+.cos-checkbox {
+  display: inline-block;
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 50%;
+  border: 2rpx solid var(--c-border);
+  background: #fff;
+  transition: all 0.2s;
+}
+
+.cos-checkbox--checked {
+  background: var(--theme-color);
+  border-color: var(--theme-color);
+  position: relative;
+}
+
+.cos-checkbox--checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 20rpx;
+  font-weight: bold;
+}
+
+.cos-item-icon {
+  flex-shrink: 0;
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-page);
+  border-radius: 12rpx;
+}
+
+.cos-ext-badge {
+  font-size: 18rpx;
+  font-weight: 700;
+  color: var(--theme-color);
+  text-transform: uppercase;
+}
+
+.cos-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.cos-item-name {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--c-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cos-item-meta {
+  font-size: 20rpx;
+  color: var(--c-text-sub);
+}
+
+.empty-hint {
+  font-size: 22rpx;
+  color: var(--c-text-sub);
+  opacity: 0.6;
+}

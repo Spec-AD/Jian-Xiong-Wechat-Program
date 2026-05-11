@@ -133,7 +133,7 @@ Page({
   /** 保存所有资料 */
   async onSave() {
     const { profile } = this.data
-    if (!profile.nickName?.trim()) {
+    if (!(profile.nickName && profile.nickName.trim())) {
       toast('请输入昵称')
       return
     }

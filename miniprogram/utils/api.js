@@ -31,7 +31,8 @@ exports.getWorkComments = getWorkComments;
 exports.addWorkComment = addWorkComment;
 const TOKEN_KEY = 'jianxiong_token';
 /** 后端 API 基础地址 — 按需修改 */
-const BASE_URL = 'http://localhost:3000/api';
+/** @note 真机调试/预览时改为电脑局域网 IP */
+const BASE_URL = 'http://10.6.66.128:3000/api';
 /** 获取缓存的 token */
 function getToken() {
     return wx.getStorageSync(TOKEN_KEY) || '';
@@ -116,13 +117,15 @@ function request(options) {
 // ========== 业务 API 封装 ==========
 /**
  * 微信登录 — POST /api/auth/login
- * 发送 code 到后端，返回 token + openid + 用户信息
+ * 发送 code + 微信用户信息 到后端，返回 token + openid + 用户信息
+ * @param nickName 可选，微信授权获取的昵称
+ * @param avatarUrl 可选，微信授权获取的头像 URL
  */
-function loginWithCode(code) {
+function loginWithCode(code, nickName, avatarUrl) {
     return request({
         url: '/auth/login',
         method: 'POST',
-        data: { code },
+        data: Object.assign(Object.assign({ code }, (nickName ? { nickName } : {})), (avatarUrl ? { avatarUrl } : {})),
         needAuth: false,
     });
 }
@@ -158,10 +161,20 @@ function getUserStats() {
  * 获取作品列表 — GET /api/works
  */
 function getWorks(params) {
+    // 清理 undefined 值，避免 wx.request 序列化为字符串 "undefined"
+    const cleanParams = {};
+    if (params) {
+        for (const key of Object.keys(params)) {
+            const val = params[key];
+            if (val !== undefined && val !== null) {
+                cleanParams[key] = val;
+            }
+        }
+    }
     return request({
         url: '/works',
         method: 'GET',
-        data: params,
+        data: cleanParams,
         needAuth: false,
     });
 }

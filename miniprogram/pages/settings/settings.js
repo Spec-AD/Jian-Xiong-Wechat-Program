@@ -1,7 +1,17 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 // pages/settings/settings.ts — 设置中心
 const util_1 = require("../../utils/util");
+const api_1 = require("../../utils/api");
 const app = getApp();
 Page({
     data: {
@@ -13,9 +23,12 @@ Page({
         userAvatar: '',
         /** 用户昵称（不含可选链，兼容 WXML） */
         userName: '未登录',
+        /** 是否管理员 */
+        isAdmin: false,
     },
     onShow() {
         this._syncUserInfo();
+        this._checkAdmin();
     },
     /** 同步用户信息到 data（避免 WXML 中使用可选链） */
     _syncUserInfo() {
@@ -30,6 +43,21 @@ Page({
         }
         const verified = wx.getStorageSync('nju_verified') === true;
         this.setData({ isVerified: verified });
+    },
+    /** 检查是否为管理员 */
+    _checkAdmin() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const profile = yield (0, api_1.request)({
+                    url: '/user/profile',
+                    method: 'GET',
+                });
+                this.setData({ isAdmin: profile.role === 'admin' });
+            }
+            catch (_a) {
+                // 静默降级
+            }
+        });
     },
     /** 菜单点击分发 */
     onMenuTap(e) {
@@ -63,6 +91,9 @@ Page({
                     data: 'https://afdian.com/@jianxiong',
                     success: () => (0, util_1.toast)('爱发电链接已复制', 'success'),
                 });
+                break;
+            case 'admin':
+                wx.navigateTo({ url: '/pages/admin/admin' });
                 break;
         }
     },

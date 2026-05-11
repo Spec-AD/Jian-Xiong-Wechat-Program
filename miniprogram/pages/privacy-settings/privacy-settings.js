@@ -34,7 +34,6 @@ Page({
     /** 从后端加载隐私设置 */
     _loadSettings() {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
             this.setData({ loading: true });
             try {
                 const settings = yield (0, api_1.request)({
@@ -42,17 +41,14 @@ Page({
                     method: 'GET',
                 });
                 if (settings) {
-                    const items = this.data.items.map(item => {
-                        var _a;
-                        return (Object.assign(Object.assign({}, item), { visible: (_a = settings[item.key]) !== null && _a !== void 0 ? _a : item.visible }));
-                    });
+                    const items = this.data.items.map(item => (Object.assign(Object.assign({}, item), { visible: settings[item.key] !== null && settings[item.key] !== void 0 ? settings[item.key] : item.visible })));
                     this.setData({
                         items,
-                        allowSearchByUid: (_a = settings.allowSearchByUid) !== null && _a !== void 0 ? _a : true,
+                        allowSearchByUid: settings.allowSearchByUid !== null && settings.allowSearchByUid !== void 0 ? settings.allowSearchByUid : true,
                     });
                 }
             }
-            catch (_b) {
+            catch (_a) {
                 // 如果后端未实现此接口，保持默认值
                 console.log('[Privacy] 使用默认设置');
             }

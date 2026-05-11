@@ -10,10 +10,15 @@ import { Like } from '../models/like.model'
  * 微信登录
  * 1. 用 code 向微信服务器换取 openid
  * 2. 根据 openid 查找/创建用户
- * 3. 生成 JWT token
- * 4. 返回登录结果
+ * 3. 如有微信昵称/头像则更新用户信息
+ * 4. 生成 JWT token
+ * 5. 返回登录结果
  */
-export async function loginWithWechat(code: string): Promise<LoginResponse> {
+export async function loginWithWechat(
+  code: string,
+  nickName?: string,
+  avatarUrl?: string,
+): Promise<LoginResponse> {
   if (!code) {
     throw new AppError('登录 code 不能为空', 400, 40001)
   }
@@ -29,15 +34,18 @@ export async function loginWithWechat(code: string): Promise<LoginResponse> {
   let user = await User.findOne({ openid: wxResult.openid })
 
   if (!user) {
-    // 新用户：创建记录
+    // 新用户：创建记录（优先使用微信授权获取的昵称/头像，否则用默认值）
     user = await User.create({
       openid: wxResult.openid,
-      nickName: generateDefaultNickName(wxResult.openid),
+      nickName: nickName || generateDefaultNickName(wxResult.openid),
+      avatarUrl: avatarUrl || '',
       lastLoginAt: new Date(),
     })
   } else {
-    // 老用户：更新最后登录时间
+    // 老用户：更新最后登录时间，如有新的微信信息也同步更新
     user.lastLoginAt = new Date()
+    if (nickName) user.nickName = nickName
+    if (avatarUrl) user.avatarUrl = avatarUrl
     await user.save()
   }
 

@@ -63,3 +63,17 @@ export async function getStats(req: AuthRequest, res: Response, next: NextFuncti
     next(error)
   }
 }
+
+/**
+ * GET /user/history
+ * 获取用户浏览记录数量
+ * （功能即将上线，目前返回空数据）
+ */
+export async function getHistory(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    // 浏览记录功能尚未实现，返回 0
+    success(res, { count: 0 })
+  } catch (error) {
+    next(error)
+  }
+}

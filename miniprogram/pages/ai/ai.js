@@ -21,7 +21,7 @@ const util_1 = require("../../utils/util");
 const api_1 = require("../../utils/api");
 const app = getApp();
 /** 后端 API 基础地址 */
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = app.globalData.baseUrl;
 Page({
     data: {
         /** 对话消息列表 */
@@ -41,7 +41,7 @@ Page({
             '书院有哪些特色活动？',
             '如何申请加入健雄书院？',
         ],
-        /** 用户头像 URL（不含可选链，兼容 WXML） */
+        /** 用户头像 URL */
         userAvatar: 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0',
     },
     onLoad() {
@@ -203,7 +203,6 @@ Page({
                 reject(new Error('请先登录'));
                 return;
             }
-            // 使用类型断言，因为 WeChat 类型定义尚未包含 enableChunked
             const requestTask = wx.request({
                 url: `${API_BASE}/ai/chat`,
                 method: 'POST',
@@ -215,7 +214,7 @@ Page({
                     messages,
                     thinkingMode,
                 },
-                // 启用分块传输（需要基础库 >= 2.18.0）
+                // @ts-ignore: enableChunked is supported since base library 2.18.0
                 enableChunked: true,
                 timeout: 60000,
                 success: () => {
@@ -236,9 +235,10 @@ Page({
             // 缓冲区：用于累积不完整的 SSE 行
             let buffer = '';
             // 监听分块数据
+            // @ts-ignore: onChunkReceived is supported since base library 2.18.0
             requestTask.onChunkReceived((response) => {
                 try {
-                    // 将 ArrayBuffer 转为字符串（不使用 TextDecoder，兼容 WeChat）
+                    // 将 ArrayBuffer 转为字符串
                     const uint8Array = new Uint8Array(response.data);
                     let chunkText = '';
                     for (let i = 0; i < uint8Array.length; i++) {

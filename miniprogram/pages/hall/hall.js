@@ -54,7 +54,6 @@ Page({
     /** 核心加载函数 */
     _loadData(reset) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d;
             if (this.data.loading)
                 return;
             this.setData(Object.assign({ loading: true }, (reset ? { refreshing: true } : {})));
@@ -63,13 +62,16 @@ Page({
                     this.setData({ page: 1, hasMore: true });
                 }
                 const { mode, activeCategory, keyword, page } = this.data;
-                // 仅在 hall 模式下加载 Banner
-                if (reset && mode === 'hall') {
-                    const bannerData = yield (0, api_1.getBannerWorks)();
-                    this.setData({
-                        bannerList: (bannerData || []).map((item) => (Object.assign(Object.assign({}, item), { typeName: (0, util_1.getFileTypeLabel)(item.type), typeIcon: (0, util_1.getFileTypeIcon)(item.type) }))),
-                    });
-                }
+                // 仅在 hall 模式下加载 Banner（与主数据并发，不阻塞）
+                const bannerPromise = reset && mode === 'hall'
+                    ? (0, api_1.getBannerWorks)().then(bannerData => {
+                        this.setData({
+                            bannerList: (bannerData || []).map((item) => (Object.assign(Object.assign({}, item), { typeName: (0, util_1.getFileTypeLabel)(item.type), typeIcon: (0, util_1.getFileTypeIcon)(item.type) }))),
+                        });
+                    }).catch(() => {
+                        console.warn('[Hall] Banner 加载失败，跳过');
+                    })
+                    : Promise.resolve();
                 // 根据模式调用不同 API
                 let result;
                 if (mode === 'my') {
@@ -79,22 +81,29 @@ Page({
                     result = yield (0, api_1.getLikedWorks)();
                 }
                 else {
-                    result = yield (0, api_1.getWorks)({
+                    // 只传有值的参数，避免 undefined 被序列化为字符串 "undefined"
+                    const params = {
                         page: reset ? 1 : page,
                         pageSize: PAGE_SIZE,
-                        categoryId: activeCategory === 'all' ? undefined : activeCategory,
-                        keyword: keyword || undefined,
-                    });
+                    };
+                    if (activeCategory !== 'all' && activeCategory) {
+                        params.categoryId = activeCategory;
+                    }
+                    if (keyword) {
+                        params.keyword = keyword;
+                    }
+                    result = yield (0, api_1.getWorks)(params);
                 }
                 // 兼容返回格式：可能是数组 {list: [...]} 或 {list: [...], pagination: {...}}
                 const list = result.list || result || [];
-                const total = result.total || ((_a = result.pagination) === null || _a === void 0 ? void 0 : _a.total) || list.length;
+                const total = result.total || (result.pagination && result.pagination.total) || list.length;
                 // 丰富前端展示字段
                 const enriched = list.map((item) => (Object.assign(Object.assign({}, item), { typeName: (0, util_1.getFileTypeLabel)(item.type), typeIcon: (0, util_1.getFileTypeIcon)(item.type), date: item.date ? (0, util_1.formatDate)(item.date) : (item.createdAt ? (0, util_1.formatDate)(item.createdAt) : '') })));
                 // 分页信息
-                const currentPage = ((_b = result.pagination) === null || _b === void 0 ? void 0 : _b.page) || result.page || 1;
-                const totalPages = ((_c = result.pagination) === null || _c === void 0 ? void 0 : _c.totalPages) ||
-                    Math.ceil((((_d = result.pagination) === null || _d === void 0 ? void 0 : _d.total) || result.total || 0) / PAGE_SIZE) ||
+                const currentPage = (result.pagination && result.pagination.page) || result.page || 1;
+                const pageTotal = result.pagination && result.pagination.total;
+                const totalPages = (result.pagination && result.pagination.totalPages) ||
+                    Math.ceil((pageTotal || result.total || 0) / PAGE_SIZE) ||
                     1;
                 this.setData({
                     works: reset ? enriched : [...this.data.works, ...enriched],

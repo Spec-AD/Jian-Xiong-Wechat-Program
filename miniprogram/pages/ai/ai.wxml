@@ -7,13 +7,6 @@
       <text class="header-title">健雄 AI 助手</text>
     </view>
     <view class="header-right">
-      <!-- 思考模式开关 -->
-      <view class="thinking-toggle" bindtap="onToggleThinking">
-        <text class="toggle-label {{thinkingMode ? 'toggle-label--active' : ''}}">深度思考</text>
-        <view class="toggle-track {{thinkingMode ? 'toggle-track--active' : ''}}">
-          <view class="toggle-thumb {{thinkingMode ? 'toggle-thumb--active' : ''}}"></view>
-        </view>
-      </view>
       <text wx:if="{{hasChat}}" class="clear-btn" bindtap="onClear">清除</text>
     </view>
   </view>
@@ -30,13 +23,8 @@
 
       <!-- 空状态：快捷引导 -->
       <view wx:if="{{!hasChat}}" class="welcome">
-        <view class="welcome-icon"></view>
-        <text class="welcome-title">你好！我是健雄书院 AI 助手</text>
-        <text class="welcome-desc">
-          由 DeepSeek 驱动，为你解答关于健雄书院的各类问题
-          <text wx:if="{{thinkingMode}}" class="welcome-tag thinking-tag">深度思考模式已开启</text>
-          <text wx:else class="welcome-tag fast-tag">快速问答模式</text>
-        </text>
+        <text class="welcome-title">{{greeting}}</text>
+        <text class="quote-line">{{quote}}</text>
         <view class="quick-grid">
           <view
             wx:for="{{quickQuestions}}"
@@ -66,11 +54,11 @@
           <view wx:if="{{item.reasoning}}" class="reasoning-block">
             <view class="reasoning-header" bindtap="onToggleReasoning" data-id="{{item.id}}">
               <text class="reasoning-icon"></text>
-              <text class="reasoning-title">已深度思考</text>
+              <text class="reasoning-title">已思考</text>
               <text class="reasoning-toggle">{{item.showReasoning ? '收起' : '展开'}}</text>
             </view>
             <view wx:if="{{item.showReasoning}}" class="reasoning-content">
-              <text class="reasoning-text">{{item.reasoning}}</text>
+              <rich-text class="reasoning-text" nodes="{{item.reasoningHtml}}"></rich-text>
             </view>
           </view>
 
@@ -81,8 +69,8 @@
             <view class="dot"></view>
           </view>
 
-          <!-- 正常消息 -->
-          <text wx:elif="{{!item.loading && item.content}}" class="msg-text">{{item.content}}</text>
+          <!-- 正常消息（使用 rich-text 渲染 Markdown） -->
+          <rich-text wx:elif="{{!item.loading && item.content}}" class="msg-text" nodes="{{item.contentHtml}}"></rich-text>
 
           <!-- 流式输出光标 -->
           <view wx:if="{{item.streaming && !item.loading}}" class="streaming-cursor">
@@ -106,25 +94,33 @@
   </scroll-view>
 
   <!-- ===== 底部输入栏 ===== -->
-  <view class="input-bar">
-    <view class="input-wrap">
-      <input
-        class="input-field"
-        placeholder="输入你想了解的问题…"
-        value="{{inputText}}"
-        bindinput="onInput"
-        bindconfirm="onSend"
-        confirm-type="send"
-        disabled="{{waiting}}"
-      />
+  <view class="input-area">
+    <!-- 思考模式开关置于聊天框上边缘 -->
+    <view class="thinking-toggle" bindtap="onToggleThinking">
+      <text class="toggle-label {{thinkingMode ? 'toggle-label--active' : ''}}">思考模式</text>
+      <view class="toggle-track {{thinkingMode ? 'toggle-track--active' : ''}}">
+        <view class="toggle-thumb {{thinkingMode ? 'toggle-thumb--active' : ''}}"></view>
+      </view>
     </view>
-    <button
-      class="send-btn {{inputText.trim() && !waiting ? 'send-btn--active' : ''}}"
-      bindtap="onSend"
-      disabled="{{!inputText.trim() || waiting}}"
-    >
-      <text class="send-icon"></text>
-    </button>
+    <view class="input-bar">
+      <view class="input-wrap">
+        <input
+          class="input-field"
+          placeholder="输入你想了解的问题…"
+          value="{{inputText}}"
+          bindinput="onInput"
+          bindconfirm="onSend"
+          confirm-type="send"
+          disabled="{{waiting}}"
+        />
+      </view>
+      <view
+        class="send-btn {{canSend ? 'send-btn--active' : ''}}"
+        bindtap="onSend"
+      >
+        <text class="send-icon">➤</text>
+      </view>
+    </view>
   </view>
 
 </view>

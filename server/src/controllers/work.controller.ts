@@ -9,7 +9,8 @@ import { success, successWithPagination, created } from '../utils/response'
  */
 export async function getWorks(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    const { category, keyword } = req.query
+    const category = (req.query.category || req.query.categoryId) as string
+    const keyword = req.query.keyword as string
     const page = Math.max(1, parseInt(req.query.page as string) || 1)
     const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize as string) || 10))
 

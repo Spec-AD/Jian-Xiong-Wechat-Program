@@ -15,22 +15,9 @@
 
   <!-- ===== 账户相关 ===== -->
   <view class="menu-group">
-    <text class="menu-group-title">账号与安全</text>
-    <view class="menu-item" bindtap="onMenuTap" data-key="editProfile">
-      <text class="menu-icon"></text>
-      <text class="menu-label">编辑资料</text>
-      <text class="menu-arrow">›</text>
-    </view>
-    <view class="menu-item" bindtap="onMenuTap" data-key="verification">
-      <text class="menu-icon"></text>
-      <text class="menu-label">实名认证</text>
-      <view class="menu-tag {{isVerified ? 'menu-tag--verified' : ''}}">
-        {{isVerified ? '已认证' : '未认证'}}
-      </view>
-      <text class="menu-arrow">›</text>
-    </view>
+    <text class="menu-group-title">账号与设置</text>
     <view class="menu-item" bindtap="onMenuTap" data-key="privacy">
-      <text class="menu-icon"></text>
+      <image class="menu-icon" src="https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/MdiCog.png" mode="aspectFit" />
       <text class="menu-label">隐私设置</text>
       <text class="menu-arrow">›</text>
     </view>
@@ -50,23 +37,13 @@
   <!-- ===== 其他 ===== -->
   <view class="menu-group">
     <text class="menu-group-title">其他</text>
-    <view class="menu-item" bindtap="onMenuTap" data-key="github">
-      <text class="menu-icon"></text>
-      <text class="menu-label">GitHub 仓库</text>
-      <text class="menu-arrow">›</text>
-    </view>
-    <view class="menu-item" bindtap="onMenuTap" data-key="afdian">
-      <text class="menu-icon"></text>
-      <text class="menu-label">爱发电支持</text>
-      <text class="menu-arrow">›</text>
-    </view>
     <view class="menu-item" bindtap="onMenuTap" data-key="about">
-      <text class="menu-icon"></text>
+      <image class="menu-icon" src="https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/MdiInformationSlabCircle.png" mode="aspectFit" />
       <text class="menu-label">关于书院</text>
       <text class="menu-arrow">›</text>
     </view>
     <view class="menu-item" bindtap="onClearCache">
-      <text class="menu-icon"></text>
+      <image class="menu-icon" src="https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/MdiPailOff.png" mode="aspectFit" />
       <text class="menu-label">清除缓存</text>
       <text class="menu-arrow">›</text>
     </view>

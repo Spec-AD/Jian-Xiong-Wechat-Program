@@ -16,7 +16,7 @@ App({
         userInfo: null,
         openid: '',
         loginCode: '',
-        baseUrl: 'http://localhost:3000/api',
+        baseUrl: 'http://10.4.122.92:3000/api',
         /** hall 页面的展示模式：hall | my | liked */
         hallMode: 'hall',
     },
@@ -28,8 +28,12 @@ App({
         if (cached) {
             this.globalData.userInfo = cached;
         }
-        // ── 微信登录流程 ──
-        this.doLogin();
+        // ── 恢复登录态（仅当有缓存 token 时） ──
+        // 不自动调用 wx.login()，避免在用户无操作时创建随机账号
+        // 由登录页面的「一键登录」按钮手动触发完整登录流程
+        if ((0, api_1.getToken)()) {
+            this.doLogin();
+        }
         // ── 小程序更新检测 ──
         if (wx.canIUse('getUpdateManager')) {
             const mgr = wx.getUpdateManager();
@@ -60,54 +64,25 @@ App({
             // 低版本基础库不支持 loadFontFace，静默忽略
         }
     },
-    /** 登录：wx.login → 后端换取 token → 获取用户信息
-   *  @returns 登录成功返回 true，失败返回 false
-   */
+    /** 恢复登录态：从已有 token 获取用户信息
+     *  由 pages/login/login.ts 的 handleQuickLogin 在用户点击「一键登录」后触发完整登录流程
+     *  @returns 恢复成功返回 true，失败（无 token）返回 false
+     */
     doLogin() {
         return __awaiter(this, void 0, void 0, function* () {
-            // 如果已有 token，直接获取用户信息
+            // 如果已有 token，尝试恢复用户信息
             if ((0, api_1.getToken)()) {
-                console.log('[App] 已有 token，直接获取用户信息');
+                console.log('[App] 已有 token，尝试恢复用户信息');
                 yield this.fetchAndSaveUser();
                 return true;
             }
-            try {
-                // 1. wx.login 获取临时 code
-                const loginRes = yield wx.login();
-                if (!loginRes.code) {
-                    console.error('[App] wx.login 失败：未获取到 code');
-                    return false;
-                }
-                this.globalData.loginCode = loginRes.code;
-                // 2. 发送 code 到后端换取 token + openid + 用户信息
-                const authRes = yield (0, api_1.loginWithCode)(loginRes.code);
-                // 3. 保存 token 和 openid
-                (0, api_1.setToken)(authRes.token);
-                this.globalData.openid = authRes.openid;
-                // 4. 直接从登录响应中保存用户信息（避免额外 API 调用）
-                if (authRes.user) {
-                    this.saveUserInfo({
-                        nickName: authRes.user.nickName,
-                        avatarUrl: authRes.user.avatarUrl,
-                    });
-                    console.log('[App] 登录成功，用户:', authRes.user.nickName);
-                }
-                else {
-                    // 降级：通过 getUserProfile 获取
-                    yield this.fetchAndSaveUser();
-                }
-                return true;
-            }
-            catch (err) {
-                console.error('[App] 登录流程失败:', err.message || err);
-                return false;
-            }
+            console.log('[App] 无 token，等待用户手动登录');
+            return false;
         });
     },
     /** 从后端获取用户信息并保存到 globalData 和缓存 */
     fetchAndSaveUser() {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
             try {
                 const profile = yield (0, api_1.getUserProfile)();
                 const userInfo = {
@@ -119,7 +94,7 @@ App({
             }
             catch (err) {
                 // token 失效则清除
-                if (((_a = err.message) === null || _a === void 0 ? void 0 : _a.includes('401')) || ((_b = err.message) === null || _b === void 0 ? void 0 : _b.includes('未登录'))) {
+                if (err.message && (err.message.includes('401') || err.message.includes('未登录'))) {
                     (0, api_1.removeToken)();
                 }
                 console.warn('[App] 获取用户信息失败:', err.message || err);
