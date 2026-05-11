@@ -74,7 +74,7 @@ async function main() {
           Region: config.cos.region,
           Key: file.key,
           CopySource: `/${config.cos.bucket!}/${config.cos.region}/${file.key}`,
-          MetadataDirective: 'Replace',
+          MetadataDirective: 'Replaced',
           ContentType: file.contentType,
         }, (err) => {
           if (err) reject(err)
