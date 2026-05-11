@@ -41,6 +41,9 @@ interface RequestOptions {
   showLoading?: boolean
 }
 
+/** 请求超时重试次数 */
+const MAX_RETRIES = 2
+
 /** 后端统一响应格式 */
 interface ApiResponse<T = any> {
   code: number
@@ -72,70 +75,85 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
     showLoading = false,
   } = options
 
-  return new Promise<T>((resolve, reject) => {
-    // ========== 检查登录态 ==========
-    if (needAuth && !getToken()) {
-      wx.showToast({ title: '请先登录', icon: 'none' })
-      reject(new Error('未登录'))
-      return
-    }
+  let retries = 0
 
-    // ========== 加载提示 ==========
-    if (showLoading) {
-      wx.showLoading({ title: '加载中...', mask: true })
-    }
+  const doRequest = (): Promise<T> => {
+    return new Promise<T>((resolve, reject) => {
+      // ========== 检查登录态 ==========
+      if (needAuth && !getToken()) {
+        wx.showToast({ title: '请先登录', icon: 'none' })
+        reject(new Error('未登录'))
+        return
+      }
 
-    // ========== 发起请求 ==========
-    const header: Record<string, string> = {
-      'Content-Type': 'application/json',
-    }
-    if (needAuth && getToken()) {
-      header['Authorization'] = `Bearer ${getToken()}`
-    }
+      // ========== 加载提示 ==========
+      if (showLoading) {
+        wx.showLoading({ title: '加载中...', mask: true })
+      }
 
-    wx.request({
-      url: `${BASE_URL}${url}`,
-      method,
-      data,
-      header,
-      timeout: 15000,
+      // ========== 发起请求 ==========
+      const header: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+      if (needAuth && getToken()) {
+        header['Authorization'] = `Bearer ${getToken()}`
+      }
 
-      success: (res) => {
-        if (showLoading) wx.hideLoading()
+      wx.request({
+        url: `${BASE_URL}${url}`,
+        method,
+        data,
+        header,
+        timeout: 20000,
 
-        const body = res.data as ApiResponse<T>
+        success: (res) => {
+          if (showLoading) wx.hideLoading()
 
-        // 后端返回了数据（即使 HTTP 200，业务 code 可能非 0）
-        if (body && typeof body.code === 'number') {
-          if (body.code === 0) {
-            // —— 成功 ——
-            resolve(body.data as T)
-          } else if (body.code === 40101 || body.code === 40102) {
-            // —— token 过期/无效，跳登录 ——
-            removeToken()
-            wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' })
-            wx.navigateTo({ url: '/pages/login/login' })
-            reject(new Error(body.message))
+          const body = res.data as ApiResponse<T>
+
+          // 后端返回了数据（即使 HTTP 200，业务 code 可能非 0）
+          if (body && typeof body.code === 'number') {
+            if (body.code === 0) {
+              // —— 成功 ——
+              resolve(body.data as T)
+            } else if (body.code === 40101 || body.code === 40102) {
+              // —— token 过期/无效，跳登录 ——
+              removeToken()
+              wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' })
+              wx.navigateTo({ url: '/pages/login/login' })
+              reject(new Error(body.message))
+            } else {
+              // —— 业务错误 ——
+              wx.showToast({ title: body.message || '请求失败', icon: 'none' })
+              reject(new Error(body.message))
+            }
           } else {
-            // —— 业务错误 ——
-            wx.showToast({ title: body.message || '请求失败', icon: 'none' })
-            reject(new Error(body.message))
+            // 响应格式异常
+            wx.showToast({ title: '服务器响应异常', icon: 'none' })
+            reject(new Error('服务器响应异常'))
           }
-        } else {
-          // 响应格式异常
-          wx.showToast({ title: '服务器响应异常', icon: 'none' })
-          reject(new Error('服务器响应异常'))
-        }
       },
 
-      fail: (err) => {
-        if (showLoading) wx.hideLoading()
-        const msg = err.errMsg || '网络异常，请检查网络连接'
-        wx.showToast({ title: msg, icon: 'none' })
-        reject(new Error(msg))
-      },
+        fail: (err) => {
+          if (showLoading) wx.hideLoading()
+          // 超时等网络错误时自动重试
+          if (retries < MAX_RETRIES) {
+            retries++
+            console.log(`[API] 请求失败，第 ${retries} 次重试: ${url}`)
+            setTimeout(() => {
+              doRequest().then(resolve).catch(reject)
+            }, 1000)
+          } else {
+            const msg = err.errMsg || '网络异常，请检查网络连接'
+            wx.showToast({ title: msg, icon: 'none' })
+            reject(new Error(msg))
+          }
+        },
+      })
     })
-  })
+  }
+
+  return doRequest()
 }
 
 // ========== 业务 API 封装 ==========

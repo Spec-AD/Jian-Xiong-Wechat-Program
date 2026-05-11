@@ -32,7 +32,8 @@ exports.addWorkComment = addWorkComment;
 const TOKEN_KEY = 'jianxiong_token';
 /** 后端 API 基础地址 — 按需修改 */
 /** @note 真机调试/预览时改为电脑局域网 IP */
-const BASE_URL = 'http://10.6.66.128:3000/api';
+const BASE_URL = 'https://jx-plform.site/api';
+const MAX_RETRIES = 2;
 /** 获取缓存的 token */
 function getToken() {
     return wx.getStorageSync(TOKEN_KEY) || '';
@@ -51,68 +52,76 @@ function removeToken() {
  */
 function request(options) {
     const { url, method = 'GET', data, needAuth = true, showLoading = false, } = options;
-    return new Promise((resolve, reject) => {
-        // ========== 检查登录态 ==========
-        if (needAuth && !getToken()) {
-            wx.showToast({ title: '请先登录', icon: 'none' });
-            reject(new Error('未登录'));
-            return;
-        }
-        // ========== 加载提示 ==========
-        if (showLoading) {
-            wx.showLoading({ title: '加载中...', mask: true });
-        }
-        // ========== 发起请求 ==========
-        const header = {
-            'Content-Type': 'application/json',
-        };
-        if (needAuth && getToken()) {
-            header['Authorization'] = `Bearer ${getToken()}`;
-        }
-        wx.request({
-            url: `${BASE_URL}${url}`,
-            method,
-            data,
-            header,
-            timeout: 15000,
-            success: (res) => {
-                if (showLoading)
-                    wx.hideLoading();
-                const body = res.data;
-                // 后端返回了数据（即使 HTTP 200，业务 code 可能非 0）
-                if (body && typeof body.code === 'number') {
-                    if (body.code === 0) {
-                        // —— 成功 ——
-                        resolve(body.data);
-                    }
-                    else if (body.code === 40101 || body.code === 40102) {
-                        // —— token 过期/无效，跳登录 ——
-                        removeToken();
-                        wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' });
-                        wx.navigateTo({ url: '/pages/login/login' });
-                        reject(new Error(body.message));
+    let retries = 0;
+    const doRequest = () => {
+        return new Promise((resolve, reject) => {
+            // ========== 检查登录态 ==========
+            if (needAuth && !getToken()) {
+                wx.showToast({ title: '请先登录', icon: 'none' });
+                reject(new Error('未登录'));
+                return;
+            }
+            // ========== 加载提示 ==========
+            if (showLoading) {
+                wx.showLoading({ title: '加载中...', mask: true });
+            }
+            // ========== 发起请求 ==========
+            const header = {
+                'Content-Type': 'application/json',
+            };
+            if (needAuth && getToken()) {
+                header['Authorization'] = `Bearer ${getToken()}`;
+            }
+            wx.request({
+                url: `${BASE_URL}${url}`,
+                method,
+                data,
+                header,
+                timeout: 20000,
+                success: (res) => {
+                    if (showLoading)
+                        wx.hideLoading();
+                    const body = res.data;
+                    if (body && typeof body.code === 'number') {
+                        if (body.code === 0) {
+                            resolve(body.data);
+                        }
+                        else if (body.code === 40101 || body.code === 40102) {
+                            removeToken();
+                            wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' });
+                            wx.navigateTo({ url: '/pages/login/login' });
+                            reject(new Error(body.message));
+                        }
+                        else {
+                            wx.showToast({ title: body.message || '请求失败', icon: 'none' });
+                            reject(new Error(body.message));
+                        }
                     }
                     else {
-                        // —— 业务错误 ——
-                        wx.showToast({ title: body.message || '请求失败', icon: 'none' });
-                        reject(new Error(body.message));
+                        wx.showToast({ title: '服务器响应异常', icon: 'none' });
+                        reject(new Error('服务器响应异常'));
                     }
-                }
-                else {
-                    // 响应格式异常
-                    wx.showToast({ title: '服务器响应异常', icon: 'none' });
-                    reject(new Error('服务器响应异常'));
-                }
+                },
+                fail: (err) => {
+                    if (showLoading)
+                        wx.hideLoading();
+                    if (retries < MAX_RETRIES) {
+                        retries++;
+                        console.log('[API] 请求失败，第 ' + retries + ' 次重试: ' + url);
+                        setTimeout(() => {
+                            doRequest().then(resolve).catch(reject);
+                        }, 1000);
+                    }
+                    else {
+                        const msg = err.errMsg || '网络异常，请检查网络连接';
+                        wx.showToast({ title: msg, icon: 'none' });
+                        reject(new Error(msg));
+                    }
             },
-            fail: (err) => {
-                if (showLoading)
-                    wx.hideLoading();
-                const msg = err.errMsg || '网络异常，请检查网络连接';
-                wx.showToast({ title: msg, icon: 'none' });
-                reject(new Error(msg));
-            },
+            });
         });
-    });
+    };
+    return doRequest();
 }
 // ========== 业务 API 封装 ==========
 /**
