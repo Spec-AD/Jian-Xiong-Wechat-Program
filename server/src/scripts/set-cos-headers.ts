@@ -62,7 +62,10 @@ async function main() {
         })
       })
 
-      console.log(`已存在 (${(headData.headers['content-length'] / 1024).toFixed(1)}KB)`)
+      const size = headData.headers?.['content-length']
+        ? Number(headData.headers['content-length'])
+        : 0
+      console.log(`已存在 (${(size / 1024).toFixed(1)}KB)`)
 
       // 使用 putObjectCopy 复制到自身并更新元数据
       await new Promise<void>((resolve, reject) => {
@@ -71,7 +74,7 @@ async function main() {
           Region: config.cos.region,
           Key: file.key,
           CopySource: `/${config.cos.bucket!}/${config.cos.region}/${file.key}`,
-          ReplaceMetadataDirective: 'Replace',
+          MetadataDirective: 'Replace',
           ContentType: file.contentType,
         }, (err) => {
           if (err) reject(err)
