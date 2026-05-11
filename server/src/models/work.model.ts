@@ -18,6 +18,8 @@ export interface IWorkDocument extends Document {
   views: number
   likesCount: number
   status: WorkStatus
+  /** 实际作者（与上传者不同，用于作品署名） */
+  actualAuthor: string
   createdAt: Date
   updatedAt: Date
 }
@@ -88,6 +90,12 @@ const workSchema = new Schema<IWorkDocument>(
       type: String,
       enum: ['draft', 'published', 'hidden'],
       default: 'published',
+    },
+    actualAuthor: {
+      type: String,
+      default: '',
+      trim: true,
+      maxlength: 50,
     },
   },
   {

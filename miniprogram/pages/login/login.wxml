@@ -22,8 +22,9 @@
       <text>{{errorMsg}}</text>
     </view>
 
-        <!-- 一键登录（使用 open-type="getUserInfo" 弹出授权窗口） -->
-    <button class="btn-primary" open-type="getUserInfo" bindgetuserinfo="handleQuickLogin" loading="{{loading}}" disabled="{{loading}}">
+            <!-- 一键登录（wx.login 静默授权，无需弹窗）
+         头像/昵称可在登录后进入「编辑资料」页自定义 -->
+    <button class="btn-primary" bindtap="handleQuickLogin" loading="{{loading}}" disabled="{{loading}}">
       一键登录
     </button>
 

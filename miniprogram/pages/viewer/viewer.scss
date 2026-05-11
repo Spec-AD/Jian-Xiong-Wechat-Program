@@ -276,19 +276,26 @@ page {
   border: 2rpx solid #ffcdd2;
 }
 
-/* 作者行 */
+/* 作者行（只展示实际作者，无值则 Unknown） */
 .info-author-row {
   display: flex;
   align-items: center;
   gap: 16rpx;
   margin-bottom: 20rpx;
 }
-.info-avatar {
+.info-author-avatar {
   width: 56rpx;
   height: 56rpx;
   border-radius: 28rpx;
-  background: #e8edf5;
+  background: linear-gradient(135deg, #6A005F, #95318A);
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.info-author-avatar-icon {
+  font-size: 28rpx;
+  color: #fff;
 }
 .info-author-text {
   display: flex;
@@ -300,9 +307,9 @@ page {
   font-weight: 600;
   color: #1a2a4a;
 }
-.info-author-id {
+.info-author-label {
   font-size: 22rpx;
-  color: #7a8fa8;
+  color: #b0bec5;
 }
 
 /* 标签 */

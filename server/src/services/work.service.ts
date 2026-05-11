@@ -262,6 +262,7 @@ export async function createWork(
     tags?: string[]
     isBanner?: boolean
     status?: WorkStatus
+    actualAuthor?: string
   },
 ) {
   const work = await Work.create({
@@ -276,6 +277,7 @@ export async function createWork(
     tags: data.tags || [],
     isBanner: data.isBanner || false,
     status: data.status || 'published',
+    actualAuthor: data.actualAuthor || '',
   })
 
   return work

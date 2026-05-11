@@ -129,12 +129,14 @@
         </view>
       </view>
 
-      <!-- 作者信息 -->
+      <!-- 作者（只展示实际作者，无值时显示 Unknown） -->
       <view class="info-author-row">
-        <image class="info-avatar" src="{{authorAvatar || '/assets/icons/home.png'}}" mode="aspectFill" />
+        <view class="info-author-avatar">
+          <text class="info-author-avatar-icon"></text>
+        </view>
         <view class="info-author-text">
-          <text class="info-author-name">{{author}}</text>
-          <text class="info-author-id" wx:if="{{authorStudentId}}">{{authorStudentId}}</text>
+          <text class="info-author-name">{{actualAuthor || 'Unknown'}}</text>
+          <text class="info-author-label">作者</text>
         </view>
       </view>
 

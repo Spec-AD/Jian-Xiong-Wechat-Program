@@ -33,6 +33,8 @@ export interface IWork {
   views: number
   likesCount: number
   status: WorkStatus
+  /** 实际作者（与上传者不同） */
+  actualAuthor: string
   createdAt?: Date
   updatedAt?: Date
 }

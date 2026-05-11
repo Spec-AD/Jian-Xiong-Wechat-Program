@@ -42,8 +42,10 @@ Page({
     showImageUpload: false,
     // 数据加载
     loading: true,
-    // 状态管理
+        // 状态管理
     status: 'published' as string,
+    // 实际作者
+    actualAuthor: '',
     // 是否为管理员/作者
     isAdmin: false,
     isOwner: false,
@@ -65,7 +67,7 @@ Page({
 
       const isImageType = detail.type === 'image'
 
-      this.setData({
+            this.setData({
         selectedType: detail.type || '',
         title: detail.title || '',
         description: detail.description || '',
@@ -75,6 +77,7 @@ Page({
         imageList: detail.imageList || [],
         showImageUpload: isImageType,
         status: detail.status || 'published',
+        actualAuthor: detail.actualAuthor || '',
         loading: false,
       })
 
@@ -228,9 +231,9 @@ Page({
     this.setData({ status: e.detail.value })
   },
 
-  /** 保存作品 */
+    /** 保存作品 */
   async onSave() {
-    const { workId, selectedType, title, description, tags, uploadedUrl, imageList, uploadedCover, status } = this.data
+    const { workId, selectedType, title, description, tags, uploadedUrl, imageList, uploadedCover, status, actualAuthor } = this.data
 
     // === 校验 ===
     if (!title.trim()) { toast('请输入作品标题'); return }
@@ -239,11 +242,12 @@ Page({
     wx.showLoading({ title: '保存中…', mask: true })
 
     try {
-      const workData: any = {
+            const workData: any = {
         title: title.trim(),
         description: description.trim(),
         tags,
         status,
+        actualAuthor: actualAuthor.trim(),
       }
 
       // 只传有变化的字段

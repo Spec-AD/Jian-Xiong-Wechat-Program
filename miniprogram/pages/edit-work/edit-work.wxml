@@ -52,6 +52,19 @@
       />
     </view>
 
+    <!-- ===== 实际作者 ===== -->
+    <view class="section">
+      <text class="section-title">实际作者</text>
+      <input
+        class="input-field"
+        placeholder="作品的真实作者（与上传者不同时填写）"
+        value="{{actualAuthor}}"
+        bindinput="onActualAuthorInput"
+        maxlength="50"
+      />
+      <text class="section-hint">如果作品不是您本人创作的，请在此填写实际作者姓名</text>
+    </view>
+
     <!-- ===== 标签 ===== -->
     <view class="section">
       <text class="section-title">标签（最多5个）</text>

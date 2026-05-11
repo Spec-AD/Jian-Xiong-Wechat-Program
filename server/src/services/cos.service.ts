@@ -330,7 +330,24 @@ export async function listCosObjects(
 }
 
 /**
+ * 从文件名中提取基础名称（去掉序号后缀）
+ * @example '陈奕涵的成果作品 (1)' → '陈奕涵的成果作品'
+ * @example 'IMG_001 (2)' → 'IMG_001'
+ */
+function extractBaseName(fileName: string): string {
+  const nameWithoutExt = path.basename(fileName, path.extname(fileName))
+  return nameWithoutExt
+    .replace(/\s*[(（]\d+[)）]\s*$/, '')
+    .replace(/\s*[-–—]\s*\d+\s*$/, '')
+    .replace(/\s*_\s*\d+\s*$/, '')
+    .trim()
+}
+
+/**
  * 将 COS 对象批量导入为 Work 作品记录
+ *
+ * 智能合并同一作品的多个图片文件（按基础文件名分组），
+ * 避免每张图片被创建为独立作品。
  *
  * @param objectKeys 要导入的 COS 对象键列表
  * @param adminUserId 执行导入的管理员用户 ID
@@ -346,42 +363,78 @@ export async function importCosObjectsAsWorks(
   let skipped = 0
   const errors: string[] = []
 
+  // ── 1. 将对象按键分组（按基础文件名 + 类型）──
+  //    同一组的多个图片文件合并为一个作品
+  interface ObjectEntry {
+    key: string
+    url: string
+    ext: string
+    type: string
+    fileName: string
+  }
+
+  const groups = new Map<string, ObjectEntry[]>()
+
   for (const key of objectKeys) {
+    const ext = path.extname(key).toLowerCase()
+    const type = detectResourceType(ext) as any
+    const fileName = path.basename(key)
+    const baseName = extractBaseName(fileName)
+
+    // 图片文件按基础名分组，其他类型各自独立
+    const groupKey = type === 'image' ? `${baseName}::${type}` : key
+
+    const cosUrl = `https://${config.cos.bucket}.cos.${config.cos.region}.myqcloud.com/${key}`
+    const entry: ObjectEntry = { key, url: cosUrl, ext, type, fileName }
+
+    if (!groups.has(groupKey)) {
+      groups.set(groupKey, [])
+    }
+    groups.get(groupKey)!.push(entry)
+  }
+
+  // ── 2. 逐组导入 ──
+  for (const [, entries] of groups) {
     try {
-      // 检查是否已导入（避免重复）
-      const existing = await Work.findOne({ fileUrl: { $regex: key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$' } })
+      const first = entries[0]
+
+      // 检查是否已导入（用第一个文件的 URL 做去重）
+      const existing = await Work.findOne({
+        fileUrl: { $regex: first.key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$' },
+      })
       if (existing) {
         skipped++
         continue
       }
 
-      const ext = path.extname(key).toLowerCase()
-      const fileName = path.basename(key, ext)
-      const type = detectResourceType(ext) as any
-      const cosUrl = `https://${config.cos.bucket}.cos.${config.cos.region}.myqcloud.com/${key}`
+      // 收集该组所有图片 URL
+      const allUrls = entries.map(e => e.url)
 
       // 自动判断分类
-      const categoryId = defaultCategoryId || type
+      const categoryId = defaultCategoryId || first.type
 
       await Work.create({
         userId: adminUserId,
-        title: fileName, // 用文件名（不含扩展名）作为默认标题
-        description: `从 COS 资源目录自动导入：${key}`,
-        type,
+        title: extractBaseName(first.fileName) || first.fileName,
+        description: entries.length > 1
+          ? `自动导入：${first.key} 等 ${entries.length} 个文件`
+          : `从 COS 资源目录自动导入：${first.key}`,
+        type: first.type,
         categoryId,
-        fileUrl: cosUrl,
-        cover: type === 'image' ? cosUrl : '', // 图片用自身做封面
-        imageList: type === 'image' ? [cosUrl] : [],
+        fileUrl: allUrls[0],
+        cover: first.type === 'image' ? allUrls[0] : '',
+        imageList: first.type === 'image' ? allUrls : [],
         tags: ['COS导入'],
         isBanner: false,
         status: 'published',
       })
 
       imported++
-      logger.info(`[COS导入] 成功导入: ${key} → ${type}`)
+      const groupInfo = entries.length > 1 ? `（${entries.length} 个文件合并）` : ''
+      logger.info(`[COS导入] 成功导入: ${first.key} ${groupInfo} → ${first.type}`)
     } catch (err: any) {
-      errors.push(`${key}: ${err.message}`)
-      logger.error(`[COS导入] 导入失败: ${key}`, err)
+      errors.push(`${entries[0].key}: ${err.message}`)
+      logger.error(`[COS导入] 导入失败: ${entries[0].key}`, err)
     }
   }
 
