@@ -13,7 +13,7 @@ const TOKEN_KEY = 'jianxiong_token'
 
 
 /** @note 真机调试/预览时改为电脑局域网 IP */
-const BASE_URL = 'http://10.6.66.128:3000/api'
+const BASE_URL = 'https://jx-plform.site/api'
 
 /** 获取缓存的 token */
 export function getToken(): string {
