@@ -16,7 +16,7 @@ App({
         userInfo: null,
         openid: '',
         loginCode: '',
-        baseUrl: 'http://10.4.122.92:3000/api',
+        baseUrl: 'https://jx-plform.site/api',
         /** hall 页面的展示模式：hall | my | liked */
         hallMode: 'hall',
     },
