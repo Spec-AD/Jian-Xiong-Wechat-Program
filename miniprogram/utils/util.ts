@@ -31,7 +31,7 @@ export const formatDate = (val: string | number | Date): string => {
  * 根据文件名后缀判断类型
  * @returns 'video' | 'audio' | 'image' | 'doc' | 'unknown'
  */
-export type FileType = 'video' | 'audio' | 'image' | 'doc' | 'markdown' | 'unknown'
+export type FileType = 'video' | 'audio' | 'image' | 'doc' | 'markdown' | 'link' | 'unknown'
 
 export const getFileType = (filename: string): FileType => {
   if (!filename) return 'unknown'
@@ -47,16 +47,16 @@ export const getFileType = (filename: string): FileType => {
 
 /** 文件类型 → 中文标签 */
 export const getFileTypeLabel = (type: FileType): string => {
-  const map: Record<FileType, string> = {
-    video: '视频', audio: '音频', image: '图片', doc: '文档', markdown: 'Markdown', unknown: '其他',
+    const map: Record<FileType, string> = {
+    video: '视频', audio: '音频', image: '图片', doc: '文档', markdown: 'Markdown', link: '外链', unknown: '其他',
   }
   return map[type] !== null && map[type] !== void 0 ? map[type] : '其他'
 }
 
 /** 文件类型 → 图标 */
 export const getFileTypeIcon = (type: FileType): string => {
-  const map: Record<FileType, string> = {
-    video: '', audio: '', image: '', doc: '', markdown: '', unknown: '',
+    const map: Record<FileType, string> = {
+    video: '', audio: '', image: '', doc: '', markdown: '', link: '🔗', unknown: '',
   }
   return (map[type] !== null && map[type] !== void 0) ? map[type] : ''
 }
@@ -111,13 +111,14 @@ export interface Category {
 }
 
 export const WORK_CATEGORIES: Category[] = [
-  { id: 'all',       name: '全部', icon: '' },
-  { id: 'video',     name: '视频', icon: '' },
-  { id: 'audio',     name: '音频', icon: '' },
-  { id: 'image',     name: '图片', icon: '' },
-  { id: 'doc',       name: '文档', icon: '' },
-  { id: 'research',  name: '科研', icon: '' },
-  { id: 'volunteer', name: '志愿', icon: '' },
+  { id: 'all',       name: '全部',   icon: '' },
+  { id: 'video',     name: '视频',   icon: '' },
+  { id: 'audio',     name: '音频',   icon: '' },
+  { id: 'image',     name: '图片',   icon: '' },
+  { id: 'doc',       name: '文档',   icon: '' },
+  { id: 'research',  name: '科研',   icon: '' },
+  { id: 'volunteer', name: '志愿',   icon: '' },
+  { id: 'external',  name: '外链作品', icon: '🔗' },
 ]
 
 /**
@@ -157,6 +158,26 @@ export function getWebpUrl(url: string, options?: { width?: number; quality?: nu
 
   const separator = url.includes('?') ? '&' : '?'
   return `${url}${separator}${params.join('/')}`
+}
+
+/**
+ * 外链平台图标映射
+ * 根据 platform 字段返回对应的图标 URL
+ */
+export const PLATFORM_ICONS: Record<string, string> = {
+  'Canva': 'https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/SimpleIconsCanva.png',
+  '可画': 'https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/SimpleIconsCanva.png',
+  'Bilibili': 'https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/StreamlineUltimateBilibiliLogo.png',
+  '哔哩哔哩': 'https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/StreamlineUltimateBilibiliLogo.png',
+  '易企秀': 'https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/SolarInfinityBoldDuotone.png',
+  '腾讯云开发个人页面': 'https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/GlyphsPolyCloud.png',
+}
+
+/**
+ * 获取平台图标 URL
+ */
+export function getPlatformIcon(platform: string): string {
+  return PLATFORM_ICONS[platform] || ''
 }
 
 /**

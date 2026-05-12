@@ -49,7 +49,21 @@ Page({
             return;
         }
         this.setData({ workId, loading: true });
+
         try {
+            // 校验管理员权限
+            if (!(0, api_1.getToken)()) {
+                (0, util_1.toast)('请先登录');
+                wx.navigateBack();
+                return;
+            }
+            const profile = await (0, api_1.getUserProfile)();
+            if (profile.role !== 'admin') {
+                (0, util_1.toast)('仅管理员可编辑作品');
+                wx.navigateBack();
+                return;
+            }
+
             // 加载作品详情
             const detail = await (0, api_1.getWorkDetail)(workId);
             const isImageType = detail.type === 'image';

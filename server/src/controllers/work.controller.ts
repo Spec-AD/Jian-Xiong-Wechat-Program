@@ -74,6 +74,22 @@ export async function getLikedWorks(req: AuthRequest, res: Response, next: NextF
 }
 
 /**
+ * GET /works/external
+ * 外链作品列表（分页）
+ */
+export async function getExternalWorks(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const page = Math.max(1, parseInt(req.query.page as string) || 1)
+    const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize as string) || 10))
+
+    const result = await workService.getExternalWorks(page, pageSize)
+    successWithPagination(res, result.list, result.total, page, pageSize)
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
  * GET /works/:id
  * 作品详情
  */

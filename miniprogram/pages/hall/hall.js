@@ -18,6 +18,7 @@ Page({
         hasMore: true, // 是否还有更多
         page: 1, // 当前页码
         mode: 'hall', // 当前模式
+        showSearch: false, // 是否显示搜索栏
     },
     onLoad(options) {
         // 支持从 profile 页跳转：通过 globalData.hallMode 传入 'my' 或 'liked'
@@ -178,9 +179,14 @@ Page({
         this.setData({ keyword: '' });
         this._loadData(true);
     },
-    /** 右下角悬浮搜索按钮 — 跳转到搜索页面 */
+    /** 右下角悬浮搜索按钮 — 切换搜索栏显示 */
     goToSearch() {
-        wx.navigateTo({ url: '/pages/index/index?focus=search' });
+        this.setData({ showSearch: !this.data.showSearch });
+        if (!this.data.showSearch) {
+            // 关闭搜索栏时清空关键词
+            this.setData({ keyword: '' });
+            this._loadData(true);
+        }
     },
     /** Banner 点击 */
     onBannerTap(e) {

@@ -1,6 +1,6 @@
 // pages/viewer/viewer.ts — 素材详情页（信息卡片 + 评论区 + 统一模板）
 import { formatDuration, formatRelativeTime, toast } from '../../utils/util'
-import { getWorkDetail, toggleLike, recordView, getWorkComments, addWorkComment, deleteWork } from '../../utils/api'
+import { getWorkDetail, toggleLike, recordView, getWorkComments, addWorkComment, deleteWork, getUserProfile, getToken, requireAuth } from '../../utils/api'
 import { markdownToHtml } from '../../utils/markdown'
 
 const app = getApp<IAppOption>()
@@ -133,8 +133,8 @@ Page({
 
       wx.setNavigationBarTitle({ title: detail.title || '作品预览' })
 
-      // 4. 开发阶段：任何人可编辑
-      this.setData({ canEdit: true })
+      // 4. 检查编辑权限（仅管理员可编辑）
+      this._checkEditPermission()
 
       // 5. 如果是音频则初始化播放器
       if (detail.type === 'audio' && detail.fileUrl) {
@@ -339,12 +339,14 @@ Page({
     wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage'] })
   },
 
-  // ─── 编辑作品（管理员/作者） ───────────────────────────
+  // ─── 编辑作品（管理员） ───────────────────────────
   onEdit() {
+    // 未登录时跳转登录页
+    if (!requireAuth()) return
     wx.navigateTo({ url: `/pages/edit-work/edit-work?id=${this._workId}` })
   },
 
-  /** 删除作品（管理员/作者） */
+  /** 删除作品（管理员） */
   onDelete() {
     const { title } = this.data
 
@@ -370,10 +372,21 @@ Page({
     })
   },
 
-  /** 开发阶段：任何人可编辑 */
-  async _checkEditPermission(detail: any) {
-    // 开发阶段不限制，任何人可编辑/删除
-    this.setData({ canEdit: true })
+  /** 检查编辑权限（仅管理员可编辑/删除） */
+  async _checkEditPermission() {
+    // 未登录则无编辑权限
+    if (!getToken()) {
+      this.setData({ canEdit: false })
+      return
+    }
+
+    try {
+      const profile = await getUserProfile()
+      this.setData({ canEdit: profile.role === 'admin' })
+    } catch {
+      // 获取用户信息失败，默认无编辑权限
+      this.setData({ canEdit: false })
+    }
   },
 
   // ─── 下载（带进度追踪）───────────────────────────────────

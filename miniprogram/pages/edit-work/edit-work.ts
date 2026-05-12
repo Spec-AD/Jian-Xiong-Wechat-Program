@@ -1,6 +1,6 @@
 // pages/edit-work/edit-work.ts — 编辑作品
 import { toast } from '../../utils/util'
-import { uploadFile, getWorkDetail, updateWork, deleteWork } from '../../utils/api'
+import { uploadFile, getWorkDetail, updateWork, deleteWork, getUserProfile, getToken } from '../../utils/api'
 
 const app = getApp<IAppOption>()
 
@@ -59,9 +59,22 @@ Page({
       return
     }
 
-    this.setData({ workId, loading: true })
+        this.setData({ workId, loading: true })
 
     try {
+      // 校验管理员权限
+      if (!getToken()) {
+        toast('请先登录')
+        wx.navigateBack()
+        return
+      }
+      const profile = await getUserProfile()
+      if (profile.role !== 'admin') {
+        toast('仅管理员可编辑作品')
+        wx.navigateBack()
+        return
+      }
+
       // 加载作品详情
       const detail = await getWorkDetail(workId)
 

@@ -1,8 +1,8 @@
 // pages/hall/hall.ts — 作品大厅（真实 API 版）
-import { WORK_CATEGORIES, getFileTypeLabel, getFileTypeIcon, toast, formatDate } from '../../utils/util'
-import { getWorks, getBannerWorks, getMyWorks, getLikedWorks, getHistory } from '../../utils/api'
+import { WORK_CATEGORIES, getFileTypeLabel, getFileTypeIcon, getPlatformIcon, toast, formatDate } from '../../utils/util'
+import { getWorks, getBannerWorks, getMyWorks, getLikedWorks, getHistory, getExternalWorks } from '../../utils/api'
 
-const app = getApp<IAppOption>()
+const app = getApp() as IAppOption
 const PAGE_SIZE = 20
 
 Page({
@@ -18,6 +18,7 @@ Page({
     hasMore: true,                // 是否还有更多
     page: 1,                      // 当前页码
     mode: 'hall' as 'hall' | 'my' | 'liked' | 'history',  // 当前模式
+    showSearch: false,              // 是否显示搜索栏
   },
 
   onLoad(options: any) {
@@ -120,6 +121,9 @@ Page({
         result = await getLikedWorks({ page: reset ? 1 : page, pageSize: PAGE_SIZE })
       } else if (mode === 'history') {
         result = await getHistory({ page: reset ? 1 : page, pageSize: PAGE_SIZE })
+      } else if (activeCategory === 'external') {
+        // 外链作品走独立接口
+        result = await getExternalWorks({ page: reset ? 1 : page, pageSize: PAGE_SIZE })
       } else {
         // 只传有值的参数，避免 undefined 被序列化为字符串 "undefined"
         const params: Record<string, any> = {
@@ -144,6 +148,7 @@ Page({
         ...item,
         typeName: getFileTypeLabel(item.type),
         typeIcon: getFileTypeIcon(item.type),
+        platformIcon: getPlatformIcon(item.platform),
         date: item.date ? formatDate(item.date) : (item.createdAt ? formatDate(item.createdAt) : ''),
         actualAuthor: item.actualAuthor || '',
       }))
@@ -190,9 +195,14 @@ Page({
     this._loadData(true)
   },
 
-  /** 右下角悬浮搜索按钮 — 跳转到搜索页面 */
+  /** 右下角悬浮搜索按钮 — 切换搜索栏显示 */
   goToSearch() {
-    wx.navigateTo({ url: '/pages/index/index?focus=search' })
+    this.setData({ showSearch: !this.data.showSearch })
+    if (!this.data.showSearch) {
+      // 关闭搜索栏时清空关键词
+      this.setData({ keyword: '' })
+      this._loadData(true)
+    }
   },
 
   /** Banner 点击 */
@@ -202,7 +212,18 @@ Page({
 
   /** 作品点击 */
   onWorkTap(e: any) {
-    this._goViewer(e.currentTarget.dataset.item.id)
+    const item = e.currentTarget.dataset.item
+    if (this.data.activeCategory === 'external' && item.externalLink) {
+      // 外链作品：直接打开外部链接
+      wx.setClipboardData({
+        data: item.externalLink,
+        success: () => {
+          wx.showToast({ title: '链接已复制，请在浏览器中打开', icon: 'none' })
+        },
+      })
+    } else {
+      this._goViewer(item.id)
+    }
   },
 
   /** 跳转详情页（仅传 id，viewer 页自己调 API 加载） */

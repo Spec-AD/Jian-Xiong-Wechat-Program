@@ -48,11 +48,28 @@
     </view>
   </scroll-view>
 
+  <!-- ===== 搜索栏（点击 FAB 按钮后显示）===== -->
+  <view class="search-section" wx:if="{{showSearch}}">
+    <view class="search-bar">
+      <input
+        class="search-input"
+        placeholder="搜索作品标题…"
+        value="{{keyword}}"
+        bindinput="onSearch"
+        confirm-type="search"
+        focus="{{showSearch}}"
+      />
+      <view class="search-clear" wx:if="{{keyword}}" bindtap="onSearchClear">
+        <text class="search-clear-icon">✕</text>
+      </view>
+    </view>
+  </view>
+
   <!-- ===== 列表区域头（含返回大厅按钮）===== -->
   <view class="list-header">
     <view class="list-header-left">
       <text wx:if="{{mode !== 'hall'}}" class="back-btn" bindtap="onBackToHall">‹ 返回大厅</text>
-      <text class="list-header-text">{{mode === 'hall' ? '全部作品' : mode === 'my' ? '我的发布' : mode === 'liked' ? '我的点赞' : '浏览记录'}}</text>
+      <text class="list-header-text">{{mode === 'hall' ? (activeCategory === 'external' ? '外链作品' : '全部作品') : mode === 'my' ? '我的发布' : mode === 'liked' ? '我的点赞' : '浏览记录'}}</text>
     </view>
     <text class="list-count">共 {{total}} 项</text>
   </view>
@@ -90,7 +107,13 @@
 
       <!-- 信息 -->
       <view class="card-info">
-        <text class="card-title">{{item.title}}</text>
+        <!-- 外链作品：标题带超链接样式 + 平台图标 -->
+        <view wx:if="{{activeCategory === 'external'}}" class="card-title-row">
+          <image wx:if="{{item.platformIcon}}" class="card-platform-icon" src="{{item.platformIcon}}" mode="aspectFit" />
+          <text class="card-title card-title--link">{{item.title}}</text>
+        </view>
+        <!-- 普通作品 -->
+        <text wx:else class="card-title">{{item.title}}</text>
         <text class="card-author">{{item.actualAuthor || '未知作者'}}</text>
         <view class="card-meta">
           <text class="card-date">{{item.date}}</text>
@@ -114,8 +137,8 @@
     <text class="empty-text">{{mode === 'my' ? '还没有发布作品哦' : mode === 'liked' ? '还没有点赞过作品' : mode === 'history' ? '还没有浏览过作品' : '暂无相关作品'}}</text>
   </view>
 
-  <!-- ===== 右下角悬浮搜索按钮 ===== -->
-  <view class="search-fab" bindtap="goToSearch">
+  <!-- ===== 右下角悬浮搜索按钮（外链作品Tab时隐藏）===== -->
+  <view wx:if="{{activeCategory !== 'external'}}" class="search-fab" bindtap="goToSearch">
     <image class="search-fab-icon" src="https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/MdiFileSearch.png" mode="aspectFit" />
   </view>
 

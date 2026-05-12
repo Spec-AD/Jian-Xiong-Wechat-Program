@@ -120,8 +120,8 @@ Page({
                 })),
             });
             wx.setNavigationBarTitle({ title: detail.title || '作品预览' });
-            // 4. 开发阶段：任何人可编辑
-            this.setData({ canEdit: true });
+            // 4. 检查编辑权限（仅管理员可编辑）
+            this._checkEditPermission();
             // 5. 如果是音频则初始化播放器
             if (detail.type === 'audio' && detail.fileUrl) {
                 this._initAudio(detail.fileUrl);
@@ -327,11 +327,13 @@ Page({
     onShare() {
         wx.showShareMenu({ withShareTicket: true, menus: ['shareAppMessage'] });
     },
-    // ─── 编辑作品（管理员/作者） ───────────────────────────
+    // ─── 编辑作品（管理员） ───────────────────────────
     onEdit() {
+        // 未登录时跳转登录页
+        if (!(0, api_1.requireAuth)()) return;
         wx.navigateTo({ url: `/pages/edit-work/edit-work?id=${this._workId}` });
     },
-    /** 删除作品（管理员/作者） */
+    /** 删除作品（管理员） */
     onDelete() {
         const { title } = this.data;
         wx.showModal({
@@ -356,10 +358,22 @@ Page({
             },
         });
     },
-    /** 开发阶段：任何人可编辑 */
-    async _checkEditPermission(detail) {
-        // 开发阶段不限制，任何人可编辑/删除
-        this.setData({ canEdit: true });
+    /** 检查编辑权限（仅管理员可编辑/删除） */
+    async _checkEditPermission() {
+        // 未登录则无编辑权限
+        if (!(0, api_1.getToken)()) {
+            this.setData({ canEdit: false });
+            return;
+        }
+
+        try {
+            const profile = await (0, api_1.getUserProfile)();
+            this.setData({ canEdit: profile.role === 'admin' });
+        }
+        catch {
+            // 获取用户信息失败，默认无编辑权限
+            this.setData({ canEdit: false });
+        }
     },
     // ─── 下载（带进度追踪）───────────────────────────────────
     onDownload() {

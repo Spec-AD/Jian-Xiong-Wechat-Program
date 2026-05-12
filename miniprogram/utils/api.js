@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getToken = getToken;
 exports.setToken = setToken;
 exports.removeToken = removeToken;
+exports.requireAuth = requireAuth;
 exports.request = request;
 exports.loginWithCode = loginWithCode;
 exports.getUserProfile = getUserProfile;
@@ -45,6 +46,30 @@ function setToken(token) {
 /** 清除 token */
 function removeToken() {
     wx.removeStorageSync(TOKEN_KEY);
+}
+
+/**
+ * 统一登录校验：未登录时跳转到登录页
+ * @param {string} tip 可选提示文案，默认'请先登录'
+ * @returns {boolean} true=已登录, false=未登录
+ */
+function requireAuth(tip) {
+    if (getToken()) {
+        return true;
+    }
+
+    // 避免在登录页循环跳转
+    const pages = getCurrentPages();
+    const currentPage = pages[pages.length - 1];
+    if (currentPage && currentPage.route === 'pages/login/login') {
+        return false;
+    }
+
+    wx.showToast({ title: tip || '请先登录', icon: 'none' });
+    setTimeout(function () {
+        wx.navigateTo({ url: '/pages/login/login' });
+    }, 500);
+    return false;
 }
 /** 请求超时重试次数 */
 const MAX_RETRIES = 2;
@@ -101,7 +126,7 @@ function request(options) {
         return new Promise((resolve, reject) => {
             // ========== 检查登录态 ==========
             if (needAuth && !getToken()) {
-                wx.showToast({ title: '请先登录', icon: 'none' });
+                requireAuth();
                 reject(new Error('未登录'));
                 return;
             }

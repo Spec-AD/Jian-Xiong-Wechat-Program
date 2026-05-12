@@ -21,6 +21,10 @@ export interface IWorkDocument extends Document {
   status: WorkStatus
   /** 实际作者（与上传者不同，用于作品署名） */
   actualAuthor: string
+  /** 外部链接 URL（外链作品专用） */
+  externalLink: string
+  /** 外部平台名称（外链作品专用，如 Canva、Bilibili） */
+  platform: string
   createdAt: Date
   updatedAt: Date
 }
@@ -49,7 +53,7 @@ const workSchema = new Schema<IWorkDocument>(
     },
     type: {
       type: String,
-      enum: ['video', 'audio', 'image', 'doc', 'markdown', 'unknown'],
+      enum: ['video', 'audio', 'image', 'doc', 'markdown', 'link', 'unknown'],
       default: 'unknown',
     },
     categoryId: {
@@ -98,6 +102,17 @@ const workSchema = new Schema<IWorkDocument>(
       default: 'published',
     },
     actualAuthor: {
+      type: String,
+      default: '',
+      trim: true,
+      maxlength: 50,
+    },
+    externalLink: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    platform: {
       type: String,
       default: '',
       trim: true,

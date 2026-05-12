@@ -30,6 +30,30 @@ export function removeToken(): void {
   wx.removeStorageSync(TOKEN_KEY)
 }
 
+/**
+ * 统一登录校验：未登录时跳转到登录页
+ * @param tip 可选提示文案，默认'请先登录'
+ * @returns true=已登录, false=未登录
+ */
+export function requireAuth(tip?: string): boolean {
+  if (getToken()) {
+    return true
+  }
+
+  // 避免在登录页循环跳转
+  const pages = getCurrentPages()
+  const currentPage = pages[pages.length - 1]
+  if (currentPage && currentPage.route === 'pages/login/login') {
+    return false
+  }
+
+  wx.showToast({ title: tip || '请先登录', icon: 'none' })
+  setTimeout(() => {
+    wx.navigateTo({ url: '/pages/login/login' })
+  }, 500)
+  return false
+}
+
 /** 通用请求选项 */
 interface RequestOptions {
   url: string
@@ -129,7 +153,7 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       // ========== 检查登录态 ==========
       if (needAuth && !getToken()) {
-        wx.showToast({ title: '请先登录', icon: 'none' })
+        requireAuth()
         reject(new Error('未登录'))
         return
       }
@@ -358,6 +382,21 @@ export function toggleLike(id: string): Promise<{ liked: boolean; likesCount: nu
 }
 
 /**
+ * 获取外链作品列表 — GET /api/works/external
+ */
+export function getExternalWorks(params?: {
+  page?: number
+  pageSize?: number
+}): Promise<PaginatedData<any>> {
+  return request({
+    url: '/works/external',
+    method: 'GET',
+    data: params as Record<string, any>,
+    needAuth: false,
+  })
+}
+
+/**
  * 获取我的作品列表 — GET /api/works/my/list
  * 返回分页数据 { list, total, page, pageSize }
  */
@@ -464,6 +503,9 @@ export function createWork(data: {
   cover?: string
   imageList?: string[]
   tags?: string[]
+  externalLink?: string
+  platform?: string
+  actualAuthor?: string
 }): Promise<any> {
   return request({
     url: '/works',

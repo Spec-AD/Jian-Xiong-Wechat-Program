@@ -367,6 +367,33 @@ export async function getUserLikedWorks(userId: string, page: number, pageSize: 
 }
 
 /**
+ * 获取外链作品列表（分页）
+ */
+export async function getExternalWorks(page: number, pageSize: number) {
+  const filter = { status: 'published' as const, externalLink: { $ne: '' } }
+
+  const total = await Work.countDocuments(filter)
+  const works = await Work.find(filter)
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * pageSize)
+    .limit(pageSize)
+    .lean()
+
+  const list = works.map((w) => ({
+    id: w._id.toString(),
+    title: w.title,
+    externalLink: w.externalLink,
+    platform: w.platform,
+    date: w.createdAt,
+    likes: w.likesCount,
+    views: w.views,
+    actualAuthor: w.actualAuthor || '',
+  }))
+
+  return { list, total, page, pageSize }
+}
+
+/**
  * 创建作品
  */
 export async function createWork(
@@ -383,6 +410,8 @@ export async function createWork(
     isBanner?: boolean
     status?: WorkStatus
     actualAuthor?: string
+    externalLink?: string
+    platform?: string
   },
 ) {
   const work = await Work.create({
@@ -398,13 +427,15 @@ export async function createWork(
     isBanner: data.isBanner || false,
     status: data.status || 'published',
     actualAuthor: data.actualAuthor || '',
+    externalLink: data.externalLink || '',
+    platform: data.platform || '',
   })
 
   return work
 }
 
 /**
- * 更新作品（开发阶段：任何人可改）
+ * 更新作品（仅管理员可操作）
  */
 export async function updateWork(
   workId: string,
@@ -422,11 +453,18 @@ export async function updateWork(
     isBanner: boolean
     status: WorkStatus
     actualAuthor: string
+    externalLink: string
+    platform: string
   }>,
 ) {
   const work = await Work.findById(workId)
   if (!work) {
     throw new AppError('作品不存在', 404, 40402)
+  }
+
+  // 仅管理员可编辑作品
+  if (userRole !== 'admin') {
+    throw new AppError('权限不足，仅管理员可编辑作品', 403, 40300)
   }
 
   Object.assign(work, data)
@@ -435,12 +473,17 @@ export async function updateWork(
 }
 
 /**
- * 删除作品（开发阶段：任何人可删）
+ * 删除作品（仅管理员可操作）
  */
 export async function deleteWork(workId: string, userId: string, userRole: string) {
   const work = await Work.findById(workId)
   if (!work) {
     throw new AppError('作品不存在', 404, 40402)
+  }
+
+  // 仅管理员可删除作品
+  if (userRole !== 'admin') {
+    throw new AppError('权限不足，仅管理员可删除作品', 403, 40300)
   }
 
   // 同时删除相关的点赞记录

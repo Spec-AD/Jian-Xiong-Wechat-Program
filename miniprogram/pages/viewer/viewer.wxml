@@ -253,19 +253,20 @@
 
         <!-- 点赞 -->
     <view class="bottom-action bottom-like" bindtap="onLike">
-      <text class="bottom-action-icon">{{liked ? '♥' : '♡'}}</text>
+      <image class="bottom-action-icon" wx:if="{{!liked}}" src="https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/MdiCardsHeartOutline.png" mode="aspectFit" />
+      <image class="bottom-action-icon" wx:else src="https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/MdiHeart.png" mode="aspectFit" />
       <text class="bottom-action-label">{{liked ? '已赞' : '点赞'}}</text>
     </view>
 
     <!-- 分享 -->
     <view class="bottom-action" bindtap="onShare">
-      <text class="bottom-action-icon">↗</text>
+      <image class="bottom-action-icon" src="https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/MdiShareVariant.png" mode="aspectFit" />
       <text class="bottom-action-label">分享</text>
     </view>
 
     <!-- 下载 -->
     <view class="bottom-action" bindtap="onDownload">
-      <text class="bottom-action-icon">↓</text>
+      <image class="bottom-action-icon" src="https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/MdiDownload.png" mode="aspectFit" />
       <text class="bottom-action-label">下载</text>
     </view>
 
@@ -286,7 +287,7 @@
         class="comment-send {{commentText ? 'comment-send--active' : ''}}"
         bindtap="onSendComment"
       >
-        <text class="send-icon"></text>
+        <image class="send-icon" src="https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/MdiArrowRightBold.png" mode="aspectFit" />
       </view>
     </view>
 

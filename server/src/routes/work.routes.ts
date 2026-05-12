@@ -59,8 +59,14 @@ router.get('/', optionalAuthMiddleware, listWorksValidator, validate, workContro
 router.get('/banner', workController.getBannerWorks)
 
 /**
+ * GET /api/works/external
+ * 外链作品列表（分页）
+ */
+router.get('/external', paginationValidator, validate, workController.getExternalWorks)
+
+/**
  * GET /api/works/:id
- * 作品详情（必须放在 /my/list、/liked/list、/banner 之后）
+ * 作品详情（必须放在 /my/list、/liked/list、/banner、/external 之后）
  */
 router.get('/:id', optionalAuthMiddleware, objectIdParamValidator, validate, workController.getWorkById)
 
