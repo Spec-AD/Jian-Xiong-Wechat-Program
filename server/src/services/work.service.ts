@@ -38,13 +38,23 @@ export async function getWorks(params: {
   // 查询总数
   const total = await Work.countDocuments(filter)
 
-  // 查询列表
-  const works = await Work.find(filter)
-    .sort({ createdAt: -1 })
-    .skip((page - 1) * pageSize)
-    .limit(pageSize)
-    .populate('userId', 'nickName avatarUrl')
-    .lean()
+  // 查询列表（使用聚合管道：外链作品排在普通作品后面）
+  const works = await Work.aggregate([
+    { $match: filter },
+    { $addFields: { sortPriority: { $cond: [{ $eq: ['$type', 'link'] }, 1, 0] } } },
+    { $sort: { sortPriority: 1, createdAt: -1 } },
+    { $skip: (page - 1) * pageSize },
+    { $limit: pageSize },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+  ])
 
   // 如果用户已登录，查询点赞状态
   let likedMap = new Map<string, boolean>()
@@ -61,8 +71,8 @@ export async function getWorks(params: {
   const list = works.map((work) => ({
     id: work._id.toString(),
     title: work.title,
-    author: (work.userId as any)?.nickName || '',
-    authorAvatar: (work.userId as any)?.avatarUrl || '',
+    author: work.user?.nickName || '',
+    authorAvatar: work.user?.avatarUrl || '',
     date: work.createdAt,
     cover: work.cover,
     type: work.type,
