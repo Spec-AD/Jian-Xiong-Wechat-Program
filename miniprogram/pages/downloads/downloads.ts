@@ -54,7 +54,7 @@ Page({
 
   /** 切换筛选 */
   onFilterChange(e: any) {
-    const filter = e.currentTarget.dataset.filter as string
+    const filter = e.currentTarget.dataset.filter as 'all' | 'completed' | 'downloading' | 'failed'
     this.setData({ filter }, () => this._refresh())
   },
 
