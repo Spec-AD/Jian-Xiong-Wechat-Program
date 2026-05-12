@@ -38,9 +38,11 @@ export async function getWorks(params: {
   // 查询总数
   const total = await Work.countDocuments(filter)
 
-  // 查询列表（使用聚合管道：外链作品排在普通作品后面）
+  // 查询列表（使用聚合管道：外链作品排在普通作品后面，去重）
   const works = await Work.aggregate([
     { $match: filter },
+    { $group: { _id: '$_id', doc: { $first: '$$ROOT' } } },         // 去重
+    { $replaceRoot: { newRoot: '$doc' } },
     { $addFields: { sortPriority: { $cond: [{ $eq: ['$type', 'link'] }, 1, 0] } } },
     { $sort: { sortPriority: 1, createdAt: -1 } },
     { $skip: (page - 1) * pageSize },
@@ -386,12 +388,22 @@ export async function getUserLikedWorks(userId: string, page: number, pageSize: 
 export async function getExternalWorks(page: number, pageSize: number) {
   const filter = { status: 'published' as const, type: 'link' }
 
-  const total = await Work.countDocuments(filter)
-  const works = await Work.find(filter)
-    .sort({ createdAt: -1 })
-    .skip((page - 1) * pageSize)
-    .limit(pageSize)
-    .lean()
+  // 先用聚合去重再计数
+  const dedupedCount = await Work.aggregate([
+    { $match: filter },
+    { $group: { _id: '$_id' } },
+    { $count: 'total' },
+  ])
+  const total = dedupedCount.length > 0 ? dedupedCount[0].total : 0
+
+  const works = await Work.aggregate([
+    { $match: filter },
+    { $group: { _id: '$_id', doc: { $first: '$$ROOT' } } },
+    { $replaceRoot: { newRoot: '$doc' } },
+    { $sort: { createdAt: -1 } },
+    { $skip: (page - 1) * pageSize },
+    { $limit: pageSize },
+  ])
 
   const list = works.map((w) => ({
     id: w._id.toString(),
