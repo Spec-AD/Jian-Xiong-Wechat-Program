@@ -481,7 +481,7 @@ Page({
 
   /** 点击发送按钮 */
   onSendComment() {
-    const text = this.data.commentText.trim()
+    const text = (this.data.commentText || '').trim()
     if (text) {
       this._submitComment(text)
     }

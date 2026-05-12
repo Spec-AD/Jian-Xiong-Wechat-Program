@@ -258,7 +258,7 @@
         confirm-type="send"
       />
       <view
-        class="comment-send {{commentText.trim() ? 'comment-send--active' : ''}}"
+        class="comment-send {{(commentText || '').trim() ? 'comment-send--active' : ''}}"
         bindtap="onSendComment"
       >
         <text class="send-icon"></text>
