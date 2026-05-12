@@ -31,7 +31,7 @@ export const formatDate = (val: string | number | Date): string => {
  * 根据文件名后缀判断类型
  * @returns 'video' | 'audio' | 'image' | 'doc' | 'unknown'
  */
-export type FileType = 'video' | 'audio' | 'image' | 'doc' | 'unknown'
+export type FileType = 'video' | 'audio' | 'image' | 'doc' | 'markdown' | 'unknown'
 
 export const getFileType = (filename: string): FileType => {
   if (!filename) return 'unknown'
@@ -41,13 +41,14 @@ export const getFileType = (filename: string): FileType => {
   if (['mp3','wav','aac','flac','ogg','m4a'].includes(ext))         return 'audio'
   if (['jpg','jpeg','png','gif','webp','bmp','heic'].includes(ext)) return 'image'
   if (['pdf','doc','docx','ppt','pptx','xls','xlsx'].includes(ext)) return 'doc'
+  if (['md','markdown'].includes(ext)) return 'markdown'
   return 'unknown'
 }
 
 /** 文件类型 → 中文标签 */
 export const getFileTypeLabel = (type: FileType): string => {
   const map: Record<FileType, string> = {
-    video: '视频', audio: '音频', image: '图片', doc: '文档', unknown: '其他',
+    video: '视频', audio: '音频', image: '图片', doc: '文档', markdown: 'Markdown', unknown: '其他',
   }
   return map[type] !== null && map[type] !== void 0 ? map[type] : '其他'
 }
@@ -55,7 +56,7 @@ export const getFileTypeLabel = (type: FileType): string => {
 /** 文件类型 → 图标 */
 export const getFileTypeIcon = (type: FileType): string => {
   const map: Record<FileType, string> = {
-    video: '', audio: '', image: '', doc: '', unknown: '',
+    video: '', audio: '', image: '', doc: '', markdown: '', unknown: '',
   }
   return (map[type] !== null && map[type] !== void 0) ? map[type] : ''
 }

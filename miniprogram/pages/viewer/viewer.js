@@ -3,12 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // pages/viewer/viewer.ts — 素材详情页（信息卡片 + 评论区 + 统一模板）
 const util_1 = require("../../utils/util");
 const api_1 = require("../../utils/api");
+const markdown_1 = require("../../utils/markdown");
 const app = getApp();
 Page({
     data: {
         id: '',
         type: '',
         fileUrl: '',
+        cover: '',
         title: '',
         author: '',
         authorAvatar: '',
@@ -25,6 +27,9 @@ Page({
         audioDuration: 100,
         audioCurrentTime: '00:00',
         audioDurationText: '00:00',
+        // Markdown 渲染
+        mdHtml: '',
+        mdLoading: false,
         // 操作
         liked: false,
         likesCount: 0,
@@ -69,9 +74,18 @@ Page({
             const rawLikes = detail.likes || 0;
             const commentsAny = commentsData;
             const rawCommentsCount = (commentsAny && commentsAny.list && commentsAny.list.length) || detail.commentsCount || 0;
+            // 检测是否为 Markdown 文件（按类型或按文件后缀）
+            let resolvedType = detail.type || '';
+            if (resolvedType !== 'markdown' && detail.fileUrl) {
+                const ext = detail.fileUrl.split('.').pop().toLowerCase();
+                if (ext === 'md' || ext === 'markdown') {
+                    resolvedType = 'markdown';
+                }
+            }
             this.setData({
-                type: detail.type || '',
+                type: resolvedType,
                 fileUrl: detail.fileUrl || '',
+                cover: detail.cover || '',
                 title: detail.title || '作品预览',
                 author: detail.author || '',
                 authorAvatar: detail.authorAvatar || '',
@@ -112,7 +126,11 @@ Page({
             if (detail.type === 'audio' && detail.fileUrl) {
                 this._initAudio(detail.fileUrl);
             }
-            // 6. 异步记录浏览量
+            // 6. 如果是 Markdown 则渲染
+            if (detail.type === 'markdown' && detail.fileUrl) {
+                this._renderMarkdown(detail.fileUrl);
+            }
+            // 7. 异步记录浏览量
             this._recordView(id);
         }
         catch (err) {
@@ -161,6 +179,36 @@ Page({
             });
         }
         catch { /* 静默 */ }
+    },
+    /** 渲染 Markdown 内容 */
+    async _renderMarkdown(url) {
+        if (!url)
+            return;
+        this.setData({ mdLoading: true });
+        try {
+            const res = await new Promise((resolve, reject) => {
+                wx.request({
+                    url,
+                    method: 'GET',
+                    success: (resp) => {
+                        if (resp.statusCode === 200) {
+                            resolve(resp.data);
+                        }
+                        else {
+                            reject(new Error('获取 Markdown 内容失败'));
+                        }
+                    },
+                    fail: (err) => reject(err),
+                });
+            });
+            const html = (0, markdown_1.markdownToHtml)(res);
+            this.setData({ mdHtml: html, mdLoading: false });
+        }
+        catch (err) {
+            console.error('[Viewer] Markdown 渲染失败:', err);
+            (0, util_1.toast)('Markdown 内容加载失败');
+            this.setData({ mdLoading: false });
+        }
     },
     onUnload() {
         if (this._audio) {

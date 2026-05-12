@@ -10,100 +10,47 @@ page {
   overflow-x: hidden;
 }
 
-/* ===== 搜索栏 ===== */
-.search-bar {
-  background: var(--theme-gradient);
-  padding: 20rpx 28rpx 24rpx;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.search-inner {
-  display: flex;
-  align-items: center;
-  background: rgba(255,255,255,0.18);
-  border-radius: 40rpx;
-  padding: 14rpx 28rpx;
-  gap: 12rpx;
-}
-
-.search-icon {
-  font-size: 28rpx;
-  flex-shrink: 0;
-}
-
-.search-input {
-  flex: 1;
-  font-size: 28rpx;
-  color: #fff;
-  height: 48rpx;
-  line-height: 48rpx;
-}
-
-.search-input::placeholder { color: rgba(255,255,255,0.6); }
-
-.search-clear {
-  font-size: 28rpx;
-  color: rgba(255,255,255,0.7);
-  padding: 0 4rpx;
-}
-
-/* ===== Banner 轮播 ===== */
-.banner-swiper {
+/* ===== 沉浸式海报轮播 ===== */
+.poster-swiper {
   width: 100%;
-  height: 360rpx;
+  height: 500rpx;
 }
 
-.banner-item {
+.poster-item {
   width: 100%;
-  height: 360rpx;
+  height: 500rpx;
   position: relative;
   overflow: hidden;
 }
 
-.banner-img {
+.poster-img {
   width: 100%;
   height: 100%;
   display: block;
 }
 
-.banner-placeholder {
-  width: 100%;
-  height: 100%;
-  background: var(--theme-gradient);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.banner-icon {
-  font-size: 120rpx;
-  opacity: 0.4;
-}
-
-.banner-overlay {
+.poster-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 48rpx 32rpx 32rpx;
-  background: linear-gradient(to top, rgba(0,0,0,0.65), transparent);
+  padding: 80rpx 32rpx 36rpx;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
 }
 
-.banner-tag {
+.poster-tag {
   display: inline-block;
-  padding: 4rpx 16rpx;
+  padding: 4rpx 18rpx;
   border-radius: 16rpx;
-  background: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.2);
   color: #fff;
   font-size: 22rpx;
   margin-bottom: 12rpx;
 }
 
-.banner-title {
+.poster-title {
   display: block;
-  font-size: 34rpx;
+  font-size: 36rpx;
   font-weight: 700;
   color: #fff;
   margin-bottom: 8rpx;
@@ -112,10 +59,10 @@ page {
   white-space: nowrap;
 }
 
-.banner-author {
+.poster-author {
   display: block;
-  font-size: 24rpx;
-  color: rgba(255,255,255,0.80);
+  font-size: 26rpx;
+  color: rgba(255,255,255,0.85);
 }
 
 /* ===== 分类标签 ===== */
@@ -319,3 +266,30 @@ page {
 }
 
 .list-bottom { height: 60rpx; }
+
+/* ===== 右下角悬浮搜索按钮 ===== */
+.search-fab {
+  position: fixed;
+  bottom: 60rpx;
+  right: 40rpx;
+  width: 110rpx;
+  height: 110rpx;
+  border-radius: 50%;
+  background-color: #6A005F;
+  box-shadow: 0 8rpx 20rpx rgba(106, 0, 95, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.search-fab:active {
+  opacity: 0.85;
+  transform: scale(0.95);
+}
+
+.search-fab-icon {
+  width: 48rpx;
+  height: 48rpx;
+  display: block;
+}

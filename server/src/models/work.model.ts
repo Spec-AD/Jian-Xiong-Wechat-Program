@@ -49,7 +49,7 @@ const workSchema = new Schema<IWorkDocument>(
     },
     type: {
       type: String,
-      enum: ['video', 'audio', 'image', 'doc', 'unknown'],
+      enum: ['video', 'audio', 'image', 'doc', 'markdown', 'unknown'],
       default: 'unknown',
     },
     categoryId: {

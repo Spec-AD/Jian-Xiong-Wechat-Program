@@ -58,7 +58,7 @@ export const createWorkValidator = [
   body('type')
     .notEmpty()
     .withMessage('作品类型不能为空')
-    .isIn(['video', 'audio', 'image', 'doc', 'unknown'])
+    .isIn(['video', 'audio', 'image', 'doc', 'markdown', 'unknown'])
     .withMessage('无效的作品类型'),
   body('categoryId')
     .notEmpty()
@@ -110,7 +110,7 @@ export const updateWorkValidator = [
     .trim(),
   body('type')
     .optional()
-    .isIn(['video', 'audio', 'image', 'doc', 'unknown'])
+    .isIn(['video', 'audio', 'image', 'doc', 'markdown', 'unknown'])
     .withMessage('无效的作品类型'),
   body('categoryId')
     .optional()

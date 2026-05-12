@@ -92,19 +92,23 @@ Page({
 
       const { mode, activeCategory, keyword, page } = this.data
 
-      // 仅在 hall 模式下加载 Banner（与主数据并发，不阻塞）
+      // 仅在 hall 模式下加载沉浸式海报轮播（节选自作品的 cover，最多 5 张，仅当有 cover 值时才入选）
       const bannerPromise = reset && mode === 'hall'
         ? getBannerWorks().then(bannerData => {
-            this.setData({
-              bannerList: (bannerData || []).map((item: any) => ({
+            const rawList: any[] = bannerData || []
+            const posterList = rawList
+              .filter((item: any) => !!item.cover)        // 仅选有 cover 的作品
+              .slice(0, 5)                                 // 最多 5 张
+              .map((item: any) => ({
                 ...item,
+                coverUrl: item.cover,                      // cover → coverUrl 供轮播使用
                 typeName: getFileTypeLabel(item.type),
                 typeIcon: getFileTypeIcon(item.type),
-              })),
-            })
+              }))
+            this.setData({ bannerList: posterList })
           }).catch(() => {
-            // Banner 加载失败不阻塞主列表
-            console.warn('[Hall] Banner 加载失败，跳过')
+            // 海报轮播加载失败不阻塞主列表
+            console.warn('[Hall] 海报轮播加载失败，跳过')
           })
         : Promise.resolve()
 
@@ -184,6 +188,11 @@ Page({
   onSearchClear() {
     this.setData({ keyword: '' })
     this._loadData(true)
+  },
+
+  /** 右下角悬浮搜索按钮 — 跳转到搜索页面 */
+  goToSearch() {
+    wx.navigateTo({ url: '/pages/index/index?focus=search' })
   },
 
   /** Banner 点击 */

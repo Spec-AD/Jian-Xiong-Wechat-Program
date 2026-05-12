@@ -3,6 +3,11 @@
 
   <scroll-view class="scroll-content" scroll-y enable-flex>
 
+    <!-- ========== 作品封面（coverUrl） ========== -->
+    <view class="cover-section" wx:if="{{cover && !loading}}">
+      <image class="cover-img" src="{{cover}}" mode="aspectFill" />
+    </view>
+
     <!-- ========== 媒体内容区 ========== -->
     <view class="media-section">
 
@@ -102,6 +107,16 @@
         >预览文档</button>
       </view>
 
+      <!-- Markdown -->
+      <view wx:elif="{{type === 'markdown'}}" class="md-wrap">
+        <view wx:if="{{mdLoading}}" class="md-loading">
+          <text class="loading-text">正在渲染 Markdown…</text>
+        </view>
+        <view wx:else class="md-content-wrap">
+          <rich-text class="md-rich-text" nodes="{{mdHtml}}" />
+        </view>
+      </view>
+
       <!-- 不支持格式 -->
       <view wx:elif="{{type && type !== 'loading'}}" class="unsupported">
         <text class="unsupported-icon"></text>
@@ -185,6 +200,16 @@
       </view>
       <view class="body-content">
         <text class="body-text">{{description}}</text>
+      </view>
+    </view>
+
+    <!-- ========== Markdown 正文区（仅 markdown 类型，置于信息卡片下方、评论上方）========== -->
+    <view class="md-body-section" wx:if="{{!loading && type === 'markdown' && mdHtml}}">
+      <view class="md-body-header">
+        <text class="md-body-title">文档正文</text>
+      </view>
+      <view class="md-body-content">
+        <rich-text class="md-rich-text" nodes="{{mdHtml}}" />
       </view>
     </view>
 

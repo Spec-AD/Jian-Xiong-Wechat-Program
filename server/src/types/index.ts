@@ -15,7 +15,7 @@ export interface IUser {
 }
 
 // ============ 作品相关 ============
-export type WorkType = 'video' | 'audio' | 'image' | 'doc' | 'unknown'
+export type WorkType = 'video' | 'audio' | 'image' | 'doc' | 'markdown' | 'unknown'
 export type WorkStatus = 'draft' | 'published' | 'hidden'
 
 export interface IWork {

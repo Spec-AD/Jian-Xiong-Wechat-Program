@@ -83,19 +83,23 @@ Page({
                 this.setData({ page: 1, hasMore: true });
             }
             const { mode, activeCategory, keyword, page } = this.data;
-            // 仅在 hall 模式下加载 Banner（与主数据并发，不阻塞）
+            // 仅在 hall 模式下加载沉浸式海报轮播（节选自作品的 cover，最多 5 张，仅当有 cover 值时才入选）
             const bannerPromise = reset && mode === 'hall'
                 ? (0, api_1.getBannerWorks)().then(bannerData => {
-                    this.setData({
-                        bannerList: (bannerData || []).map((item) => ({
+                    const rawList = bannerData || [];
+                    const posterList = rawList
+                        .filter((item) => !!item.cover)        // 仅选有 cover 的作品
+                        .slice(0, 5)                           // 最多 5 张
+                        .map((item) => ({
                             ...item,
+                            coverUrl: item.cover,              // cover → coverUrl 供轮播使用
                             typeName: (0, util_1.getFileTypeLabel)(item.type),
                             typeIcon: (0, util_1.getFileTypeIcon)(item.type),
-                        })),
-                    });
+                        }));
+                    this.setData({ bannerList: posterList });
                 }).catch(() => {
-                    // Banner 加载失败不阻塞主列表
-                    console.warn('[Hall] Banner 加载失败，跳过');
+                    // 海报轮播加载失败不阻塞主列表
+                    console.warn('[Hall] 海报轮播加载失败，跳过');
                 })
                 : Promise.resolve();
             // 根据模式调用不同 API
@@ -173,6 +177,10 @@ Page({
     onSearchClear() {
         this.setData({ keyword: '' });
         this._loadData(true);
+    },
+    /** 右下角悬浮搜索按钮 — 跳转到搜索页面 */
+    goToSearch() {
+        wx.navigateTo({ url: '/pages/index/index?focus=search' });
     },
     /** Banner 点击 */
     onBannerTap(e) {

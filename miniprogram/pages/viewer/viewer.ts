@@ -1,6 +1,7 @@
 // pages/viewer/viewer.ts — 素材详情页（信息卡片 + 评论区 + 统一模板）
 import { formatDuration, formatRelativeTime, toast } from '../../utils/util'
 import { getWorkDetail, toggleLike, recordView, getWorkComments, addWorkComment, deleteWork } from '../../utils/api'
+import { markdownToHtml } from '../../utils/markdown'
 
 const app = getApp<IAppOption>()
 
@@ -9,6 +10,7 @@ Page({
     id: '' as string,
     type: '' as string,
     fileUrl: '' as string,
+    cover: '' as string,
     title: '' as string,
     author: '' as string,
     authorAvatar: '' as string,
@@ -25,6 +27,9 @@ Page({
     audioDuration: 100,
     audioCurrentTime: '00:00',
     audioDurationText: '00:00',
+    // Markdown 渲染
+    mdHtml: '' as string,
+    mdLoading: false,
     // 操作
     liked: false,
     likesCount: 0,
@@ -78,9 +83,19 @@ Page({
       const commentsAny = (commentsData as any)
       const rawCommentsCount = (commentsAny && commentsAny.list && commentsAny.list.length) || detail.commentsCount || 0
 
+      // 检测是否为 Markdown 文件（按类型或按文件后缀）
+      let resolvedType = detail.type || ''
+      if (resolvedType !== 'markdown' && detail.fileUrl) {
+        const ext = detail.fileUrl.split('.').pop()?.toLowerCase()
+        if (ext === 'md' || ext === 'markdown') {
+          resolvedType = 'markdown'
+        }
+      }
+
       this.setData({
-        type: detail.type || '',
+        type: resolvedType,
         fileUrl: detail.fileUrl || '',
+        cover: detail.cover || '',
         title: detail.title || '作品预览',
         author: detail.author || '',
         authorAvatar: detail.authorAvatar || '',
@@ -126,7 +141,12 @@ Page({
         this._initAudio(detail.fileUrl)
       }
 
-      // 6. 异步记录浏览量
+      // 6. 如果是 Markdown 则渲染
+      if (detail.type === 'markdown' && detail.fileUrl) {
+        this._renderMarkdown(detail.fileUrl)
+      }
+
+      // 7. 异步记录浏览量
       this._recordView(id)
     } catch (err: any) {
       console.error('[Viewer] 加载失败:', err)
@@ -170,6 +190,34 @@ Page({
         viewsDisplay: this._formatCount(newViews),
       })
     } catch { /* 静默 */ }
+  },
+
+  /** 渲染 Markdown 内容 */
+  async _renderMarkdown(url: string) {
+    if (!url) return
+    this.setData({ mdLoading: true })
+    try {
+      const res = await new Promise<string>((resolve, reject) => {
+        wx.request({
+          url,
+          method: 'GET',
+          success: (resp) => {
+            if (resp.statusCode === 200) {
+              resolve(resp.data as string)
+            } else {
+              reject(new Error('获取 Markdown 内容失败'))
+            }
+          },
+          fail: (err) => reject(err),
+        })
+      })
+      const html = markdownToHtml(res)
+      this.setData({ mdHtml: html, mdLoading: false })
+    } catch (err: any) {
+      console.error('[Viewer] Markdown 渲染失败:', err)
+      toast('Markdown 内容加载失败')
+      this.setData({ mdLoading: false })
+    }
   },
 
   onUnload() {
