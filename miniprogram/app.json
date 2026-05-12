@@ -10,7 +10,6 @@
     "pages/settings/settings",
     "pages/privacy-settings/privacy-settings",
     "pages/verification/verification",
-    "pages/index/index",
     "pages/login/login",
     "pages/edit-work/edit-work",
     "pages/admin/admin",

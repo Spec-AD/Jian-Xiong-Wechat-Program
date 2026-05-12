@@ -134,7 +134,7 @@
             <view class="work-meta">
               <text class="work-title">{{item.title}}</text>
               <text class="work-sub">
-                {{item.author || '未知作者'}} · {{item.date || ''}} · {{item.views || 0}} 次浏览
+                {{item.actualAuthor || '未知作者'}} · {{item.date || ''}} · {{item.views || 0}} 次浏览
               </text>
             </view>
           </view>

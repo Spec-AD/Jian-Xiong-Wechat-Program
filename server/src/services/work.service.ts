@@ -75,6 +75,7 @@ export async function getWorks(params: {
     tags: work.tags,
     imageList: work.imageList,
     liked: likedMap.has(work._id.toString()),
+    actualAuthor: work.actualAuthor || '',
   }))
 
   return {
@@ -103,6 +104,7 @@ export async function getBannerWorks() {
     type: work.type,
     likes: work.likesCount,
     views: work.views,
+    actualAuthor: work.actualAuthor || '',
   }))
 }
 
@@ -144,6 +146,7 @@ export async function getWorkById(workId: string, currentUserId?: string | null)
     isBanner: work.isBanner,
     tags: work.tags,
     imageList: work.imageList,
+    actualAuthor: work.actualAuthor || '',
     commentsCount: work.commentsCount || 0,
     liked,
   }
@@ -225,6 +228,7 @@ export async function getUserViewHistory(userId: string, page: number, pageSize:
         likes: work.likesCount,
         fileUrl: work.fileUrl,
         viewedAt: r.viewedAt,
+        actualAuthor: work.actualAuthor || '',
       }
     })
 
@@ -317,6 +321,7 @@ export async function getUserWorks(userId: string, page: number, pageSize: numbe
       views: w.views,
       status: w.status,
       createdAt: w.createdAt,
+      actualAuthor: w.actualAuthor || '',
     })),
     total,
     page,
@@ -354,6 +359,7 @@ export async function getUserLikedWorks(userId: string, page: number, pageSize: 
         views: work.views,
         createdAt: work.createdAt,
         likedAt: l.createdAt,
+        actualAuthor: work.actualAuthor || '',
       }
     })
 
@@ -415,6 +421,7 @@ export async function updateWork(
     tags: string[]
     isBanner: boolean
     status: WorkStatus
+    actualAuthor: string
   }>,
 ) {
   const work = await Work.findById(workId)

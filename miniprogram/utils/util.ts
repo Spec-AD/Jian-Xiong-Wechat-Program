@@ -52,7 +52,7 @@ export const getFileTypeLabel = (type: FileType): string => {
   return map[type] !== null && map[type] !== void 0 ? map[type] : '其他'
 }
 
-/** 文件类型 → Emoji 图标 */
+/** 文件类型 → 图标 */
 export const getFileTypeIcon = (type: FileType): string => {
   const map: Record<FileType, string> = {
     video: '', audio: '', image: '', doc: '', unknown: '',

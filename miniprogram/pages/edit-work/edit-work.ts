@@ -226,6 +226,11 @@ Page({
     })
   },
 
+    /** 实际作者输入 */
+  onActualAuthorInput(e: any) {
+    this.setData({ actualAuthor: e.detail.value })
+  },
+
   /** 状态变更 */
   onStatusChange(e: any) {
     this.setData({ status: e.detail.value })

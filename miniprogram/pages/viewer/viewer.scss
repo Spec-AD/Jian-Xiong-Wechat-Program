@@ -364,8 +364,12 @@ page {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6rpx;
+  gap: 4rpx;
   flex: 1;
+}
+.stat-icon {
+  font-size: 28rpx;
+  line-height: 1;
 }
 .stat-value {
   font-size: 28rpx;

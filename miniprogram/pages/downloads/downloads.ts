@@ -145,6 +145,11 @@ Page({
     })
   },
 
+  /** 跳转大厅 */
+  goHall() {
+    wx.switchTab({ url: '/pages/hall/hall' })
+  },
+
   /** 打开已下载的文件 */
   onOpenFile(e: any) {
     const id = e.currentTarget.dataset.id as string

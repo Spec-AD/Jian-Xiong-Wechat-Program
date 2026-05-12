@@ -23,6 +23,7 @@ exports.toggleLike = toggleLike;
 exports.getMyWorks = getMyWorks;
 exports.getLikedWorks = getLikedWorks;
 exports.recordView = recordView;
+exports.getHistory = getHistory;
 exports.uploadFile = uploadFile;
 exports.createWork = createWork;
 exports.updateWork = updateWork;
@@ -33,7 +34,6 @@ const TOKEN_KEY = 'jianxiong_token';
 /** 后端 API 基础地址 — 按需修改 */
 /** @note 真机调试/预览时改为电脑局域网 IP */
 const BASE_URL = 'https://jx-plform.site/api';
-const MAX_RETRIES = 2;
 /** 获取缓存的 token */
 function getToken() {
     return wx.getStorageSync(TOKEN_KEY) || '';
@@ -46,12 +46,56 @@ function setToken(token) {
 function removeToken() {
     wx.removeStorageSync(TOKEN_KEY);
 }
+/** 请求超时重试次数 */
+const MAX_RETRIES = 2;
+/**
+ * 前端请求缓存（内存缓存，避免短时间重复请求）
+ * 仅用于公开的 GET 请求
+ */
+const requestCache = new Map();
+/** 缓存有效期（毫秒）— 公开列表缓存 30 秒，详情缓存 60 秒 */
+const CACHE_TTL = {
+    '/works': 30 * 1000,
+    '/works/banner': 60 * 1000,
+};
+function getCacheKey(url, data) {
+    return data ? `${url}?${JSON.stringify(data)}` : url;
+}
+function getFromCache(url, data) {
+    // 只在缓存配置中存在 TTL 的接口启用缓存
+    const baseUrl = Object.keys(CACHE_TTL).find((k) => url.startsWith(k));
+    if (!baseUrl)
+        return null;
+    const key = getCacheKey(url, data);
+    const cached = requestCache.get(key);
+    if (cached && cached.expiry > Date.now()) {
+        return cached.data;
+    }
+    return null;
+}
+function setCache(url, data, dataParam) {
+    const baseUrl = Object.keys(CACHE_TTL).find((k) => url.startsWith(k));
+    if (!baseUrl)
+        return;
+    const key = getCacheKey(url, dataParam);
+    requestCache.set(key, {
+        data,
+        expiry: Date.now() + CACHE_TTL[baseUrl],
+    });
+}
 /**
  * 通用请求函数
  * 自动拼接 baseUrl、注入 token、处理错误
  */
 function request(options) {
     const { url, method = 'GET', data, needAuth = true, showLoading = false, } = options;
+    // ========== 对公开 GET 请求启用缓存 ==========
+    if (method === 'GET' && !needAuth) {
+        const cached = getFromCache(url, data);
+        if (cached) {
+            return Promise.resolve(cached);
+        }
+    }
     let retries = 0;
     const doRequest = () => {
         return new Promise((resolve, reject) => {
@@ -82,26 +126,36 @@ function request(options) {
                     if (showLoading)
                         wx.hideLoading();
                     const body = res.data;
+                    // 后端返回了数据（即使 HTTP 200，业务 code 可能非 0）
                     if (body && typeof body.code === 'number') {
                         if (body.code === 0) {
+                            // —— 成功 ——
+                            // 对公开 GET 请求写入缓存
+                            if (method === 'GET' && !needAuth) {
+                                setCache(url, body.data, data);
+                            }
                             resolve(body.data);
                         }
                         else if (body.code === 40101 || body.code === 40102) {
+                            // —— token 过期/无效，跳登录 ——
                             removeToken();
                             wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' });
                             wx.navigateTo({ url: '/pages/login/login' });
                             reject(new Error(body.message));
                         }
                         else if (body.code >= 40400 && body.code < 40500) {
-                            // 资源不存在类错误（404xx），静默处理
+                            // —— 资源不存在类错误（404xx），静默处理 ——
+                            // 调用方已在各自 catch 中做降级处理，不必弹 Toast 干扰用户
                             reject(new Error(body.message));
                         }
                         else {
+                            // —— 其它业务错误 ——
                             wx.showToast({ title: body.message || '请求失败', icon: 'none' });
                             reject(new Error(body.message));
                         }
                     }
                     else {
+                        // 响应格式异常
                         wx.showToast({ title: '服务器响应异常', icon: 'none' });
                         reject(new Error('服务器响应异常'));
                     }
@@ -109,9 +163,10 @@ function request(options) {
                 fail: (err) => {
                     if (showLoading)
                         wx.hideLoading();
+                    // 超时等网络错误时自动重试
                     if (retries < MAX_RETRIES) {
                         retries++;
-                        console.log('[API] 请求失败，第 ' + retries + ' 次重试: ' + url);
+                        console.log(`[API] 请求失败，第 ${retries} 次重试: ${url}`);
                         setTimeout(() => {
                             doRequest().then(resolve).catch(reject);
                         }, 1000);
@@ -121,7 +176,7 @@ function request(options) {
                         wx.showToast({ title: msg, icon: 'none' });
                         reject(new Error(msg));
                     }
-            },
+                },
             });
         });
     };
@@ -138,7 +193,11 @@ function loginWithCode(code, nickName, avatarUrl) {
     return request({
         url: '/auth/login',
         method: 'POST',
-        data: Object.assign(Object.assign({ code }, (nickName ? { nickName } : {})), (avatarUrl ? { avatarUrl } : {})),
+        data: {
+            code,
+            ...(nickName ? { nickName } : {}),
+            ...(avatarUrl ? { avatarUrl } : {}),
+        },
         needAuth: false,
     });
 }
@@ -244,12 +303,24 @@ function getLikedWorks(params) {
 }
 /**
  * 记录浏览量 — POST /api/works/:id/view
+ * 用户已登录时会同步记录浏览历史
  */
 function recordView(id) {
     return request({
         url: `/works/${id}/view`,
         method: 'POST',
         needAuth: false,
+    });
+}
+/**
+ * 获取浏览记录 — GET /api/user/history
+ * 返回分页数据 { list, total, page, pageSize }
+ */
+function getHistory(params) {
+    return request({
+        url: '/user/history',
+        method: 'GET',
+        data: params,
     });
 }
 /**
@@ -264,7 +335,10 @@ function uploadFile(tempFilePath, type, name) {
             url: `${BASE_URL}/upload`,
             filePath: tempFilePath,
             name: 'file',
-            formData: Object.assign(Object.assign({}, (type ? { type } : {})), (name ? { name } : {})),
+            formData: {
+                ...(type ? { type } : {}),
+                ...(name ? { name } : {}),
+            },
             header: {
                 Authorization: `Bearer ${token}`,
             },
@@ -278,7 +352,7 @@ function uploadFile(tempFilePath, type, name) {
                         reject(new Error(body.message || '上传失败'));
                     }
                 }
-                catch (_a) {
+                catch {
                     reject(new Error('上传响应异常'));
                 }
             },

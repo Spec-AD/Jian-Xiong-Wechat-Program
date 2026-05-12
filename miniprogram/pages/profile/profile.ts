@@ -1,5 +1,5 @@
 ﻿// pages/profile/profile.ts — 个人主页（图标配置版）
-import { getUserStats, request } from '../../utils/api'
+import { getUserStats, request, getHistory } from '../../utils/api'
 import { toast } from '../../utils/util'
 
 const app = getApp<IAppOption>()
@@ -22,6 +22,10 @@ Page({
     uid: '',
     isVerified: false,
     signature: '',
+    birthday: '',
+    region: [] as string[],
+    regionDisplay: '',
+    interests: [] as string[],
     stats: {
       publishCount: 0,
       likeCount: 0,
@@ -79,12 +83,20 @@ Page({
     wx.setStorageSync('profile_first_time_shown', true)
   },
 
+  /** 格式化地域 */
+  _formatRegion(region: string[]) {
+    return region && region.length ? region.join(' · ') : ''
+  },
+
   async _loadProfile() {
     try {
       const profileData = await request<{
         nickName?: string
         avatarUrl?: string
         signature?: string
+        birthday?: string
+        region?: string[]
+        interests?: string[]
         isVerified?: boolean
         canPublish?: boolean
       }>({ url: '/user/profile', method: 'GET' })
@@ -101,6 +113,10 @@ Page({
 
       this.setData({
         signature: profileData.signature || '',
+        birthday: profileData.birthday || '',
+        region: profileData.region || [],
+        regionDisplay: this._formatRegion(profileData.region || []),
+        interests: profileData.interests || [],
         canPublish: profileData.canPublish !== null && profileData.canPublish !== void 0 ? profileData.canPublish : false,
       })
     } catch {
@@ -130,7 +146,6 @@ Page({
 
   async _loadHistoryCount() {
     try {
-      const { getHistory } = await import('../../utils/api')
       const result = await getHistory({ page: 1, pageSize: 1 })
       this.setData({ historyCount: result.pagination?.total || 0 })
     } catch {

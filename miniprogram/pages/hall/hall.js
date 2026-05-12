@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 // pages/hall/hall.ts — 作品大厅（真实 API 版）
 const util_1 = require("../../utils/util");
@@ -30,9 +21,28 @@ Page({
     },
     onLoad(options) {
         // 支持从 profile 页跳转：通过 globalData.hallMode 传入 'my' 或 'liked'
+        this._applyHallMode(options);
+    },
+    /** 每次页面显示时检查是否有模式切换（switchTab 不会触发 onLoad） */
+    onShow() {
+        if (app.globalData.hallMode && app.globalData.hallMode !== this.data.mode) {
+            this._applyHallMode({});
+        }
+    },
+    /** 应用大厅模式并刷新数据 */
+    _applyHallMode(options) {
         const mode = options.mode || app.globalData.hallMode || 'hall';
+        if (mode === this.data.mode && this.data.works.length > 0) {
+            app.globalData.hallMode = 'hall'; // 无需切换，重置标记
+            return;
+        }
         app.globalData.hallMode = 'hall'; // 消费后重置
-        this.setData({ mode });
+        this.setData({
+            mode,
+            works: [],
+            page: 1,
+            hasMore: true,
+        });
         this._loadData(true);
     },
     /** 下拉刷新 */
@@ -51,76 +61,100 @@ Page({
             path: '/pages/hall/hall',
         };
     },
-    /** 核心加载函数 */
-    _loadData(reset) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this.data.loading)
-                return;
-            this.setData(Object.assign({ loading: true }, (reset ? { refreshing: true } : {})));
-            try {
-                if (reset) {
-                    this.setData({ page: 1, hasMore: true });
-                }
-                const { mode, activeCategory, keyword, page } = this.data;
-                // 仅在 hall 模式下加载 Banner（与主数据并发，不阻塞）
-                const bannerPromise = reset && mode === 'hall'
-                    ? (0, api_1.getBannerWorks)().then(bannerData => {
-                        this.setData({
-                            bannerList: (bannerData || []).map((item) => (Object.assign(Object.assign({}, item), { typeName: (0, util_1.getFileTypeLabel)(item.type), typeIcon: (0, util_1.getFileTypeIcon)(item.type) }))),
-                        });
-                    }).catch(() => {
-                        console.warn('[Hall] Banner 加载失败，跳过');
-                    })
-                    : Promise.resolve();
-                // 根据模式调用不同 API
-                let result;
-                if (mode === 'my') {
-                    result = yield (0, api_1.getMyWorks)();
-                }
-                else if (mode === 'liked') {
-                    result = yield (0, api_1.getLikedWorks)();
-                }
-                else {
-                    // 只传有值的参数，避免 undefined 被序列化为字符串 "undefined"
-                    const params = {
-                        page: reset ? 1 : page,
-                        pageSize: PAGE_SIZE,
-                    };
-                    if (activeCategory !== 'all' && activeCategory) {
-                        params.categoryId = activeCategory;
-                    }
-                    if (keyword) {
-                        params.keyword = keyword;
-                    }
-                    result = yield (0, api_1.getWorks)(params);
-                }
-                // 兼容返回格式：可能是数组 {list: [...]} 或 {list: [...], pagination: {...}}
-                const list = result.list || result || [];
-                const total = result.total || (result.pagination && result.pagination.total) || list.length;
-                // 丰富前端展示字段
-                const enriched = list.map((item) => (Object.assign(Object.assign({}, item), { typeName: (0, util_1.getFileTypeLabel)(item.type), typeIcon: (0, util_1.getFileTypeIcon)(item.type), date: item.date ? (0, util_1.formatDate)(item.date) : (item.createdAt ? (0, util_1.formatDate)(item.createdAt) : '') })));
-                // 分页信息
-                const currentPage = (result.pagination && result.pagination.page) || result.page || 1;
-                const pageTotal = result.pagination && result.pagination.total;
-                const totalPages = (result.pagination && result.pagination.totalPages) ||
-                    Math.ceil((pageTotal || result.total || 0) / PAGE_SIZE) ||
-                    1;
-                this.setData({
-                    works: reset ? enriched : [...this.data.works, ...enriched],
-                    total,
-                    hasMore: currentPage < totalPages,
-                    page: reset ? 2 : page + 1,
-                });
-            }
-            catch (err) {
-                console.error('[Hall] 加载失败:', err.message || err);
-                (0, util_1.toast)('加载失败，请下拉刷新重试');
-            }
-            finally {
-                this.setData({ loading: false, refreshing: false });
-                wx.stopPullDownRefresh();
-            }
+    /** 返回真正的大厅（全部作品） */
+    onBackToHall() {
+        this.setData({
+            mode: 'hall',
+            activeCategory: 'all',
+            keyword: '',
+            page: 1,
+            works: [],
+            hasMore: true,
         });
+        this._loadData(true);
+    },
+    /** 核心加载函数 */
+    async _loadData(reset) {
+        if (this.data.loading)
+            return;
+        this.setData({ loading: true, ...(reset ? { refreshing: true } : {}) });
+        try {
+            if (reset) {
+                this.setData({ page: 1, hasMore: true });
+            }
+            const { mode, activeCategory, keyword, page } = this.data;
+            // 仅在 hall 模式下加载 Banner（与主数据并发，不阻塞）
+            const bannerPromise = reset && mode === 'hall'
+                ? (0, api_1.getBannerWorks)().then(bannerData => {
+                    this.setData({
+                        bannerList: (bannerData || []).map((item) => ({
+                            ...item,
+                            typeName: (0, util_1.getFileTypeLabel)(item.type),
+                            typeIcon: (0, util_1.getFileTypeIcon)(item.type),
+                        })),
+                    });
+                }).catch(() => {
+                    // Banner 加载失败不阻塞主列表
+                    console.warn('[Hall] Banner 加载失败，跳过');
+                })
+                : Promise.resolve();
+            // 根据模式调用不同 API
+            let result;
+            if (mode === 'my') {
+                result = await (0, api_1.getMyWorks)({ page: reset ? 1 : page, pageSize: PAGE_SIZE });
+            }
+            else if (mode === 'liked') {
+                result = await (0, api_1.getLikedWorks)({ page: reset ? 1 : page, pageSize: PAGE_SIZE });
+            }
+            else if (mode === 'history') {
+                result = await (0, api_1.getHistory)({ page: reset ? 1 : page, pageSize: PAGE_SIZE });
+            }
+            else {
+                // 只传有值的参数，避免 undefined 被序列化为字符串 "undefined"
+                const params = {
+                    page: reset ? 1 : page,
+                    pageSize: PAGE_SIZE,
+                };
+                if (activeCategory !== 'all' && activeCategory) {
+                    params.categoryId = activeCategory;
+                }
+                if (keyword) {
+                    params.keyword = keyword;
+                }
+                result = await (0, api_1.getWorks)(params);
+            }
+            // 兼容返回格式：可能是数组 {list: [...]} 或 {list: [...], pagination: {...}}
+            const list = result.list || result || [];
+            const total = result.total || (result.pagination && result.pagination.total) || list.length;
+            // 丰富前端展示字段
+            const enriched = list.map((item) => ({
+                ...item,
+                typeName: (0, util_1.getFileTypeLabel)(item.type),
+                typeIcon: (0, util_1.getFileTypeIcon)(item.type),
+                date: item.date ? (0, util_1.formatDate)(item.date) : (item.createdAt ? (0, util_1.formatDate)(item.createdAt) : ''),
+                actualAuthor: item.actualAuthor || '',
+            }));
+            // 分页信息
+            const currentPage = (result.pagination && result.pagination.page) || result.page || 1;
+            const pageTotal = result.pagination && result.pagination.total;
+            const totalPages = (result.pagination && result.pagination.totalPages) ||
+                Math.ceil((pageTotal || result.total || 0) / PAGE_SIZE) ||
+                1;
+            this.setData({
+                works: reset ? enriched : [...this.data.works, ...enriched],
+                total,
+                hasMore: currentPage < totalPages,
+                page: reset ? 2 : page + 1,
+            });
+        }
+        catch (err) {
+            console.error('[Hall] 加载失败:', err.message || err);
+            (0, util_1.toast)('加载失败，请下拉刷新重试');
+        }
+        finally {
+            this.setData({ loading: false, refreshing: false });
+            wx.stopPullDownRefresh();
+        }
     },
     /** 分类切换 */
     onTabTap(e) {

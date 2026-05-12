@@ -22,8 +22,10 @@ Page({
   data: {
     profile: {} as ProfileData,
     interestOptions: INTEREST_OPTIONS,
+    interestTags: INTEREST_OPTIONS.map((name) => ({ name, active: false })),
     regionIndex: 0,
     region: ['江苏省', '南京市', ''],
+    regionDisplay: '选择地域',
     birthdayDate: '2000-01-01',
     uploading: false,
     saving: false,
@@ -31,6 +33,20 @@ Page({
 
   onLoad() {
     this._loadProfile()
+  },
+
+  /** 格式化地域显示 */
+  _formatRegion(region: string[]) {
+    return region && region.length ? region.join(' · ') : '选择地域'
+  },
+
+  /** 根据 interests 数组生成标签列表（含激活状态） */
+  _buildInterestTags(interests?: string[]) {
+    const list = interests ?? this.data.profile.interests ?? []
+    return this.data.interestOptions.map((name) => ({
+      name,
+      active: list.indexOf(name) >= 0,
+    }))
   },
 
   /** 加载当前用户信息 */
@@ -51,7 +67,10 @@ Page({
       },
       region: profileData.region || ['江苏省', '南京市', ''],
       birthdayDate: profileData.birthday || '2000-01-01',
+      regionDisplay: this._formatRegion(profileData.region || ['江苏省', '南京市', '']),
       })
+      // 同步兴趣标签状态
+      this.setData({ interestTags: this._buildInterestTags() })
     } catch (err: any) {
       console.error('[EditProfile] 加载失败:', err)
     }
@@ -111,6 +130,7 @@ Page({
     this.setData({
       region: values,
       'profile.region': values,
+      regionDisplay: this._formatRegion(values),
     })
   },
 
@@ -128,7 +148,10 @@ Page({
       }
       current.push(interest)
     }
-    this.setData({ 'profile.interests': current })
+    this.setData({
+      'profile.interests': current,
+      interestTags: this._buildInterestTags(current),
+    })
   },
 
   /** 保存所有资料 */

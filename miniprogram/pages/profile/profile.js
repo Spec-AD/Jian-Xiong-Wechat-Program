@@ -1,15 +1,6 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-// pages/profile/profile.ts — 个人主页（大重构版：数据中心、编辑资料、隐私设置、认证、浏览记录）
+// pages/profile/profile.ts — 个人主页（图标配置版）
 const api_1 = require("../../utils/api");
 const util_1 = require("../../utils/util");
 const app = getApp();
@@ -31,6 +22,10 @@ Page({
         uid: '',
         isVerified: false,
         signature: '',
+        birthday: '',
+        region: [],
+        regionDisplay: '',
+        interests: [],
         stats: {
             publishCount: 0,
             likeCount: 0,
@@ -60,19 +55,17 @@ Page({
         this._checkAdmin();
     },
     /** 检查是否为管理员 */
-    _checkAdmin() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const profile = yield (0, api_1.request)({
-                    url: '/user/profile',
-                    method: 'GET',
-                });
-                this.setData({ isAdmin: profile.role === 'admin' });
-            }
-            catch (_a) {
-                // 静默降级
-            }
-        });
+    async _checkAdmin() {
+        try {
+            const profile = await (0, api_1.request)({
+                url: '/user/profile',
+                method: 'GET',
+            });
+            this.setData({ isAdmin: profile.role === 'admin' });
+        }
+        catch {
+            // 静默降级
+        }
     },
     _checkFirstTime() {
         const shown = wx.getStorageSync('profile_first_time_shown');
@@ -84,53 +77,52 @@ Page({
         this.setData({ firstTime: false });
         wx.setStorageSync('profile_first_time_shown', true);
     },
-    _loadProfile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const profileData = yield (0, api_1.request)({ url: '/user/profile', method: 'GET' });
-                // 从后端同步最新的昵称和头像到全局状态
-                if (profileData.nickName || profileData.avatarUrl) {
-                    var syncedInfo = {
-                        nickName: (profileData.nickName && profileData.nickName.trim()) || (app.globalData.userInfo && app.globalData.userInfo.nickName) || '书院同学',
-                        avatarUrl: profileData.avatarUrl || (app.globalData.userInfo && app.globalData.userInfo.avatarUrl) || '',
-                    };
-                    app.saveUserInfo(syncedInfo);
-                    this.setData({ userInfo: syncedInfo });
-                }
-                this.setData({
-                    signature: profileData.signature || '',
-                    canPublish: profileData.canPublish !== null && profileData.canPublish !== void 0 ? profileData.canPublish : false,
-                });
-            }
-            catch (_a) {
-                // 静默降级
-            }
-        });
+    /** 格式化地域 */
+    _formatRegion(region) {
+        return region && region.length ? region.join(' · ') : '';
     },
-    _loadStats() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const stats = yield (0, api_1.getUserStats)();
-                this.setData({ stats });
+    async _loadProfile() {
+        try {
+            const profileData = await (0, api_1.request)({ url: '/user/profile', method: 'GET' });
+            // 从后端同步最新的昵称和头像到全局状态
+            if (profileData.nickName || profileData.avatarUrl) {
+                const syncedInfo = {
+                    nickName: profileData.nickName?.trim() || app.globalData.userInfo?.nickName || '书院同学',
+                    avatarUrl: profileData.avatarUrl || app.globalData.userInfo?.avatarUrl || '',
+                };
+                app.saveUserInfo(syncedInfo);
+                this.setData({ userInfo: syncedInfo });
             }
-            catch (err) {
-                console.warn('[Profile] 获取统计数据失败:', err.message || err);
-            }
-        });
+            this.setData({
+                signature: profileData.signature || '',
+                birthday: profileData.birthday || '',
+                region: profileData.region || [],
+                regionDisplay: this._formatRegion(profileData.region || []),
+                interests: profileData.interests || [],
+                canPublish: profileData.canPublish !== null && profileData.canPublish !== void 0 ? profileData.canPublish : false,
+            });
+        }
+        catch {
+            // 静默降级
+        }
     },
-    _loadHistoryCount() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const data = yield (0, api_1.request)({
-                    url: '/user/history',
-                    method: 'GET',
-                });
-                this.setData({ historyCount: data.count || 0 });
-            }
-            catch (_a) {
-                this.setData({ historyCount: 0 });
-            }
-        });
+    async _loadStats() {
+        try {
+            const stats = await (0, api_1.getUserStats)();
+            this.setData({ stats });
+        }
+        catch (err) {
+            console.warn('[Profile] 获取统计数据失败:', err.message || err);
+        }
+    },
+    async _loadHistoryCount() {
+        try {
+            const result = await (0, api_1.getHistory)({ page: 1, pageSize: 1 });
+            this.setData({ historyCount: result.pagination?.total || 0 });
+        }
+        catch {
+            // 静默降级
+        }
     },
     // ── onSyncWechatInfo 已移除 ──
     // wx.getUserProfile() 在 2.32.3+ 基础库中已废弃
@@ -173,12 +165,6 @@ Page({
                 break;
             case 'editProfile':
                 wx.navigateTo({ url: '/pages/edit-profile/edit-profile' });
-                break;
-            case 'verification':
-                wx.navigateTo({ url: '/pages/verification/verification' });
-                break;
-            case 'privacy':
-                wx.navigateTo({ url: '/pages/privacy-settings/privacy-settings' });
                 break;
             case 'github':
                 wx.setClipboardData({

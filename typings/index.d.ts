@@ -22,10 +22,6 @@ interface IAppOption {
   }
   /** 加载自定义字体 */
   loadCustomFont(): void
-  /** 执行登录流程，返回是否登录成功 */
-  doLogin(): Promise<boolean>
-  /** 获取并保存用户信息 */
-  fetchAndSaveUser(): Promise<void>
   saveUserInfo(info: AppUserInfo): void
   clearUserInfo(): void
 }

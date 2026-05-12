@@ -134,4 +134,12 @@ export const updateWorkValidator = [
     .optional()
     .isIn(['draft', 'published', 'hidden'])
     .withMessage('无效的状态值'),
+  body('actualAuthor')
+    .optional()
+    .isString()
+    .withMessage('实际作者必须是字符串')
+    .isLength({ max: 50 })
+    .withMessage('实际作者最长 50 个字符')
+    .trim(),
 ]
+

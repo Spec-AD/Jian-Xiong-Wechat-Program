@@ -46,7 +46,7 @@
         <view class="banner-overlay">
           <view class="banner-tag">{{item.typeName}}</view>
           <text class="banner-title">{{item.title}}</text>
-          <text class="banner-author">{{item.author}}</text>
+          <text class="banner-author">{{item.actualAuthor || '未知作者'}}</text>
         </view>
       </view>
     </swiper-item>
@@ -110,12 +110,12 @@
       <!-- 信息 -->
       <view class="card-info">
         <text class="card-title">{{item.title}}</text>
-        <text class="card-author">{{item.author}}</text>
+        <text class="card-author">{{item.actualAuthor}}</text>
         <view class="card-meta">
           <text class="card-date">{{item.date}}</text>
           <view class="card-stats">
-            <text class="stat-text">{{item.views}}</text>
-            <text class="stat-text">{{item.likes}}</text>
+            <text class="stat-text">浏览 {{item.views}}</text>
+            <text class="stat-text">赞 {{item.likes}}</text>
           </view>
         </view>
       </view>

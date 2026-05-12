@@ -1,7 +1,8 @@
 "use strict";
 // utils/util.ts — 健雄书院工具函数库
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.throttle = exports.WORK_CATEGORIES = exports.formatRelativeTime = exports.toast = exports.formatFileSize = exports.formatDuration = exports.getFileTypeIcon = exports.getFileTypeLabel = exports.getFileType = exports.formatDate = exports.formatTime = exports.formatNumber = void 0;
+exports.debounce = exports.throttle = exports.WORK_CATEGORIES = exports.formatRelativeTime = exports.toast = exports.formatFileSize = exports.formatDuration = exports.getFileTypeIcon = exports.getFileTypeLabel = exports.getFileType = exports.formatDate = exports.formatTime = exports.formatNumber = void 0;
+exports.getWebpUrl = getWebpUrl;
 /** 补零 */
 const formatNumber = (n) => {
     const s = n.toString();
@@ -56,7 +57,7 @@ const getFileTypeIcon = (type) => {
     const map = {
         video: '', audio: '', image: '', doc: '', unknown: '',
     };
-    return map[type] !== null && map[type] !== void 0 ? map[type] : '';
+    return (map[type] !== null && map[type] !== void 0) ? map[type] : '';
 };
 exports.getFileTypeIcon = getFileTypeIcon;
 /**
@@ -130,3 +131,37 @@ const throttle = (fn, delay = 300) => {
     };
 };
 exports.throttle = throttle;
+/**
+ * 获取 WebP 格式的图片 URL（利用腾讯云 COS 图片处理）
+ * COS 万象图片处理：添加 ?imageMogr2/format/webp
+ * 在支持 WebP 的浏览器/小程序中节省带宽
+ */
+function getWebpUrl(url, options) {
+    if (!url || !url.includes('cos.ap-'))
+        return url;
+    const params = ['imageMogr2'];
+    params.push('format/webp');
+    if (options?.width) {
+        params.push(`thumbnail/${options.width}x`);
+    }
+    if (options?.quality) {
+        params.push(`quality/${options.quality}`);
+    }
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}${params.join('/')}`;
+}
+/**
+ * 防抖函数
+ */
+const debounce = (fn, delay = 300) => {
+    let timer = null;
+    return (...args) => {
+        if (timer)
+            clearTimeout(timer);
+        timer = setTimeout(() => {
+            fn(...args);
+            timer = null;
+        }, delay);
+    };
+};
+exports.debounce = debounce;

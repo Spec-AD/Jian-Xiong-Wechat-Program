@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 // app.ts
 const api_1 = require("./utils/api");
@@ -17,9 +8,8 @@ App({
         openid: '',
         loginCode: '',
         baseUrl: 'https://jx-plform.site/api',
-        /** hall 页面的展示模式：hall | my | liked */
-        hallMode: 'hall',
         /** hall 页面的展示模式：hall | my | liked | history */
+        hallMode: 'hall',
     },
     onLaunch() {
         // ── 加载全局自定义字体 ──
@@ -29,12 +19,10 @@ App({
         if (cached) {
             this.globalData.userInfo = cached;
         }
-        // ── 恢复登录态（仅当有缓存 token 时） ──
-        // 不自动调用 wx.login()，避免在用户无操作时创建随机账号
-        // 由登录页面的「一键登录」按钮手动触发完整登录流程
-        if ((0, api_1.getToken)()) {
-            this.doLogin();
-        }
+        // ── 登录态恢复 ──
+        // 不自动调用 wx.login() 或主动验证 token，避免后台 API 调用意外清除有效 token。
+        // 如果 token 已过期，首次需要鉴权的 API 请求会返回 401，由 api.ts 统一处理跳转登录。
+        // 用户信息从缓存恢复，登录页「一键登录」触发完整登录流程。
         // ── 小程序更新检测 ──
         if (wx.canIUse('getUpdateManager')) {
             const mgr = wx.getUpdateManager();
@@ -64,43 +52,6 @@ App({
         catch (err) {
             // 低版本基础库不支持 loadFontFace，静默忽略
         }
-    },
-    /** 恢复登录态：从已有 token 获取用户信息
-     *  由 pages/login/login.ts 的 handleQuickLogin 在用户点击「一键登录」后触发完整登录流程
-     *  @returns 恢复成功返回 true，失败（无 token）返回 false
-     */
-    doLogin() {
-        return __awaiter(this, void 0, void 0, function* () {
-            // 如果已有 token，尝试恢复用户信息
-            if ((0, api_1.getToken)()) {
-                console.log('[App] 已有 token，尝试恢复用户信息');
-                yield this.fetchAndSaveUser();
-                return true;
-            }
-            console.log('[App] 无 token，等待用户手动登录');
-            return false;
-        });
-    },
-    /** 从后端获取用户信息并保存到 globalData 和缓存 */
-    fetchAndSaveUser() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const profile = yield (0, api_1.getUserProfile)();
-                const userInfo = {
-                    nickName: profile.nickName,
-                    avatarUrl: profile.avatarUrl,
-                };
-                this.saveUserInfo(userInfo);
-                console.log('[App] 用户信息已加载:', userInfo.nickName);
-            }
-            catch (err) {
-                // token 失效则清除
-                if (err.message && (err.message.includes('401') || err.message.includes('未登录'))) {
-                    (0, api_1.removeToken)();
-                }
-                console.warn('[App] 获取用户信息失败:', err.message || err);
-            }
-        });
     },
     /** 保存并持久化用户信息 */
     saveUserInfo(info) {

@@ -129,14 +129,14 @@
         </view>
       </view>
 
-      <!-- 作者（只展示实际作者，无值时显示 Unknown） -->
+      <!-- 作者（只展示实际作者，不展示上传者） -->
       <view class="info-author-row">
         <view class="info-author-avatar">
           <text class="info-author-avatar-icon"></text>
         </view>
         <view class="info-author-text">
-          <text class="info-author-name">{{actualAuthor || 'Unknown'}}</text>
-          <text class="info-author-label">作者</text>
+          <text class="info-author-name">{{actualAuthor || '未知作者'}}</text>
+          <text class="info-author-label">实际作者</text>
         </view>
       </view>
 
@@ -159,21 +159,21 @@
       <!-- 统计数据 -->
       <view class="info-stats">
         <view class="stat-item">
-          <text class="stat-value">{{viewsDisplay}}</text>
-          <text class="stat-label">浏览量</text>
-        </view>
-        <view class="stat-item">
-          <text class="stat-value">{{likesCountDisplay}}</text>
-          <text class="stat-label">点赞数</text>
-        </view>
-        <view class="stat-item">
-          <text class="stat-value">{{commentsCountDisplay}}</text>
-          <text class="stat-label">评论数</text>
-        </view>
-        <view class="stat-item">
-          <text class="stat-value">{{dateDisplay}}</text>
-          <text class="stat-label">发布日期</text>
-        </view>
+            <text class="stat-value">{{viewsDisplay}}</text>
+            <text class="stat-label">浏览</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-value">{{likesCountDisplay}}</text>
+            <text class="stat-label">点赞</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-value">{{commentsCountDisplay}}</text>
+            <text class="stat-label">评论</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-value">{{dateDisplay}}</text>
+            <text class="stat-label">日期</text>
+          </view>
       </view>
 
     </view>
@@ -226,21 +226,21 @@
   <!-- ========== 固定底部操作栏（含评论输入）========== -->
   <view class="bottom-bar" wx:if="{{!loading}}">
 
-    <!-- 点赞 -->
+        <!-- 点赞 -->
     <view class="bottom-action bottom-like" bindtap="onLike">
-      <text class="bottom-action-icon"></text>
+      <text class="bottom-action-icon">{{liked ? '♥' : '♡'}}</text>
       <text class="bottom-action-label">{{liked ? '已赞' : '点赞'}}</text>
     </view>
 
     <!-- 分享 -->
     <view class="bottom-action" bindtap="onShare">
-      <text class="bottom-action-icon"></text>
+      <text class="bottom-action-icon">↗</text>
       <text class="bottom-action-label">分享</text>
     </view>
 
     <!-- 下载 -->
     <view class="bottom-action" bindtap="onDownload">
-      <text class="bottom-action-icon"></text>
+      <text class="bottom-action-icon">↓</text>
       <text class="bottom-action-label">下载</text>
     </view>
 

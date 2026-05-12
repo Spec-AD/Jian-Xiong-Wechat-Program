@@ -28,7 +28,20 @@
       </view>
       <text class="profile-uid">UID: {{uid}}</text>
       <text wx:if="{{signature}}" class="profile-sig">「{{signature}}」</text>
-
+      <view wx:if="{{birthday}}" class="profile-detail-row">
+        <text class="profile-detail-label">🎂 生日</text>
+        <text class="profile-detail-value">{{birthday}}</text>
+      </view>
+      <view wx:if="{{region.length > 0}}" class="profile-detail-row">
+        <text class="profile-detail-label">📍 地域</text>
+        <text class="profile-detail-value">{{regionDisplay}}</text>
+      </view>
+      <view wx:if="{{interests.length > 0}}" class="profile-detail-row">
+        <text class="profile-detail-label">🏷️ 兴趣</text>
+        <view class="profile-interests">
+          <text wx:for="{{interests}}" wx:key="index" class="profile-interest-tag">{{item}}</text>
+        </view>
+      </view>
     </view>
 
   </view>

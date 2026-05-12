@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 // pages/privacy-settings/privacy-settings.ts — 隐私设置
 const api_1 = require("../../utils/api");
@@ -32,60 +23,59 @@ Page({
         this._loadSettings();
     },
     /** 从后端加载隐私设置 */
-    _loadSettings() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.setData({ loading: true });
-            try {
-                const settings = yield (0, api_1.request)({
-                    url: '/user/privacy-settings',
-                    method: 'GET',
+    async _loadSettings() {
+        this.setData({ loading: true });
+        try {
+            const settings = await (0, api_1.request)({
+                url: '/user/privacy-settings',
+                method: 'GET',
+            });
+            if (settings) {
+                const items = this.data.items.map(item => ({
+                    ...item,
+                    visible: settings[item.key] !== null && settings[item.key] !== void 0 ? settings[item.key] : item.visible,
+                }));
+                this.setData({
+                    items,
+                    allowSearchByUid: settings.allowSearchByUid !== null && settings.allowSearchByUid !== void 0 ? settings.allowSearchByUid : true,
                 });
-                if (settings) {
-                    const items = this.data.items.map(item => (Object.assign(Object.assign({}, item), { visible: settings[item.key] !== null && settings[item.key] !== void 0 ? settings[item.key] : item.visible })));
-                    this.setData({
-                        items,
-                        allowSearchByUid: settings.allowSearchByUid !== null && settings.allowSearchByUid !== void 0 ? settings.allowSearchByUid : true,
-                    });
-                }
             }
-            catch (_a) {
-                // 如果后端未实现此接口，保持默认值
-                console.log('[Privacy] 使用默认设置');
-            }
-            finally {
-                this.setData({ loading: false });
-            }
-        });
+        }
+        catch {
+            // 如果后端未实现此接口，保持默认值
+            console.log('[Privacy] 使用默认设置');
+        }
+        finally {
+            this.setData({ loading: false });
+        }
     },
     /** 切换开关 */
-    onSwitchChange(e) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const key = e.currentTarget.dataset.key;
-            const checked = e.detail.value;
-            // 更新本地状态
-            if (key === 'allowSearchByUid') {
-                this.setData({ allowSearchByUid: checked });
-            }
-            else {
-                const items = this.data.items.map(item => item.key === key ? Object.assign(Object.assign({}, item), { visible: checked }) : item);
-                this.setData({ items });
-            }
-            // 同步到后端
-            try {
-                const settings = {};
-                this.data.items.forEach(item => { settings[item.key] = item.visible; });
-                settings.allowSearchByUid = this.data.allowSearchByUid;
-                yield (0, api_1.request)({
-                    url: '/user/privacy-settings',
-                    method: 'PUT',
-                    data: settings,
-                });
-            }
-            catch (_a) {
-                (0, util_1.toast)('设置保存失败');
-                // 回滚
-                this._loadSettings();
-            }
-        });
+    async onSwitchChange(e) {
+        const key = e.currentTarget.dataset.key;
+        const checked = e.detail.value;
+        // 更新本地状态
+        if (key === 'allowSearchByUid') {
+            this.setData({ allowSearchByUid: checked });
+        }
+        else {
+            const items = this.data.items.map(item => item.key === key ? { ...item, visible: checked } : item);
+            this.setData({ items });
+        }
+        // 同步到后端
+        try {
+            const settings = {};
+            this.data.items.forEach(item => { settings[item.key] = item.visible; });
+            settings.allowSearchByUid = this.data.allowSearchByUid;
+            await (0, api_1.request)({
+                url: '/user/privacy-settings',
+                method: 'PUT',
+                data: settings,
+            });
+        }
+        catch {
+            (0, util_1.toast)('设置保存失败');
+            // 回滚
+            this._loadSettings();
+        }
     },
 });

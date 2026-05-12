@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 // pages/viewer/viewer.ts — 素材详情页（信息卡片 + 评论区 + 统一模板）
 const util_1 = require("../../utils/util");
@@ -22,6 +13,7 @@ Page({
         author: '',
         authorAvatar: '',
         authorStudentId: '',
+        actualAuthor: '',
         description: '',
         date: '',
         tags: [],
@@ -58,77 +50,76 @@ Page({
     },
     _audio: null,
     _workId: '',
-    onLoad(options) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const id = options.id || '';
-            if (!id) {
-                (0, util_1.toast)('作品ID无效');
-                return;
+    async onLoad(options) {
+        const id = options.id || '';
+        if (!id) {
+            (0, util_1.toast)('作品ID无效');
+            return;
+        }
+        this._workId = id;
+        this.setData({ id, loading: true });
+        try {
+            // 1. 并发加载作品详情 + 评论
+            const [detail, commentsData] = await Promise.all([
+                (0, api_1.getWorkDetail)(id),
+                (0, api_1.getWorkComments)(id).catch(() => ({ list: [] })),
+            ]);
+            // 2. 组装作品数据
+            const rawViews = detail.views || 0;
+            const rawLikes = detail.likes || 0;
+            const commentsAny = commentsData;
+            const rawCommentsCount = (commentsAny && commentsAny.list && commentsAny.list.length) || detail.commentsCount || 0;
+            this.setData({
+                type: detail.type || '',
+                fileUrl: detail.fileUrl || '',
+                title: detail.title || '作品预览',
+                author: detail.author || '',
+                authorAvatar: detail.authorAvatar || '',
+                authorStudentId: detail.authorStudentId || '',
+                actualAuthor: detail.actualAuthor || '',
+                description: detail.description || '',
+                date: detail.date || detail.createdAt || '',
+                tags: detail.tags || [],
+                imageList: detail.imageList || [],
+                liked: detail.liked || false,
+                likesCount: rawLikes,
+                views: rawViews,
+                commentsCount: rawCommentsCount,
+                // 预计算格式化显示值
+                viewsDisplay: this._formatCount(rawViews),
+                likesCountDisplay: this._formatCount(rawLikes),
+                commentsCountDisplay: this._formatCount(rawCommentsCount),
+                dateDisplay: this._formatDate(detail.date || detail.createdAt),
+                loading: false,
+            });
+            // 3. 处理评论列表（添加相对时间）
+            const commentsAny2 = commentsData;
+            const rawComments = (commentsAny2 && commentsAny2.list) || [];
+            this.setData({
+                comments: rawComments.map((c) => ({
+                    id: c.id,
+                    author: c.author,
+                    authorAvatar: c.authorAvatar,
+                    content: c.content,
+                    createdAt: c.createdAt,
+                    relativeTime: (0, util_1.formatRelativeTime)(c.createdAt),
+                })),
+            });
+            wx.setNavigationBarTitle({ title: detail.title || '作品预览' });
+            // 4. 开发阶段：任何人可编辑
+            this.setData({ canEdit: true });
+            // 5. 如果是音频则初始化播放器
+            if (detail.type === 'audio' && detail.fileUrl) {
+                this._initAudio(detail.fileUrl);
             }
-            this._workId = id;
-            this.setData({ id, loading: true });
-            try {
-                // 1. 并发加载作品详情 + 评论
-                const [detail, commentsData] = yield Promise.all([
-                    (0, api_1.getWorkDetail)(id),
-                    (0, api_1.getWorkComments)(id).catch(() => ({ list: [] })),
-                ]);
-                // 2. 组装作品数据
-                const rawViews = detail.views || 0;
-                const rawLikes = detail.likes || 0;
-                const commentsAny = commentsData;
-                const rawCommentsCount = (commentsAny && commentsAny.list && commentsAny.list.length) || detail.commentsCount || 0;
-                this.setData({
-                    type: detail.type || '',
-                    fileUrl: detail.fileUrl || '',
-                    title: detail.title || '作品预览',
-                    author: detail.author || '',
-                    authorAvatar: detail.authorAvatar || '',
-                    authorStudentId: detail.authorStudentId || '',
-                    description: detail.description || '',
-                    date: detail.date || detail.createdAt || '',
-                    tags: detail.tags || [],
-                    imageList: detail.imageList || [],
-                    liked: detail.liked || false,
-                    likesCount: rawLikes,
-                    views: rawViews,
-                    commentsCount: rawCommentsCount,
-                    // 预计算格式化显示值
-                    viewsDisplay: this._formatCount(rawViews),
-                    likesCountDisplay: this._formatCount(rawLikes),
-                    commentsCountDisplay: this._formatCount(rawCommentsCount),
-                    dateDisplay: this._formatDate(detail.date || detail.createdAt),
-                    loading: false,
-                });
-                // 3. 处理评论列表（添加相对时间）
-                const commentsAny2 = commentsData;
-                const rawComments = (commentsAny2 && commentsAny2.list) || [];
-                this.setData({
-                    comments: rawComments.map((c) => ({
-                        id: c.id,
-                        author: c.author,
-                        authorAvatar: c.authorAvatar,
-                        content: c.content,
-                        createdAt: c.createdAt,
-                        relativeTime: (0, util_1.formatRelativeTime)(c.createdAt),
-                    })),
-                });
-                wx.setNavigationBarTitle({ title: detail.title || '作品预览' });
-                // 4. 开发阶段：任何人可编辑
-                this.setData({ canEdit: true });
-                // 5. 如果是音频则初始化播放器
-                if (detail.type === 'audio' && detail.fileUrl) {
-                    this._initAudio(detail.fileUrl);
-                }
-                // 6. 异步记录浏览量
-                this._recordView(id);
-            }
-            catch (err) {
-                console.error('[Viewer] 加载失败:', err);
-                (0, util_1.toast)('作品加载失败');
-                this.setData({ loading: false });
-            }
-        });
+            // 6. 异步记录浏览量
+            this._recordView(id);
+        }
+        catch (err) {
+            console.error('[Viewer] 加载失败:', err);
+            (0, util_1.toast)('作品加载失败');
+            this.setData({ loading: false });
+        }
     },
     // ─── 工具函数：格式化大数字（1234 → 1.2k）─────
     _formatCount(val) {
@@ -155,23 +146,21 @@ Page({
             const m = String(d.getMinutes()).padStart(2, '0');
             return `${Y}-${M}-${D} ${h}:${m}`;
         }
-        catch (_a) {
+        catch {
             return val;
         }
     },
-    /** 异步记录浏览量 */
-    _recordView(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                yield (0, api_1.request)({ url: `/works/${id}/view`, method: 'POST', needAuth: false });
-                const newViews = this.data.views + 1;
-                this.setData({
-                    views: newViews,
-                    viewsDisplay: this._formatCount(newViews),
-                });
-            }
-            catch ( /* 静默 */_a) { /* 静默 */ }
-        });
+    /** 异步记录浏览量（同时记录浏览历史） */
+    async _recordView(id) {
+        try {
+            await (0, api_1.recordView)(id);
+            const newViews = this.data.views + 1;
+            this.setData({
+                views: newViews,
+                viewsDisplay: this._formatCount(newViews),
+            });
+        }
+        catch { /* 静默 */ }
     },
     onUnload() {
         if (this._audio) {
@@ -272,21 +261,19 @@ Page({
         });
     },
     // ─── 点赞 ───────────────────────────────────────────────
-    onLike() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const result = yield (0, api_1.toggleLike)(this._workId);
-                this.setData({
-                    liked: result.liked,
-                    likesCount: result.likesCount,
-                    likesCountDisplay: this._formatCount(result.likesCount),
-                });
-                (0, util_1.toast)(result.liked ? '已点赞' : '已取消点赞');
-            }
-            catch (err) {
-                (0, util_1.toast)('操作失败，请重试');
-            }
-        });
+    async onLike() {
+        try {
+            const result = await (0, api_1.toggleLike)(this._workId);
+            this.setData({
+                liked: result.liked,
+                likesCount: result.likesCount,
+                likesCountDisplay: this._formatCount(result.likesCount),
+            });
+            (0, util_1.toast)(result.liked ? '已点赞' : '已取消点赞');
+        }
+        catch (err) {
+            (0, util_1.toast)('操作失败，请重试');
+        }
     },
     // ─── 分享 ───────────────────────────────────────────────
     onShare() {
@@ -304,11 +291,11 @@ Page({
             content: `确定要删除「${title || '作品'}」吗？此操作不可恢复。`,
             confirmColor: '#e57373',
             confirmText: '删除',
-            success: (res) => __awaiter(this, void 0, void 0, function* () {
+            success: async (res) => {
                 if (res.confirm) {
                     wx.showLoading({ title: '删除中…', mask: true });
                     try {
-                        yield (0, api_1.deleteWork)(this._workId);
+                        await (0, api_1.deleteWork)(this._workId);
                         wx.hideLoading();
                         (0, util_1.toast)('已删除', 'success');
                         wx.navigateBack();
@@ -318,53 +305,127 @@ Page({
                         (0, util_1.toast)(err.message || '删除失败');
                     }
                 }
-            }),
+            },
         });
     },
     /** 开发阶段：任何人可编辑 */
-    _checkEditPermission(detail) {
-        return __awaiter(this, void 0, void 0, function* () {
-            // 开发阶段不限制，任何人可编辑/删除
-            this.setData({ canEdit: true });
-        });
+    async _checkEditPermission(detail) {
+        // 开发阶段不限制，任何人可编辑/删除
+        this.setData({ canEdit: true });
     },
-    // ─── 下载 ───────────────────────────────────────────────
+    // ─── 下载（带进度追踪）───────────────────────────────────
     onDownload() {
-        const { fileUrl, type } = this.data;
+        const { fileUrl, type, title, id: workId } = this.data;
         if (!fileUrl) {
             (0, util_1.toast)('暂无可下载文件');
             return;
         }
-        wx.showLoading({ title: '下载中…' });
-        wx.downloadFile({
+        wx.showLoading({ title: '准备下载…' });
+        // 从后端获取文件大小信息（HEAD 请求）
+        let expectedBytes = 0;
+        const doDownload = () => {
+            const startTime = Date.now();
+            let lastBytes = 0;
+            let lastTime = startTime;
+            const task = wx.downloadFile({
+                url: fileUrl,
+                success: res => {
+                    wx.hideLoading();
+                    if (res.statusCode !== 200) {
+                        // 更新记录为失败
+                        const { updateDownloadRecord } = require('../../utils/downloadManager');
+                        updateDownloadRecord(recordId, {
+                            status: 'failed',
+                            errorMsg: '服务器返回 ' + res.statusCode,
+                        });
+                        (0, util_1.toast)('下载失败');
+                        return;
+                    }
+                    // 更新记录为完成
+                    const { updateDownloadRecord } = require('../../utils/downloadManager');
+                    updateDownloadRecord(recordId, {
+                        status: 'completed',
+                        progress: 100,
+                        downloadedBytes: expectedBytes,
+                        localPath: res.tempFilePath,
+                        completedAt: new Date().toISOString(),
+                    });
+                    // 根据类型自动处理
+                    if (type === 'image') {
+                        wx.saveImageToPhotosAlbum({
+                            filePath: res.tempFilePath,
+                            success: () => (0, util_1.toast)('图片已保存到相册', 'success'),
+                            fail: () => (0, util_1.toast)('保存失败，请授权相册权限'),
+                        });
+                    }
+                    else if (type === 'video') {
+                        wx.saveVideoToPhotosAlbum({
+                            filePath: res.tempFilePath,
+                            success: () => (0, util_1.toast)('视频已保存到相册', 'success'),
+                            fail: () => (0, util_1.toast)('保存失败，请授权相册权限'),
+                        });
+                    }
+                    else {
+                        wx.openDocument({ filePath: res.tempFilePath, showMenu: true,
+                            success: () => (0, util_1.toast)('文件已打开，可从菜单另存') });
+                    }
+                },
+                fail: (err) => {
+                    wx.hideLoading();
+                    const { updateDownloadRecord } = require('../../utils/downloadManager');
+                    updateDownloadRecord(recordId, {
+                        status: 'failed',
+                        errorMsg: err.errMsg || '网络异常',
+                    });
+                    (0, util_1.toast)('下载失败，请检查网络');
+                },
+            });
+            // 追踪下载进度
+            task.onProgressUpdate((res) => {
+                const now = Date.now();
+                const elapsed = (now - lastTime) / 1000; // 秒
+                const bytesDelta = res.totalBytesWritten - lastBytes;
+                const speed = elapsed > 0 ? bytesDelta / elapsed : 0;
+                // 估算剩余时间
+                const remaining = res.totalBytesExpectedToWrite - res.totalBytesWritten;
+                const eta = speed > 0 ? remaining / speed : 0;
+                lastBytes = res.totalBytesWritten;
+                lastTime = now;
+                expectedBytes = res.totalBytesExpectedToWrite;
+                const { updateDownloadRecord } = require('../../utils/downloadManager');
+                updateDownloadRecord(recordId, {
+                    progress: res.progress,
+                    downloadedBytes: res.totalBytesWritten,
+                    totalBytes: res.totalBytesExpectedToWrite,
+                    speed: Math.round(speed),
+                    eta: Math.round(eta),
+                });
+            });
+        };
+        // 创建下载记录
+        const { addDownloadRecord } = require('../../utils/downloadManager');
+        const record = addDownloadRecord({
+            workId,
+            title: title || '未知作品',
+            type,
             url: fileUrl,
-            success: res => {
-                wx.hideLoading();
-                if (res.statusCode !== 200) {
-                    (0, util_1.toast)('下载失败');
-                    return;
-                }
-                if (type === 'image') {
-                    wx.saveImageToPhotosAlbum({
-                        filePath: res.tempFilePath,
-                        success: () => (0, util_1.toast)('图片已保存到相册', 'success'),
-                        fail: () => (0, util_1.toast)('保存失败，请授权相册权限'),
-                    });
-                }
-                else if (type === 'video') {
-                    wx.saveVideoToPhotosAlbum({
-                        filePath: res.tempFilePath,
-                        success: () => (0, util_1.toast)('视频已保存到相册', 'success'),
-                        fail: () => (0, util_1.toast)('保存失败，请授权相册权限'),
-                    });
-                }
-                else {
-                    wx.openDocument({ filePath: res.tempFilePath, showMenu: true,
-                        success: () => (0, util_1.toast)('文件已打开，可从菜单另存') });
-                }
-            },
-            fail: () => { wx.hideLoading(); (0, util_1.toast)('下载失败'); },
+            localPath: '',
+            totalBytes: 0,
+            downloadedBytes: 0,
+            progress: 0,
+            speed: 0,
+            eta: 0,
+            status: 'downloading',
         });
+        const recordId = record.id;
+        // 开始下载
+        wx.hideLoading();
+        wx.showToast({ title: '开始下载', icon: 'success', duration: 1500 });
+        doDownload();
+    },
+    /** 跳转到下载管理页 */
+    onGoDownloads() {
+        wx.navigateTo({ url: '/pages/downloads/downloads' });
     },
     // ─── 评论功能 ───────────────────────────────────────────
     /** 输入框聚焦 */
@@ -398,39 +459,37 @@ Page({
         }
     },
     /** 提交评论 */
-    _submitComment(content) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this.data.sendingComment)
-                return;
-            if (!content.trim()) {
-                (0, util_1.toast)('请输入评论内容');
-                return;
-            }
-            this.setData({ sendingComment: true });
-            try {
-                const result = yield (0, api_1.addWorkComment)(this._workId, content);
-                // 将新评论插入列表顶部
-                const newComment = {
-                    id: result.comment.id,
-                    author: result.comment.author,
-                    authorAvatar: result.comment.authorAvatar,
-                    content: result.comment.content,
-                    createdAt: result.comment.createdAt,
-                    relativeTime: '刚刚',
-                };
-                this.setData({
-                    comments: [newComment, ...this.data.comments],
-                    commentsCount: this.data.commentsCount + 1,
-                    commentText: '',
-                    sendingComment: false,
-                });
-                (0, util_1.toast)('评论成功', 'success');
-            }
-            catch (err) {
-                // 显示后端返回的具体错误信息
-                (0, util_1.toast)(err.message || '评论发送失败，请重试');
-                this.setData({ sendingComment: false });
-            }
-        });
+    async _submitComment(content) {
+        if (this.data.sendingComment)
+            return;
+        if (!content.trim()) {
+            (0, util_1.toast)('请输入评论内容');
+            return;
+        }
+        this.setData({ sendingComment: true });
+        try {
+            const result = await (0, api_1.addWorkComment)(this._workId, content);
+            // 将新评论插入列表顶部
+            const newComment = {
+                id: result.comment.id,
+                author: result.comment.author,
+                authorAvatar: result.comment.authorAvatar,
+                content: result.comment.content,
+                createdAt: result.comment.createdAt,
+                relativeTime: '刚刚',
+            };
+            this.setData({
+                comments: [newComment, ...this.data.comments],
+                commentsCount: this.data.commentsCount + 1,
+                commentText: '',
+                sendingComment: false,
+            });
+            (0, util_1.toast)('评论成功', 'success');
+        }
+        catch (err) {
+            // 显示后端返回的具体错误信息（如：内容不能为空、请先登录等）
+            (0, util_1.toast)(err.message || '评论发送失败，请重试');
+            this.setData({ sendingComment: false });
+        }
     },
 });

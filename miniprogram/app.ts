@@ -1,5 +1,5 @@
 // app.ts
-import { getUserProfile, getToken, removeToken } from './utils/api'
+import { removeToken } from './utils/api'
 
 App<IAppOption>({
     globalData: {
@@ -21,12 +21,10 @@ App<IAppOption>({
       this.globalData.userInfo = cached
     }
 
-        // ── 恢复登录态（仅当有缓存 token 时） ──
-        // 不自动调用 wx.login()，避免在用户无操作时创建随机账号
-        // 由登录页面的「一键登录」按钮手动触发完整登录流程
-        if (getToken()) {
-          this.doLogin()
-        }
+                // ── 登录态恢复 ──
+        // 不自动调用 wx.login() 或主动验证 token，避免后台 API 调用意外清除有效 token。
+        // 如果 token 已过期，首次需要鉴权的 API 请求会返回 401，由 api.ts 统一处理跳转登录。
+        // 用户信息从缓存恢复，登录页「一键登录」触发完整登录流程。
 
     // ── 小程序更新检测 ──
     if (wx.canIUse('getUpdateManager')) {
@@ -55,40 +53,6 @@ App<IAppOption>({
       })
     } catch (err) {
       // 低版本基础库不支持 loadFontFace，静默忽略
-    }
-  },
-
-    /** 恢复登录态：从已有 token 获取用户信息
-     *  由 pages/login/login.ts 的 handleQuickLogin 在用户点击「一键登录」后触发完整登录流程
-     *  @returns 恢复成功返回 true，失败（无 token）返回 false
-     */
-    async doLogin(): Promise<boolean> {
-      // 如果已有 token，尝试恢复用户信息
-      if (getToken()) {
-        console.log('[App] 已有 token，尝试恢复用户信息')
-        await this.fetchAndSaveUser()
-        return true
-      }
-      console.log('[App] 无 token，等待用户手动登录')
-      return false
-    },
-
-  /** 从后端获取用户信息并保存到 globalData 和缓存 */
-  async fetchAndSaveUser() {
-    try {
-      const profile = await getUserProfile()
-      const userInfo: AppUserInfo = {
-        nickName: profile.nickName,
-        avatarUrl: profile.avatarUrl,
-      }
-      this.saveUserInfo(userInfo)
-      console.log('[App] 用户信息已加载:', userInfo.nickName)
-    } catch (err: any) {
-      // token 失效则清除
-      if (err.message && (err.message.includes('401') || err.message.includes('未登录'))) {
-        removeToken()
-      }
-      console.warn('[App] 获取用户信息失败:', err.message || err)
     }
   },
 

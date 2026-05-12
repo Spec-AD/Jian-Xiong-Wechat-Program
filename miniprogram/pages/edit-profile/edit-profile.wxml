@@ -67,7 +67,7 @@
         value="{{region}}"
         bindchange="onRegionChange"
       >
-        <text class="form-value picker-value">{{profile.region ? profile.region.join(' · ') : '选择地域'}}</text>
+        <text class="form-value picker-value">{{regionDisplay}}</text>
       </picker>
     </view>
 
@@ -76,13 +76,13 @@
       <text class="form-label">兴趣</text>
       <view class="interests-wrap">
         <view
-          wx:for="{{interestOptions}}"
+          wx:for="{{interestTags}}"
           wx:key="index"
-          class="interest-tag {{(profile.interests || []).indexOf(item) >= 0 ? 'interest-tag--active' : ''}}"
+          class="interest-tag {{item.active ? 'interest-tag--active' : ''}}"
           bindtap="onInterestTap"
-          data-interest="{{item}}"
+          data-interest="{{item.name}}"
         >
-          {{item}}
+          {{item.name}}
         </view>
       </view>
     </view>

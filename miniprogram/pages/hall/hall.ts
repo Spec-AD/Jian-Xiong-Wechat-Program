@@ -22,9 +22,30 @@ Page({
 
   onLoad(options: any) {
     // 支持从 profile 页跳转：通过 globalData.hallMode 传入 'my' 或 'liked'
+    this._applyHallMode(options)
+  },
+
+  /** 每次页面显示时检查是否有模式切换（switchTab 不会触发 onLoad） */
+  onShow() {
+    if (app.globalData.hallMode && app.globalData.hallMode !== this.data.mode) {
+      this._applyHallMode({})
+    }
+  },
+
+  /** 应用大厅模式并刷新数据 */
+  _applyHallMode(options: any) {
     const mode = options.mode || app.globalData.hallMode || 'hall'
+    if (mode === this.data.mode && this.data.works.length > 0) {
+      app.globalData.hallMode = 'hall' // 无需切换，重置标记
+      return
+    }
     app.globalData.hallMode = 'hall' // 消费后重置
-    this.setData({ mode })
+    this.setData({
+      mode,
+      works: [],
+      page: 1,
+      hasMore: true,
+    })
     this._loadData(true)
   },
 
@@ -120,6 +141,7 @@ Page({
         typeName: getFileTypeLabel(item.type),
         typeIcon: getFileTypeIcon(item.type),
         date: item.date ? formatDate(item.date) : (item.createdAt ? formatDate(item.createdAt) : ''),
+        actualAuthor: item.actualAuthor || '',
       }))
 
       // 分页信息

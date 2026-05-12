@@ -7,21 +7,26 @@
  *  - 流式输出：逐 token 渲染到页面
  *  - 思考模式：使用 deepseek-reasoner，展示推理过程
  */
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("../../utils/util");
 const api_1 = require("../../utils/api");
+const markdown_1 = require("../../utils/markdown");
 const app = getApp();
 /** 后端 API 基础地址 */
 const API_BASE = app.globalData.baseUrl;
+/** 通用语录（随时可能触发） */
+const GENERAL_QUOTES = [
+    '世人的眼光或许分男女，微小的原子和核子却不会。',
+    '不要害怕做新的尝试，即使失败了，也是向成功迈进的一步。',
+    '真正的智慧不在于知识的多少，而在于运用知识的能力。',
+    '实验物理是以事实为依据的学问。',
+    '一个成功的实验需要的是眼光、勇气和毅力。',
+    '父亲教我做人要做\'大我\'而非\'小我\'。',
+];
+/** 夜深了时段（22:00-次日06:00）触发的语录 */
+const NIGHT_QUOTES = [
+    '只有一件事比从实验室回到家里看到满池的脏碗更糟糕，那就是不能去实验室。',
+];
 Page({
     data: {
         /** 对话消息列表 */
@@ -30,19 +35,25 @@ Page({
         inputText: '',
         /** 是否正在等待 AI 回复 */
         waiting: false,
+        /** 发送按钮是否可用（由 inputText 计算） */
+        canSend: false,
         /** 是否已有对话 */
         hasChat: false,
         /** 思考模式开关 */
         thinkingMode: false,
         /** 快捷问题列表 */
         quickQuestions: [
-            '健雄书院的院训是什么？',
-            '介绍一下南京大学健雄书院',
-            '书院有哪些特色活动？',
-            '如何申请加入健雄书院？',
+            '为我介绍一下吴健雄',
+            '吴健雄大先生具有怎样的精神',
+            '帮我总结吴健雄取得了哪些成就',
+            '吴健雄在追求男女平等关系的道路上做出了怎样的贡献',
         ],
         /** 用户头像 URL */
         userAvatar: 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0',
+        /** 时段问候语 */
+        greeting: '',
+        /** 吴健雄语录 */
+        quote: '',
     },
     onLoad() {
         // 同步用户头像
@@ -54,17 +65,20 @@ Page({
         if (savedThinking === true) {
             this.setData({ thinkingMode: true });
         }
+        // 生成问候语和语录
+        this._generateGreeting();
     },
     onShow() {
         this._syncUserAvatar();
+        // 重新生成问候语（应对跨时段场景）
+        this._generateGreeting();
     },
     onUnload() {
         this._saveHistory();
     },
     /** ===== 头像同步 ===== */
     _syncUserAvatar() {
-        var _a;
-        const avatarUrl = (_a = app.globalData.userInfo) === null || _a === void 0 ? void 0 : _a.avatarUrl;
+        const avatarUrl = app.globalData.userInfo?.avatarUrl;
         if (avatarUrl) {
             this.setData({ userAvatar: avatarUrl });
         }
@@ -74,10 +88,16 @@ Page({
         try {
             const saved = wx.getStorageSync('ai_chat_history');
             if (saved && Array.isArray(saved) && saved.length > 0) {
-                this.setData({ messages: saved, hasChat: true });
+                // 从缓存恢复时，重新生成 HTML（兼容旧缓存没有 contentHtml 的情况）
+                const restored = saved.map(m => ({
+                    ...m,
+                    contentHtml: m.contentHtml || (0, markdown_1.markdownToHtml)(m.content || ''),
+                    reasoningHtml: m.reasoningHtml || (0, markdown_1.markdownToHtml)(m.reasoning || ''),
+                }));
+                this.setData({ messages: restored, hasChat: true });
             }
         }
-        catch (_a) {
+        catch {
             // 忽略缓存读取错误
         }
     },
@@ -88,7 +108,9 @@ Page({
                 id: m.id,
                 role: m.role,
                 content: m.content,
+                contentHtml: m.contentHtml,
                 reasoning: m.reasoning,
+                reasoningHtml: m.reasoningHtml,
                 showReasoning: m.showReasoning,
                 timestamp: m.timestamp,
                 thinkingMode: m.thinkingMode,
@@ -96,12 +118,70 @@ Page({
             wx.setStorageSync('ai_chat_history', toSave);
         }
     },
+    /** ===== 问候语 & 吴健雄语录 ===== */
+    /** 获取 UTC+8 当前时段问候语 */
+    _getPeriodGreeting() {
+        const now = new Date();
+        const utcHours = now.getUTCHours();
+        const beijingHours = (utcHours + 8) % 24;
+        if (beijingHours >= 6 && beijingHours < 9) {
+            return '早上好';
+        }
+        else if (beijingHours >= 9 && beijingHours < 11) {
+            return '上午好';
+        }
+        else if (beijingHours >= 11 && beijingHours < 14) {
+            return '中午好';
+        }
+        else if (beijingHours >= 14 && beijingHours < 17) {
+            return '下午好';
+        }
+        else if (beijingHours >= 17 && beijingHours < 19) {
+            return '日落了';
+        }
+        else if (beijingHours >= 19 && beijingHours < 22) {
+            return '晚上好';
+        }
+        else {
+            return '夜深了';
+        }
+    },
+    /** 获取用户昵称 */
+    _getUserNickName() {
+        const nickName = app.globalData.userInfo?.nickName;
+        return (nickName && typeof nickName === 'string' && nickName.trim()) ? nickName : '书院同学';
+    },
+    /** 获取随机语录（通用 + 夜深时段触发） */
+    _getRandomQuote() {
+        const now = new Date();
+        const utcHours = now.getUTCHours();
+        const beijingHours = (utcHours + 8) % 24;
+        // 夜深了时段（22:00-次日06:00）：合并通用语录和深夜语录
+        if (beijingHours >= 22 || beijingHours < 6) {
+            const allQuotes = [...GENERAL_QUOTES, ...NIGHT_QUOTES];
+            const index = Math.floor(Math.random() * allQuotes.length);
+            return allQuotes[index];
+        }
+        // 其他时段：仅通用语录
+        const index = Math.floor(Math.random() * GENERAL_QUOTES.length);
+        return GENERAL_QUOTES[index];
+    },
+    /** 生成问候语和语录并更新页面 */
+    _generateGreeting() {
+        const periodText = this._getPeriodGreeting();
+        const nickName = this._getUserNickName();
+        const quote = this._getRandomQuote();
+        this.setData({
+            greeting: periodText + '，' + nickName,
+            quote: '\u201C' + quote + '\u201D \u2014\u2014\u2014\u2014\u5434\u5065\u96c4',
+        });
+    },
     /** ===== 思考模式切换 ===== */
     onToggleThinking() {
         const newMode = !this.data.thinkingMode;
         this.setData({ thinkingMode: newMode });
         wx.setStorageSync('ai_thinking_mode', newMode);
-        (0, util_1.toast)(newMode ? '深度思考模式已开启' : '快速问答模式');
+        // 不显示 toast，仅通过开关样式变化反馈状态
     },
     /** ===== 展开/收起推理过程 ===== */
     onToggleReasoning(e) {
@@ -109,7 +189,7 @@ Page({
         const { messages } = this.data;
         const updated = messages.map(m => {
             if (m.id === id) {
-                return Object.assign(Object.assign({}, m), { showReasoning: !m.showReasoning });
+                return { ...m, showReasoning: !m.showReasoning };
             }
             return m;
         });
@@ -117,7 +197,8 @@ Page({
     },
     /** ===== 输入框 ===== */
     onInput(e) {
-        this.setData({ inputText: e.detail.value });
+        const val = e.detail.value || '';
+        this.setData({ inputText: val, canSend: !!val.trim() });
     },
     /** ===== 发送消息 ===== */
     onSend() {
@@ -125,7 +206,7 @@ Page({
         if (!inputText.trim() || waiting)
             return;
         this._sendMessage(inputText.trim());
-        this.setData({ inputText: '' });
+        this.setData({ inputText: '', canSend: false });
     },
     /** ===== 点击快捷问题 ===== */
     onQuickTap(e) {
@@ -135,63 +216,71 @@ Page({
         this._sendMessage(text);
     },
     /** ===== 核心方法：发送消息并流式获取 AI 回复 ===== */
-    _sendMessage(text) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { thinkingMode } = this.data;
-            // 1. 添加用户消息
-            const userMsg = {
-                id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-                role: 'user',
-                content: text,
-                timestamp: Date.now(),
-            };
-            // 2. 添加 assistant 占位（流式写入）
-            const assistantId = `assist_${Date.now()}`;
-            const assistantMsg = {
-                id: assistantId,
-                role: 'assistant',
-                content: '',
-                reasoning: '',
-                showReasoning: false,
-                timestamp: Date.now(),
-                streaming: true,
-                loading: true,
-                thinkingMode,
-            };
-            const messages = [...this.data.messages, userMsg, assistantMsg];
-            this.setData({ messages, waiting: true, hasChat: true });
-            // 滚动到底部显示 loading
-            this._scrollToBottom();
-            try {
-                // 3. 构造对话历史（取最近 20 条）
-                const historyForApi = this.data.messages
-                    .concat(userMsg)
-                    .filter(m => m.role !== 'system' && !m.streaming)
-                    .slice(-20)
-                    .map(m => ({
-                    role: m.role,
-                    content: m.content,
-                }));
-                // 添加系统提示词
-                const systemPrompt = thinkingMode
-                    ? '你是健雄书院智能助手，由 DeepSeek R1 驱动。请先展示你的推理思考过程，然后给出最终回答。回答应当简洁、准确、友好。如果遇到不确定的问题，请如实告知用户你不清楚。'
-                    : '你是健雄书院智能助手，由 DeepSeek 驱动。你的职责是帮助用户了解南京大学健雄书院的相关信息，包括书院介绍、招生政策、校园生活、学术活动等。回答应当简洁、准确、友好。如果遇到不确定的问题，请如实告知用户你不清楚。';
-                historyForApi.unshift({ role: 'system', content: systemPrompt });
-                // 4. 发起流式请求
-                yield this._streamChat(assistantId, historyForApi, thinkingMode);
-            }
-            catch (err) {
-                // 5. 出错时更新消息
-                const updated = this.data.messages.map(m => {
-                    if (m.id === assistantId) {
-                        return Object.assign(Object.assign({}, m), { loading: false, streaming: false, content: m.content || `抱歉，AI 暂时无法回复。${err.message || '请稍后再试'}` });
-                    }
-                    return m;
-                });
-                this.setData({ messages: updated, waiting: false });
-            }
-            this._scrollToBottom();
-        });
+    async _sendMessage(text) {
+        const { thinkingMode } = this.data;
+        // 1. 添加用户消息（同时生成 HTML 用于 rich-text 渲染）
+        const userMsg = {
+            id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+            role: 'user',
+            content: text,
+            contentHtml: (0, markdown_1.markdownToHtml)(text),
+            timestamp: Date.now(),
+        };
+        // 2. 添加 assistant 占位（流式写入）
+        const assistantId = `assist_${Date.now()}`;
+        const assistantMsg = {
+            id: assistantId,
+            role: 'assistant',
+            content: '',
+            contentHtml: '',
+            reasoning: '',
+            reasoningHtml: '',
+            showReasoning: false,
+            timestamp: Date.now(),
+            streaming: true,
+            loading: true,
+            thinkingMode,
+        };
+        const messages = [...this.data.messages, userMsg, assistantMsg];
+        this.setData({ messages, waiting: true, hasChat: true });
+        // 滚动到底部显示 loading
+        this._scrollToBottom();
+        try {
+            // 3. 构造对话历史（取最近 20 条）
+            const historyForApi = this.data.messages
+                .concat(userMsg)
+                .filter(m => m.role !== 'system' && !m.streaming)
+                .slice(-20)
+                .map(m => ({
+                role: m.role,
+                content: m.content,
+            }));
+            // 添加系统提示词
+            const systemPrompt = thinkingMode
+                ? '你是健雄书院智能助手，由 DeepSeek R1 驱动。请展示推理过程后给出回答。简洁、准确、友好。'
+                : '你是健雄书院智能助手，由 DeepSeek 驱动。回答简洁、准确、友好。';
+            historyForApi.unshift({ role: 'system', content: systemPrompt });
+            // 4. 发起流式请求
+            await this._streamChat(assistantId, historyForApi, thinkingMode);
+        }
+        catch (err) {
+            // 5. 出错时更新消息
+            const updated = this.data.messages.map(m => {
+                if (m.id === assistantId) {
+                    const finalContent = m.content || `抱歉，AI 暂时无法回复。${err.message || '请稍后再试'}`;
+                    return {
+                        ...m,
+                        loading: false,
+                        streaming: false,
+                        content: finalContent,
+                        contentHtml: (0, markdown_1.markdownToHtml)(finalContent),
+                    };
+                }
+                return m;
+            });
+            this.setData({ messages: updated, waiting: false });
+        }
+        this._scrollToBottom();
     },
     /**
      * 流式聊天 — 使用 enableChunked 接收 SSE 流
@@ -218,10 +307,19 @@ Page({
                 enableChunked: true,
                 timeout: 60000,
                 success: () => {
-                    // 流式响应结束时，标记完成
+                    // 流式响应结束时，标记完成并做最终渲染
                     const updated = this.data.messages.map(m => {
                         if (m.id === assistantId) {
-                            return Object.assign(Object.assign({}, m), { streaming: false, loading: false });
+                            // 最终的 Markdown 渲染（确保所有标记完整闭合）
+                            const finalHtml = (0, markdown_1.markdownToHtml)(m.content || '');
+                            const finalReasoningHtml = (0, markdown_1.markdownToHtml)(m.reasoning || '');
+                            return {
+                                ...m,
+                                streaming: false,
+                                loading: false,
+                                contentHtml: finalHtml,
+                                reasoningHtml: finalReasoningHtml,
+                            };
                         }
                         return m;
                     });
@@ -238,17 +336,44 @@ Page({
             // @ts-ignore: onChunkReceived is supported since base library 2.18.0
             requestTask.onChunkReceived((response) => {
                 try {
-                    // 将 ArrayBuffer 转为字符串
-                    const uint8Array = new Uint8Array(response.data);
+                    // UTF-8 解码 ArrayBuffer
                     let chunkText = '';
-                    for (let i = 0; i < uint8Array.length; i++) {
-                        chunkText += String.fromCharCode(uint8Array[i]);
+                    try {
+                        // 优先使用 TextDecoder API
+                        chunkText = new TextDecoder('utf-8').decode(response.data);
+                    }
+                    catch {
+                        // 降级：手动 UTF-8 解码
+                        const uint8Array = new Uint8Array(response.data);
+                        for (let i = 0; i < uint8Array.length;) {
+                            const b1 = uint8Array[i++];
+                            if (b1 < 0x80) {
+                                chunkText += String.fromCharCode(b1);
+                            }
+                            else if (b1 >= 0xC0 && b1 < 0xE0) {
+                                const b2 = uint8Array[i++];
+                                chunkText += String.fromCharCode(((b1 & 0x1F) << 6) | (b2 & 0x3F));
+                            }
+                            else if (b1 >= 0xE0 && b1 < 0xF0) {
+                                const b2 = uint8Array[i++];
+                                const b3 = uint8Array[i++];
+                                chunkText += String.fromCharCode(((b1 & 0x0F) << 12) | ((b2 & 0x3F) << 6) | (b3 & 0x3F));
+                            }
+                            else if (b1 >= 0xF0 && b1 < 0xF8) {
+                                const b2 = uint8Array[i++];
+                                const b3 = uint8Array[i++];
+                                const b4 = uint8Array[i++];
+                                chunkText += String.fromCodePoint(((b1 & 0x07) << 18) | ((b2 & 0x3F) << 12) | ((b3 & 0x3F) << 6) | (b4 & 0x3F));
+                            }
+                        }
                     }
                     buffer += chunkText;
                     // 按行解析 SSE 事件
                     const lines = buffer.split('\n');
                     buffer = lines.pop() || ''; // 保留不完整的行
                     for (const line of lines) {
+                        if (typeof line !== 'string')
+                            continue;
                         const trimmed = line.trim();
                         if (!trimmed || !trimmed.startsWith('data: '))
                             continue;
@@ -259,12 +384,12 @@ Page({
                             const event = JSON.parse(jsonStr);
                             this._handleSSEEvent(assistantId, event);
                         }
-                        catch (_a) {
+                        catch {
                             // 忽略解析错误
                         }
                     }
                 }
-                catch (_b) {
+                catch {
                     // 忽略解码错误
                 }
             });
@@ -280,9 +405,14 @@ Page({
             const updated = messages.map(m => {
                 if (m.id === assistantId) {
                     const newReasoning = (m.reasoning || '') + (event.content || '');
-                    return Object.assign(Object.assign({}, m), { reasoning: newReasoning, loading: false, 
+                    return {
+                        ...m,
+                        reasoning: newReasoning,
+                        reasoningHtml: (0, markdown_1.markdownToHtml)(newReasoning),
+                        loading: false,
                         // 自动展开推理过程（仅首次）
-                        showReasoning: m.showReasoning !== false });
+                        showReasoning: m.showReasoning !== false,
+                    };
                 }
                 return m;
             });
@@ -293,7 +423,13 @@ Page({
             // 常规内容：逐 token 追加
             const updated = messages.map(m => {
                 if (m.id === assistantId) {
-                    return Object.assign(Object.assign({}, m), { content: (m.content || '') + (event.content || ''), loading: false });
+                    const newContent = (m.content || '') + (event.content || '');
+                    return {
+                        ...m,
+                        content: newContent,
+                        contentHtml: (0, markdown_1.markdownToHtml)(newContent),
+                        loading: false,
+                    };
                 }
                 return m;
             });
@@ -304,7 +440,13 @@ Page({
             // 错误事件
             const updated = messages.map(m => {
                 if (m.id === assistantId) {
-                    return Object.assign(Object.assign({}, m), { content: (m.content || '') + `\n\n⚠️ ${event.message || '发生错误'}`, loading: false });
+                    const newContent = (m.content || '') + `\n\n⚠️ ${event.message || '发生错误'}`;
+                    return {
+                        ...m,
+                        content: newContent,
+                        contentHtml: (0, markdown_1.markdownToHtml)(newContent),
+                        loading: false,
+                    };
                 }
                 return m;
             });
