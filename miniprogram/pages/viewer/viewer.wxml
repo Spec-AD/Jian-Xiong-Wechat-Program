@@ -117,6 +117,19 @@
         </view>
       </view>
 
+      <!-- 外链作品 -->
+      <view wx:elif="{{type === 'link' && externalLink}}" class="link-wrap">
+        <view class="link-card">
+          <view class="link-platform-row">
+            <image wx:if="{{platformIcon}}" class="link-platform-icon" src="{{platformIcon}}" mode="aspectFit" />
+            <text class="link-platform-name">{{platform || '外部平台'}}</text>
+          </view>
+          <text class="link-desc">该作品发布于外部平台，点击下方按钮查看</text>
+          <button class="link-open-btn" bindtap="onOpenExternalLink">打开外部链接</button>
+          <text class="link-hint">点击后将链接复制到剪贴板，可在浏览器中打开</text>
+        </view>
+      </view>
+
       <!-- 不支持格式 -->
       <view wx:elif="{{type && type !== 'loading'}}" class="unsupported">
         <text class="unsupported-icon"></text>
@@ -264,8 +277,12 @@
       <text class="bottom-action-label">分享</text>
     </view>
 
-    <!-- 下载 -->
-    <view class="bottom-action" bindtap="onDownload">
+    <!-- 外链作品：打开链接 / 普通作品：下载 -->
+    <view wx:if="{{type === 'link' && externalLink}}" class="bottom-action" bindtap="onOpenExternalLink">
+      <image class="bottom-action-icon" src="https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/MdiLinkVariant.png" mode="aspectFit" />
+      <text class="bottom-action-label">打开链接</text>
+    </view>
+    <view wx:else class="bottom-action" bindtap="onDownload">
       <image class="bottom-action-icon" src="https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/MdiDownload.png" mode="aspectFit" />
       <text class="bottom-action-label">下载</text>
     </view>

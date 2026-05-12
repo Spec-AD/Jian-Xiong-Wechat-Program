@@ -75,6 +75,8 @@ export async function getWorks(params: {
     tags: work.tags,
     imageList: work.imageList,
     liked: likedMap.has(work._id.toString()),
+    externalLink: work.externalLink || '',
+    platform: work.platform || '',
     actualAuthor: work.actualAuthor || '',
   }))
 
@@ -147,6 +149,8 @@ export async function getWorkById(workId: string, currentUserId?: string | null)
     tags: work.tags,
     imageList: work.imageList,
     actualAuthor: work.actualAuthor || '',
+    externalLink: work.externalLink || '',
+    platform: work.platform || '',
     commentsCount: work.commentsCount || 0,
     liked,
   }
@@ -370,7 +374,7 @@ export async function getUserLikedWorks(userId: string, page: number, pageSize: 
  * 获取外链作品列表（分页）
  */
 export async function getExternalWorks(page: number, pageSize: number) {
-  const filter = { status: 'published' as const, externalLink: { $ne: '' } }
+  const filter = { status: 'published' as const, type: 'link' }
 
   const total = await Work.countDocuments(filter)
   const works = await Work.find(filter)

@@ -74,8 +74,39 @@
     <text class="list-count">共 {{total}} 项</text>
   </view>
 
-  <!-- ===== 作品网格 ===== -->
-  <view class="work-grid">
+  <!-- ===== 作品列表 ===== -->
+  <!-- 外链作品：条状列表 -->
+  <view wx:if="{{activeCategory === 'external'}}" class="work-list">
+    <view
+      wx:for="{{works}}"
+      wx:key="id"
+      class="work-list-item"
+      bindtap="onWorkTap"
+      data-item="{{item}}"
+    >
+      <image wx:if="{{item.platformIcon}}" class="list-platform-icon" src="{{item.platformIcon}}" mode="aspectFit" />
+      <view class="list-content">
+        <view class="list-title-row">
+          <text class="list-title list-title--link">{{item.title}}</text>
+        </view>
+        <view class="list-meta-row">
+          <text class="list-author">{{item.actualAuthor || '未知作者'}}</text>
+          <text wx:if="{{item.platform}}" class="list-sep">·</text>
+          <text wx:if="{{item.platform}}" class="list-platform-name">{{item.platform}}</text>
+          <text class="list-sep">·</text>
+          <text class="list-date">{{item.date}}</text>
+          <text class="list-sep">·</text>
+          <text class="list-stat">浏览 {{item.views}}</text>
+          <text class="list-sep">·</text>
+          <text class="list-stat">赞 {{item.likes}}</text>
+        </view>
+      </view>
+      <text class="list-open-tag">打开</text>
+    </view>
+  </view>
+
+  <!-- 普通作品：网格卡片 -->
+  <view wx:else class="work-grid">
     <view
       wx:for="{{works}}"
       wx:key="id"
@@ -83,10 +114,16 @@
       bindtap="onWorkTap"
       data-item="{{item}}"
     >
-      <!-- 封面（cover 优先，图片类型无 cover 时用 fileUrl 兜底） -->
+      <!-- 封面 -->
       <view class="card-cover">
+        <!-- 外链作品：展示平台图标 -->
+        <view wx:if="{{item.type === 'link'}}" class="cover-link">
+          <image wx:if="{{item.platformIcon}}" class="cover-link-icon" src="{{item.platformIcon}}" mode="aspectFit" />
+          <text wx:else class="cover-link-text">🔗</text>
+        </view>
+        <!-- 普通作品：cover 优先，图片类型无 cover 时用 fileUrl 兜底 -->
         <image
-          wx:if="{{item.cover}}"
+          wx:elif="{{item.cover}}"
           class="cover-img"
           src="{{item.cover}}"
           mode="aspectFill"
@@ -107,14 +144,11 @@
 
       <!-- 信息 -->
       <view class="card-info">
-        <!-- 外链作品：标题带超链接样式 + 平台图标 -->
-        <view wx:if="{{activeCategory === 'external'}}" class="card-title-row">
-          <image wx:if="{{item.platformIcon}}" class="card-platform-icon" src="{{item.platformIcon}}" mode="aspectFit" />
-          <text class="card-title card-title--link">{{item.title}}</text>
-        </view>
-        <!-- 普通作品 -->
-        <text wx:else class="card-title">{{item.title}}</text>
-        <text class="card-author">{{item.actualAuthor || '未知作者'}}</text>
+        <text class="card-title {{item.type === 'link' ? 'card-title--link' : ''}}">{{item.title}}</text>
+        <text class="card-author">
+          <text wx:if="{{item.platform}}" class="card-platform-name">{{item.platform}} · </text>
+          {{item.actualAuthor || '未知作者'}}
+        </text>
         <view class="card-meta">
           <text class="card-date">{{item.date}}</text>
           <view class="card-stats">

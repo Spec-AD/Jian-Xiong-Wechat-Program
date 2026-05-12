@@ -114,6 +114,9 @@ Page({
             else if (mode === 'history') {
                 result = await (0, api_1.getHistory)({ page: reset ? 1 : page, pageSize: PAGE_SIZE });
             }
+            else if (activeCategory === 'external') {
+                result = await (0, api_1.getExternalWorks)({ page: reset ? 1 : page, pageSize: PAGE_SIZE });
+            }
             else {
                 // 只传有值的参数，避免 undefined 被序列化为字符串 "undefined"
                 const params = {
@@ -136,6 +139,7 @@ Page({
                 ...item,
                 typeName: (0, util_1.getFileTypeLabel)(item.type),
                 typeIcon: (0, util_1.getFileTypeIcon)(item.type),
+                platformIcon: (0, util_1.getPlatformIcon)(item.platform),
                 date: item.date ? (0, util_1.formatDate)(item.date) : (item.createdAt ? (0, util_1.formatDate)(item.createdAt) : ''),
                 actualAuthor: item.actualAuthor || '',
             }));
@@ -192,7 +196,7 @@ Page({
     onBannerTap(e) {
         this._goViewer(e.currentTarget.dataset.item.id);
     },
-    /** 作品点击 */
+    /** 作品点击 — 全部跳转到详情页 */
     onWorkTap(e) {
         this._goViewer(e.currentTarget.dataset.item.id);
     },

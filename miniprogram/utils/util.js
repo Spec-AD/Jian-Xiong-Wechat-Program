@@ -2,7 +2,24 @@
 // utils/util.ts — 健雄书院工具函数库
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.debounce = exports.throttle = exports.WORK_CATEGORIES = exports.formatRelativeTime = exports.toast = exports.formatFileSize = exports.formatDuration = exports.getFileTypeIcon = exports.getFileTypeLabel = exports.getFileType = exports.formatDate = exports.formatTime = exports.formatNumber = void 0;
+exports.getPlatformIcon = getPlatformIcon;
 exports.getWebpUrl = getWebpUrl;
+
+/** 外链平台图标映射 */
+const PLATFORM_ICONS = {
+    'Canva': 'https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/SimpleIconsCanva.png',
+    '可画': 'https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/SimpleIconsCanva.png',
+    'Bilibili': 'https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/StreamlineUltimateBilibiliLogo.png',
+    '哔哩哔哩': 'https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/StreamlineUltimateBilibiliLogo.png',
+    '易企秀': 'https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/SolarInfinityBoldDuotone.png',
+    '腾讯云开发个人页面': 'https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/GlyphsPolyCloud.png',
+};
+
+/** 获取平台图标 URL */
+function getPlatformIcon(platform) {
+    return PLATFORM_ICONS[platform] || '';
+}
+
 /** 补零 */
 const formatNumber = (n) => {
     const s = n.toString();
@@ -41,13 +58,15 @@ const getFileType = (filename) => {
         return 'image';
     if (['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext))
         return 'doc';
+    if (ext === 'link' || ext === '')
+        return 'link';
     return 'unknown';
 };
 exports.getFileType = getFileType;
 /** 文件类型 → 中文标签 */
 const getFileTypeLabel = (type) => {
     const map = {
-        video: '视频', audio: '音频', image: '图片', doc: '文档', unknown: '其他',
+        video: '视频', audio: '音频', image: '图片', doc: '文档', markdown: 'Markdown', link: '外链', unknown: '其他',
     };
     return map[type] !== null && map[type] !== void 0 ? map[type] : '其他';
 };
@@ -55,7 +74,7 @@ exports.getFileTypeLabel = getFileTypeLabel;
 /** 文件类型 → Emoji 图标 */
 const getFileTypeIcon = (type) => {
     const map = {
-        video: '', audio: '', image: '', doc: '', unknown: '',
+        video: '', audio: '', image: '', doc: '', markdown: '', link: '🔗', unknown: '',
     };
     return (map[type] !== null && map[type] !== void 0) ? map[type] : '';
 };
@@ -116,6 +135,7 @@ exports.WORK_CATEGORIES = [
     { id: 'doc', name: '文档', icon: '' },
     { id: 'research', name: '科研', icon: '' },
     { id: 'volunteer', name: '志愿', icon: '' },
+    { id: 'external', name: '外链作品', icon: '🔗' },
 ];
 /**
  * 节流（300ms 默认）

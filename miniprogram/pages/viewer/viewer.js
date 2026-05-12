@@ -19,6 +19,9 @@ Page({
         description: '',
         date: '',
         tags: [],
+        externalLink: '',
+        platform: '',
+        platformIcon: '',
         // 图片多图模式
         imageList: [],
         // 音频
@@ -95,6 +98,9 @@ Page({
                 date: detail.date || detail.createdAt || '',
                 tags: detail.tags || [],
                 imageList: detail.imageList || [],
+                externalLink: detail.externalLink || '',
+                platform: detail.platform || '',
+                platformIcon: (0, util_1.getPlatformIcon)(detail.platform || ''),
                 liked: detail.liked || false,
                 likesCount: rawLikes,
                 views: rawViews,
@@ -276,6 +282,18 @@ Page({
         const urls = imageList.length > 0 ? imageList : [fileUrl];
         wx.previewImage({ urls, current: src || fileUrl, showmenu: true });
     },
+    // ─── 外链作品：打开外部链接 ────────────────────────────
+    onOpenExternalLink() {
+        const { externalLink, platform } = this.data;
+        if (!externalLink) { (0, util_1.toast)('暂无外部链接'); return; }
+        wx.setClipboardData({
+            data: externalLink,
+            success: () => {
+                wx.showToast({ title: `链接已复制，可在浏览器中打开${platform ? '（' + platform + '）' : ''}`, icon: 'none' });
+            },
+        });
+    },
+
     // ─── 文档预览 ───────────────────────────────────────────
     onOpenDoc() {
         const { fileUrl } = this.data;

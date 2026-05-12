@@ -18,6 +18,7 @@ exports.getUserProfile = getUserProfile;
 exports.updateUserProfile = updateUserProfile;
 exports.getUserStats = getUserStats;
 exports.getWorks = getWorks;
+exports.getExternalWorks = getExternalWorks;
 exports.getBannerWorks = getBannerWorks;
 exports.getWorkDetail = getWorkDetail;
 exports.toggleLike = toggleLike;
@@ -275,6 +276,18 @@ function getWorks(params) {
         needAuth: false,
     });
 }
+/**
+ * 获取外链作品列表 — GET /api/works/external
+ */
+function getExternalWorks(params) {
+    return request({
+        url: '/works/external',
+        method: 'GET',
+        data: params,
+        needAuth: false,
+    });
+}
+
 /**
  * 获取 Banner 作品 — GET /api/works/banner
  */

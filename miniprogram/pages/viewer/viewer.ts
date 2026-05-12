@@ -1,5 +1,5 @@
 // pages/viewer/viewer.ts — 素材详情页（信息卡片 + 评论区 + 统一模板）
-import { formatDuration, formatRelativeTime, toast } from '../../utils/util'
+import { formatDuration, formatRelativeTime, getPlatformIcon, toast } from '../../utils/util'
 import { getWorkDetail, toggleLike, recordView, getWorkComments, addWorkComment, deleteWork, getUserProfile, getToken, requireAuth } from '../../utils/api'
 import { markdownToHtml } from '../../utils/markdown'
 
@@ -19,6 +19,9 @@ Page({
     description: '' as string,
     date: '' as string,
     tags: [] as string[],
+    externalLink: '' as string,
+    platform: '' as string,
+    platformIcon: '' as string,
     // 图片多图模式
     imageList: [] as string[],
     // 音频
@@ -105,6 +108,9 @@ Page({
         date: detail.date || detail.createdAt || '',
         tags: detail.tags || [],
         imageList: detail.imageList || [],
+        externalLink: detail.externalLink || '',
+        platform: detail.platform || '',
+        platformIcon: getPlatformIcon(detail.platform || ''),
         liked: detail.liked || false,
         likesCount: rawLikes,
         views: rawViews,
@@ -288,6 +294,18 @@ Page({
     const { imageList, fileUrl } = this.data
     const urls = imageList.length > 0 ? imageList : [fileUrl]
     wx.previewImage({ urls, current: src || fileUrl, showmenu: true })
+  },
+
+  // ─── 外链作品：打开外部链接 ────────────────────────────
+  onOpenExternalLink() {
+    const { externalLink, platform } = this.data
+    if (!externalLink) { toast('暂无外部链接'); return }
+    wx.setClipboardData({
+      data: externalLink,
+      success: () => {
+        wx.showToast({ title: `链接已复制，可在浏览器中打开${platform ? '（' + platform + '）' : ''}`, icon: 'none' })
+      },
+    })
   },
 
   // ─── 文档预览 ───────────────────────────────────────────

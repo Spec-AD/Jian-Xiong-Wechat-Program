@@ -210,20 +210,9 @@ Page({
     this._goViewer(e.currentTarget.dataset.item.id)
   },
 
-  /** 作品点击 */
+  /** 作品点击 — 全部跳转到详情页 */
   onWorkTap(e: any) {
-    const item = e.currentTarget.dataset.item
-    if (this.data.activeCategory === 'external' && item.externalLink) {
-      // 外链作品：直接打开外部链接
-      wx.setClipboardData({
-        data: item.externalLink,
-        success: () => {
-          wx.showToast({ title: '链接已复制，请在浏览器中打开', icon: 'none' })
-        },
-      })
-    } else {
-      this._goViewer(item.id)
-    }
+    this._goViewer(e.currentTarget.dataset.item.id)
   },
 
   /** 跳转详情页（仅传 id，viewer 页自己调 API 加载） */
