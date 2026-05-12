@@ -17,8 +17,8 @@ interface IAppOption {
     openid: string
     loginCode: string
     baseUrl: string
-    /** 大厅页面模式：hall-全部 my-我的 liked-已点赞 */
-    hallMode?: 'hall' | 'my' | 'liked'
+    /** 大厅页面模式：hall-全部 my-我的 liked-已点赞 history-浏览记录 */
+    hallMode?: 'hall' | 'my' | 'liked' | 'history'
   }
   /** 加载自定义字体 */
   loadCustomFont(): void

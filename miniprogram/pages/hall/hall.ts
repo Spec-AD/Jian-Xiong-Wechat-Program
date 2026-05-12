@@ -1,6 +1,6 @@
 // pages/hall/hall.ts — 作品大厅（真实 API 版）
 import { WORK_CATEGORIES, getFileTypeLabel, getFileTypeIcon, toast, formatDate } from '../../utils/util'
-import { getWorks, getBannerWorks, getMyWorks, getLikedWorks } from '../../utils/api'
+import { getWorks, getBannerWorks, getMyWorks, getLikedWorks, getHistory } from '../../utils/api'
 
 const app = getApp<IAppOption>()
 const PAGE_SIZE = 20
@@ -17,7 +17,7 @@ Page({
     refreshing: false,            // 下拉刷新中
     hasMore: true,                // 是否还有更多
     page: 1,                      // 当前页码
-    mode: 'hall' as 'hall' | 'my' | 'liked',  // 当前模式
+    mode: 'hall' as 'hall' | 'my' | 'liked' | 'history',  // 当前模式
   },
 
   onLoad(options: any) {
@@ -44,6 +44,19 @@ Page({
       title: '健雄书院 · 学生成果展示平台',
       path: '/pages/hall/hall',
     }
+  },
+
+  /** 返回真正的大厅（全部作品） */
+  onBackToHall() {
+    this.setData({
+      mode: 'hall',
+      activeCategory: 'all',
+      keyword: '',
+      page: 1,
+      works: [],
+      hasMore: true,
+    })
+    this._loadData(true)
   },
 
   /** 核心加载函数 */
@@ -77,9 +90,11 @@ Page({
       // 根据模式调用不同 API
       let result: any
       if (mode === 'my') {
-        result = await getMyWorks()
+        result = await getMyWorks({ page: reset ? 1 : page, pageSize: PAGE_SIZE })
       } else if (mode === 'liked') {
-        result = await getLikedWorks()
+        result = await getLikedWorks({ page: reset ? 1 : page, pageSize: PAGE_SIZE })
+      } else if (mode === 'history') {
+        result = await getHistory({ page: reset ? 1 : page, pageSize: PAGE_SIZE })
       } else {
         // 只传有值的参数，避免 undefined 被序列化为字符串 "undefined"
         const params: Record<string, any> = {

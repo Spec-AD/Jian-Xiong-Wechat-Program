@@ -22,7 +22,7 @@ Page({
         profile: {},
         interestOptions: INTEREST_OPTIONS,
         regionIndex: 0,
-        region: ['江苏省', '南京市'],
+        region: ['江苏省', '南京市', ''],
         birthdayDate: '2000-01-01',
         uploading: false,
         saving: false,
@@ -44,9 +44,10 @@ Page({
                         nickName: profileData.nickName || '',
                         signature: profileData.signature || '',
                         birthday: profileData.birthday || '',
-                        region: profileData.region || ['江苏省', '南京市'],
+                        region: profileData.region || ['江苏省', '南京市', ''],
                         interests: profileData.interests || [],
                     },
+                    region: profileData.region || ['江苏省', '南京市', ''],
                     birthdayDate: profileData.birthday || '2000-01-01',
                 });
             }

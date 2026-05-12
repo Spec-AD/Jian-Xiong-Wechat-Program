@@ -88,6 +88,15 @@ Page({
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const profileData = yield (0, api_1.request)({ url: '/user/profile', method: 'GET' });
+                // 从后端同步最新的昵称和头像到全局状态
+                if (profileData.nickName || profileData.avatarUrl) {
+                    var syncedInfo = {
+                        nickName: (profileData.nickName && profileData.nickName.trim()) || (app.globalData.userInfo && app.globalData.userInfo.nickName) || '书院同学',
+                        avatarUrl: profileData.avatarUrl || (app.globalData.userInfo && app.globalData.userInfo.avatarUrl) || '',
+                    };
+                    app.saveUserInfo(syncedInfo);
+                    this.setData({ userInfo: syncedInfo });
+                }
                 this.setData({
                     signature: profileData.signature || '',
                     canPublish: profileData.canPublish !== null && profileData.canPublish !== void 0 ? profileData.canPublish : false,
@@ -141,11 +150,11 @@ Page({
                 wx.switchTab({ url: '/pages/hall/hall' });
                 break;
             case 'history':
+                app.globalData.hallMode = 'history';
                 wx.switchTab({ url: '/pages/hall/hall' });
-                (0, util_1.toast)('浏览记录功能即将上线');
                 break;
             case 'downloads':
-                (0, util_1.toast)('下载记录功能即将上线');
+                wx.navigateTo({ url: '/pages/downloads/downloads' });
                 break;
             case 'publish':
                 if (!this.data.canPublish) {

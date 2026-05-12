@@ -49,8 +49,7 @@ Page({
 
     this._loadProfile()
     this._loadStats()
-
-    // this._loadHistoryCount() — 后端尚未实现 /user/history 接口
+    this._loadHistoryCount()
     this._checkFirstTime()
     this._checkAdmin()
   },
@@ -83,10 +82,23 @@ Page({
   async _loadProfile() {
     try {
       const profileData = await request<{
+        nickName?: string
+        avatarUrl?: string
         signature?: string
         isVerified?: boolean
         canPublish?: boolean
       }>({ url: '/user/profile', method: 'GET' })
+
+      // 从后端同步最新的昵称和头像到全局状态
+      if (profileData.nickName || profileData.avatarUrl) {
+        const syncedInfo: AppUserInfo = {
+          nickName: profileData.nickName?.trim() || app.globalData.userInfo?.nickName || '书院同学',
+          avatarUrl: profileData.avatarUrl || app.globalData.userInfo?.avatarUrl || '',
+        }
+        app.saveUserInfo(syncedInfo)
+        this.setData({ userInfo: syncedInfo })
+      }
+
       this.setData({
         signature: profileData.signature || '',
         canPublish: profileData.canPublish !== null && profileData.canPublish !== void 0 ? profileData.canPublish : false,
@@ -116,8 +128,15 @@ Page({
 
 
 
-  // _loadHistoryCount — 暂未启用，后端 /user/history 接口未实现
-  // 待浏览记录功能上线后启用
+  async _loadHistoryCount() {
+    try {
+      const { getHistory } = await import('../../utils/api')
+      const result = await getHistory({ page: 1, pageSize: 1 })
+      this.setData({ historyCount: result.pagination?.total || 0 })
+    } catch {
+      // 静默降级
+    }
+  },
 
   // ── onSyncWechatInfo 已移除 ──
   // wx.getUserProfile() 在 2.32.3+ 基础库中已废弃
@@ -138,11 +157,11 @@ Page({
         wx.switchTab({ url: '/pages/hall/hall' })
         break
       case 'history':
+        app.globalData.hallMode = 'history'
         wx.switchTab({ url: '/pages/hall/hall' })
-        toast('浏览记录功能即将上线')
         break
       case 'downloads':
-        toast('下载记录功能即将上线')
+        wx.navigateTo({ url: '/pages/downloads/downloads' })
         break
       case 'publish':
         if (!this.data.canPublish) {

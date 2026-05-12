@@ -1,4 +1,4 @@
-// pages/login/login.ts — 登录页（生产级）
+// pages/login/login.ts — 登录页（重构版：南大紫主题）
 import { loginWithCode, setToken, getToken } from '../../utils/api'
 import { toast } from '../../utils/util'
 
@@ -48,8 +48,15 @@ Page({
       // ===== 3. 保存 token =====
       setToken(authRes.token)
 
-      // ===== 4. 保存用户信息（使用后端返回的用户信息） =====
-      const displayName = authRes.user?.nickName || '书院同学'
+      // ===== 4. 保存 openid（用于生成 UID） =====
+      if (authRes.openid) {
+        app.globalData.openid = authRes.openid
+      }
+
+      // ===== 5. 保存用户信息（使用后端返回的用户信息） =====
+      const displayName = authRes.user?.nickName 
+        ? authRes.user.nickName.trim() 
+        : '书院同学'
       const displayAvatar = authRes.user?.avatarUrl || ''
 
       app.saveUserInfo({
@@ -57,7 +64,7 @@ Page({
         avatarUrl: displayAvatar,
       })
 
-      // ===== 5. 跳转到「我的」 =====
+      // ===== 6. 跳转到「我的」 =====
       wx.reLaunch({ url: '/pages/profile/profile' })
     } catch (err: any) {
       const msg = err.message || '登录失败，请检查网络后重试'
@@ -66,5 +73,36 @@ Page({
     } finally {
       this.setData({ loading: false })
     }
+  },
+
+  /**
+   * 清除错误信息
+   */
+  onClearError() {
+    this.setData({ errorMsg: '' })
+  },
+
+  /**
+   * 查看用户协议
+   */
+  onViewAgreement() {
+    wx.showModal({
+      title: '用户协议',
+      content: '欢迎使用健雄书院成果展示平台。\n\n本平台为南京大学健雄书院官方学生成果展示平台。\n\n用户需遵守相关法律法规，不得发布违法违规内容。',
+      showCancel: false,
+      confirmText: '了解',
+    })
+  },
+
+  /**
+   * 查看隐私政策
+   */
+  onViewPrivacy() {
+    wx.showModal({
+      title: '隐私政策',
+      content: '我们重视您的隐私。\n\n我们仅收集必要的用户信息用于平台功能。\n您的个人信息将受到严格保护，不会泄露给第三方。',
+      showCancel: false,
+      confirmText: '了解',
+    })
   },
 })

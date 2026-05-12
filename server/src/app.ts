@@ -7,6 +7,7 @@ import { connectDatabase } from './config/db'
 import { swaggerSpec } from './config/swagger'
 import { requestLogger } from './middleware/logger'
 import { errorHandler } from './middleware/errorHandler'
+import { responseCache, setStaticCacheHeaders } from './middleware/cache'
 import routes from './routes'
 
 const app = express()
@@ -26,8 +27,17 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 // 请求日志
 app.use(requestLogger)
 
+// 响应缓存（对公开的 GET 接口启用 60 秒内存缓存）
+app.use('/api', responseCache(60))
+
+// 静态资源强缓存头
+app.use(setStaticCacheHeaders)
+
 // 静态文件（上传的文件）
-app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')))
+app.use('/uploads', express.static(path.resolve(__dirname, '../uploads'), {
+  maxAge: '7d',
+  immutable: true,
+}))
 
 // Swagger 接口文档
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {

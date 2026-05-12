@@ -44,6 +44,46 @@ interface RequestOptions {
 /** 请求超时重试次数 */
 const MAX_RETRIES = 2
 
+/**
+ * 前端请求缓存（内存缓存，避免短时间重复请求）
+ * 仅用于公开的 GET 请求
+ */
+const requestCache = new Map<string, { data: any; expiry: number }>()
+
+/** 缓存有效期（毫秒）— 公开列表缓存 30 秒，详情缓存 60 秒 */
+const CACHE_TTL: Record<string, number> = {
+  '/works': 30 * 1000,
+  '/works/banner': 60 * 1000,
+}
+
+function getCacheKey(url: string, data?: Record<string, any>): string {
+  return data ? `${url}?${JSON.stringify(data)}` : url
+}
+
+function getFromCache(url: string, data?: Record<string, any>): any | null {
+  // 只在缓存配置中存在 TTL 的接口启用缓存
+  const baseUrl = Object.keys(CACHE_TTL).find((k) => url.startsWith(k))
+  if (!baseUrl) return null
+
+  const key = getCacheKey(url, data)
+  const cached = requestCache.get(key)
+  if (cached && cached.expiry > Date.now()) {
+    return cached.data
+  }
+  return null
+}
+
+function setCache(url: string, data: any, dataParam?: Record<string, any>) {
+  const baseUrl = Object.keys(CACHE_TTL).find((k) => url.startsWith(k))
+  if (!baseUrl) return
+
+  const key = getCacheKey(url, dataParam)
+  requestCache.set(key, {
+    data,
+    expiry: Date.now() + CACHE_TTL[baseUrl],
+  })
+}
+
 /** 后端统一响应格式 */
 interface ApiResponse<T = any> {
   code: number
@@ -74,6 +114,14 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
     needAuth = true,
     showLoading = false,
   } = options
+
+  // ========== 对公开 GET 请求启用缓存 ==========
+  if (method === 'GET' && !needAuth) {
+    const cached = getFromCache(url, data)
+    if (cached) {
+      return Promise.resolve(cached as T)
+    }
+  }
 
   let retries = 0
 
@@ -115,6 +163,10 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
           if (body && typeof body.code === 'number') {
             if (body.code === 0) {
               // —— 成功 ——
+              // 对公开 GET 请求写入缓存
+              if (method === 'GET' && !needAuth) {
+                setCache(url, body.data, data)
+              }
               resolve(body.data as T)
             } else if (body.code === 40101 || body.code === 40102) {
               // —— token 过期/无效，跳登录 ——
@@ -122,8 +174,12 @@ export function request<T = any>(options: RequestOptions): Promise<T> {
               wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' })
               wx.navigateTo({ url: '/pages/login/login' })
               reject(new Error(body.message))
+            } else if (body.code >= 40400 && body.code < 40500) {
+              // —— 资源不存在类错误（404xx），静默处理 ——
+              // 调用方已在各自 catch 中做降级处理，不必弹 Toast 干扰用户
+              reject(new Error(body.message))
             } else {
-              // —— 业务错误 ——
+              // —— 其它业务错误 ——
               wx.showToast({ title: body.message || '请求失败', icon: 'none' })
               reject(new Error(body.message))
             }
@@ -333,12 +389,28 @@ export function getLikedWorks(params?: {
 
 /**
  * 记录浏览量 — POST /api/works/:id/view
+ * 用户已登录时会同步记录浏览历史
  */
 export function recordView(id: string): Promise<void> {
   return request({
     url: `/works/${id}/view`,
     method: 'POST',
     needAuth: false,
+  })
+}
+
+/**
+ * 获取浏览记录 — GET /api/user/history
+ * 返回分页数据 { list, total, page, pageSize }
+ */
+export function getHistory(params?: {
+  page?: number
+  pageSize?: number
+}): Promise<PaginatedData<any>> {
+  return request({
+    url: '/user/history',
+    method: 'GET',
+    data: params as Record<string, any>,
   })
 }
 

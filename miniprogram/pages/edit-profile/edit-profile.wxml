@@ -5,7 +5,7 @@
     <button class="avatar-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
       <image
         class="avatar-img"
-        src="{{profile.avatarUrl || 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'}}"
+        src="{{profile.avatarUrl || 'https://jianxiong-public-assets-1406049668.cos.ap-nanjing.myqcloud.com/resources/%E7%BB%93%E5%90%88%E8%BF%99%E4%B8%A4%E5%BC%A0%E5%9B%BE%E7%89%87%EF%BC%881.%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E6%A0%A1%E6%A0%87%EF%BC%9B2.%E5%90%B4%E5%81%A5%E9%9B%84%E5%85%88%E7%94%9F%E7%85%A7%EF%BC%89%EF%BC%8C%E4%B8%BA%E6%88%91%E7%94%9F_2026-05-10_12-00-37.png'}}"
         mode="aspectFill"
       />
       <view class="avatar-badge">
@@ -24,17 +24,12 @@
       <text class="form-label">昵称</text>
       <input
         class="form-input"
-        placeholder="请输入昵称"
+        type="nickname"
+        placeholder="点击填写昵称（可使用微信昵称）"
         value="{{profile.nickName}}"
         bindinput="onNicknameInput"
         maxlength="20"
       />
-    </view>
-
-    <!-- UID（只读）-->
-    <view class="form-row">
-      <text class="form-label">UID</text>
-      <text class="form-value readonly">自动生成</text>
     </view>
 
     <!-- 签名 -->
@@ -83,7 +78,7 @@
         <view
           wx:for="{{interestOptions}}"
           wx:key="index"
-          class="interest-tag {{profile.interests.indexOf(item) >= 0 ? 'interest-tag--active' : ''}}"
+          class="interest-tag {{(profile.interests || []).indexOf(item) >= 0 ? 'interest-tag--active' : ''}}"
           bindtap="onInterestTap"
           data-interest="{{item}}"
         >

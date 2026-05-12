@@ -1,5 +1,8 @@
 import { Work, IWorkDocument } from '../models/work.model'
+import { Comment } from '../models/comment.model'
+import { User } from '../models/user.model'
 import { Like } from '../models/like.model'
+import { ViewHistory } from '../models/viewHistory.model'
 import { AppError } from '../middleware/errorHandler'
 import { WorkType, WorkStatus } from '../types'
 
@@ -141,6 +144,7 @@ export async function getWorkById(workId: string, currentUserId?: string | null)
     isBanner: work.isBanner,
     tags: work.tags,
     imageList: work.imageList,
+    commentsCount: work.commentsCount || 0,
     liked,
   }
 }
@@ -172,12 +176,122 @@ export async function toggleLike(workId: string, userId: string) {
 }
 
 /**
- * 记录浏览量 (防重复)
+ * 记录浏览量（并保存浏览历史，若用户已登录）
  */
-export async function recordView(workId: string) {
+export async function recordView(workId: string, userId?: string | null) {
   const result = await Work.findByIdAndUpdate(workId, { $inc: { views: 1 } }, { new: true })
   if (!result) {
     throw new AppError('作品不存在', 404, 40402)
+  }
+
+  // 如果用户已登录，同步记录浏览历史
+  if (userId) {
+    await ViewHistory.findOneAndUpdate(
+      { userId, workId },
+      { userId, workId, viewedAt: new Date() },
+      { upsert: true, new: true },
+    )
+  }
+}
+
+/**
+ * 获取用户浏览记录（分页）
+ */
+export async function getUserViewHistory(userId: string, page: number, pageSize: number) {
+  const total = await ViewHistory.countDocuments({ userId })
+
+  const records = await ViewHistory.find({ userId })
+    .sort({ viewedAt: -1 })
+    .skip((page - 1) * pageSize)
+    .limit(pageSize)
+    .populate({
+      path: 'workId',
+      populate: { path: 'userId', select: 'nickName avatarUrl' },
+    })
+    .lean()
+
+  const list = records
+    .filter((r) => r.workId) // 过滤掉已被删除的作品
+    .map((r) => {
+      const work = r.workId as any
+      return {
+        id: work._id.toString(),
+        title: work.title,
+        type: work.type,
+        cover: work.cover,
+        author: work.userId?.nickName || '',
+        authorAvatar: work.userId?.avatarUrl || '',
+        views: work.views,
+        likes: work.likesCount,
+        fileUrl: work.fileUrl,
+        viewedAt: r.viewedAt,
+      }
+    })
+
+  return { list, total, page, pageSize }
+}
+
+// ============ 评论功能 ============
+
+/**
+ * 获取作品评论列表
+ */
+export async function getWorkComments(workId: string) {
+  // 确认作品存在
+  const work = await Work.findById(workId)
+  if (!work) {
+    throw new AppError('作品不存在', 404, 40402)
+  }
+
+  const comments = await Comment.find({ workId })
+    .sort({ createdAt: -1 })
+    .populate('userId', 'nickName avatarUrl')
+    .lean()
+
+  const list = comments.map((c) => ({
+    id: c._id.toString(),
+    author: (c.userId as any)?.nickName || '匿名',
+    authorAvatar: (c.userId as any)?.avatarUrl || '',
+    content: c.content,
+    createdAt: c.createdAt,
+  }))
+
+  return { list }
+}
+
+/**
+ * 添加评论
+ */
+export async function addWorkComment(workId: string, userId: string, content: string) {
+  // 确认作品存在
+  const work = await Work.findById(workId)
+  if (!work) {
+    throw new AppError('作品不存在', 404, 40402)
+  }
+
+  // 获取用户信息
+  const user = await User.findById(userId)
+  if (!user) {
+    throw new AppError('用户不存在', 404, 40401)
+  }
+
+  const comment = await Comment.create({
+    workId,
+    userId,
+    content,
+  })
+
+  // 更新作品评论数（在 Work 模型中添加 commentsCount 字段，或保持现状）
+  await Work.findByIdAndUpdate(workId, { $inc: { commentsCount: 1 } })
+
+  return {
+    comment: {
+      id: comment._id.toString(),
+      author: user.nickName || '匿名',
+      authorAvatar: user.avatarUrl || '',
+      content: comment.content,
+      createdAt: comment.createdAt,
+    },
   }
 }
 

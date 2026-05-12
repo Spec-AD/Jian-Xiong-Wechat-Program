@@ -371,6 +371,10 @@ Page({
     onCommentFocus() {
         this.setData({ commentInputFocused: true });
     },
+    /** 输入框输入（实时更新 commentText，使发送按钮高亮） */
+    onCommentInput(e) {
+        this.setData({ commentText: e.detail.value || '' });
+    },
     /** 输入框失焦 */
     onCommentBlur(e) {
         this.setData({
@@ -398,6 +402,10 @@ Page({
         return __awaiter(this, void 0, void 0, function* () {
             if (this.data.sendingComment)
                 return;
+            if (!content.trim()) {
+                (0, util_1.toast)('请输入评论内容');
+                return;
+            }
             this.setData({ sendingComment: true });
             try {
                 const result = yield (0, api_1.addWorkComment)(this._workId, content);
@@ -419,7 +427,8 @@ Page({
                 (0, util_1.toast)('评论成功', 'success');
             }
             catch (err) {
-                (0, util_1.toast)('评论发送失败，请重试');
+                // 显示后端返回的具体错误信息
+                (0, util_1.toast)(err.message || '评论发送失败，请重试');
                 this.setData({ sendingComment: false });
             }
         });

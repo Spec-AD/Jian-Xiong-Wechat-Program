@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express'
 import { AuthRequest } from '../types'
 import * as userService from '../services/user.service'
 import * as authService from '../services/auth.service'
+import * as workService from '../services/work.service'
 import { success } from '../utils/response'
 
 /**
@@ -17,6 +18,10 @@ export async function getProfile(req: AuthRequest, res: Response, next: NextFunc
       id: user._id.toString(),
       nickName: user.nickName,
       avatarUrl: user.avatarUrl,
+      signature: user.signature,
+      birthday: user.birthday,
+      region: user.region,
+      interests: user.interests,
       role: user.role,
       createdAt: user.createdAt,
       stats,
@@ -32,14 +37,14 @@ export async function getProfile(req: AuthRequest, res: Response, next: NextFunc
  */
 export async function updateProfile(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    const { nickName, avatarUrl } = req.body
+    const { nickName, avatarUrl, signature, birthday, region, interests } = req.body
 
-    if (!nickName && !avatarUrl) {
+    if (!nickName && !avatarUrl && !signature && !birthday && !region && !interests) {
       success(res, { message: '没有需要更新的字段' })
       return
     }
 
-    const user = await userService.updateUserProfile(req.user!.id, { nickName, avatarUrl })
+    const user = await userService.updateUserProfile(req.user!.id, { nickName, avatarUrl, signature, birthday, region, interests })
 
     success(res, {
       id: user._id.toString(),
@@ -66,13 +71,15 @@ export async function getStats(req: AuthRequest, res: Response, next: NextFuncti
 
 /**
  * GET /user/history
- * 获取用户浏览记录数量
- * （功能即将上线，目前返回空数据）
+ * 获取用户浏览记录（分页）
  */
 export async function getHistory(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    // 浏览记录功能尚未实现，返回 0
-    success(res, { count: 0 })
+    const page = Math.max(1, parseInt(req.query.page as string) || 1)
+    const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize as string) || 10))
+
+    const result = await workService.getUserViewHistory(req.user!.id, page, pageSize)
+    success(res, result)
   } catch (error) {
     next(error)
   }

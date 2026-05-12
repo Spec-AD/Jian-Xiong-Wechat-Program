@@ -1,41 +1,89 @@
-<!-- pages/login/login.wxml -->
+<!-- pages/login/login.wxml — 健雄书院登录页（重构版：南大紫主题） -->
 <view class="login-page">
 
-  <!-- 顶部背景区 -->
-  <view class="login-header">
-    <image class="login-logo" src="/assets/images/logo.png" mode="aspectFit" />
-    <text class="login-title">健雄书院</text>
-    <text class="login-subtitle">南京大学学生成果展示平台</text>
+  <!-- ===== 顶部装饰波纹 ===== -->
+  <view class="hero-wave">
+    <view class="wave wave-1"></view>
+    <view class="wave wave-2"></view>
+    <view class="wave wave-3"></view>
   </view>
 
-    <!-- 登录卡片 -->
+  <!-- ===== 顶部品牌区 ===== -->
+  <view class="hero-section">
+    <view class="logo-ring">
+      <image class="login-logo" src="/assets/images/logo.png" mode="aspectFit" />
+    </view>
+    <text class="login-title">健雄书院</text>
+    <text class="login-subtitle">南京大学 · 学生成果展示平台</text>
+  </view>
+
+  <!-- ===== 登录卡片 ===== -->
   <view class="login-card">
-    <view class="login-desc" style="text-align:center;margin-bottom:48rpx;">
-      <text class="text-lg text-bold">欢迎来到健雄书院</text>
-      <text class="text-secondary text-sm text-center mt-8" style="display:block;">
-        点击下方按钮，一键登录体验
-      </text>
+
+    <!-- 卡片头部 -->
+    <view class="card-header">
+      <text class="card-title">欢迎回来</text>
+      <text class="card-desc">一键登录，探索书院同学的精彩成果</text>
     </view>
 
     <!-- 错误提示 -->
-    <view class="error-tip" wx:if="{{errorMsg}}" style="background:#fef0f0;color:#e57373;padding:16rpx 24rpx;border-radius:12rpx;font-size:26rpx;text-align:center;margin-bottom:24rpx;">
-      <text>{{errorMsg}}</text>
+    <view wx:if="{{errorMsg}}" class="error-tip">
+            <text class="error-icon">!</text>
+      <text class="error-text">{{errorMsg}}</text>
     </view>
 
-            <!-- 一键登录（wx.login 静默授权，无需弹窗）
-         头像/昵称可在登录后进入「编辑资料」页自定义 -->
-    <button class="btn-primary" bindtap="handleQuickLogin" loading="{{loading}}" disabled="{{loading}}">
-      一键登录
+    <!-- 一键登录按钮 -->
+    <button
+      class="login-btn {{loading ? 'login-btn--loading' : ''}}"
+      bindtap="handleQuickLogin"
+      disabled="{{loading}}"
+    >
+      <!-- 加载状态动画 -->
+      <view wx:if="{{loading}}" class="btn-loading-wrap">
+        <view class="btn-dot dot-1"></view>
+        <view class="btn-dot dot-2"></view>
+        <view class="btn-dot dot-3"></view>
+        <text class="btn-loading-text">正在登录…</text>
+      </view>
+      <!-- 默认状态 -->
+      <view wx:else class="btn-content">
+                <text class="btn-icon">→</text>
+        <text class="btn-label">微信一键登录</text>
+      </view>
     </button>
 
-    <text class="text-secondary text-sm text-center mt-32" style="display:block;">
-      登录即代表同意《用户协议》与《隐私政策》
-    </text>
+    <!-- 协议 -->
+    <view class="agreement">
+      <text class="agreement-text">登录即代表同意</text>
+            <text class="agreement-link" bindtap="onViewAgreement">《用户协议》</text>
+      <text class="agreement-text">与</text>
+      <text class="agreement-link" bindtap="onViewPrivacy">《隐私政策》</text>
+    </view>
+
+    <!-- 特色标签 -->
+    <view class="features-row">
+            <view class="feature-item">
+        <text class="feature-icon">◆</text>
+        <text class="feature-label">成果展示</text>
+      </view>
+      <view class="feature-divider"></view>
+      <view class="feature-item">
+        <text class="feature-icon">◇</text>
+        <text class="feature-label">AI 助手</text>
+      </view>
+      <view class="feature-divider"></view>
+      <view class="feature-item">
+        <text class="feature-icon">✦</text>
+        <text class="feature-label">荣誉记录</text>
+      </view>
+    </view>
+
   </view>
 
-  <!-- 底部装饰 -->
+  <!-- ===== 底部 ===== -->
   <view class="login-footer">
-    <text class="text-secondary text-sm">南京大学健雄书院 © 2024</text>
+    <text class="footer-text">南京大学健雄书院 © 2024</text>
+    <text class="footer-version">v1.0.0</text>
   </view>
 
 </view>

@@ -22,13 +22,25 @@ export async function updateUserProfile(
   userId: string,
   data: Partial<WxUserInfo>,
 ): Promise<IUserDocument> {
-  const updateData: Partial<Pick<IUserDocument, 'nickName' | 'avatarUrl'>> = {}
+  const updateData: Partial<Pick<IUserDocument, 'nickName' | 'avatarUrl' | 'signature' | 'birthday' | 'region' | 'interests'>> = {}
 
   if (data.nickName !== undefined) {
     updateData.nickName = data.nickName
   }
   if (data.avatarUrl !== undefined) {
     updateData.avatarUrl = data.avatarUrl
+  }
+  if (data.signature !== undefined) {
+    updateData.signature = data.signature
+  }
+  if (data.birthday !== undefined) {
+    updateData.birthday = data.birthday
+  }
+  if (data.region !== undefined) {
+    updateData.region = data.region
+  }
+  if (data.interests !== undefined) {
+    updateData.interests = data.interests
   }
 
   const user = await User.findByIdAndUpdate(userId, updateData, {

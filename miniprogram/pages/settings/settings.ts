@@ -96,7 +96,7 @@ Page({
       success: (res) => {
         if (res.confirm) {
           app.clearUserInfo()
-          wx.reLaunch({ url: '/pages/index/index' })
+          wx.reLaunch({ url: '/pages/login/login' })
         }
       },
     })

@@ -23,7 +23,7 @@ Page({
     profile: {} as ProfileData,
     interestOptions: INTEREST_OPTIONS,
     regionIndex: 0,
-    region: ['江苏省', '南京市'],
+    region: ['江苏省', '南京市', ''],
     birthdayDate: '2000-01-01',
     uploading: false,
     saving: false,
@@ -46,10 +46,11 @@ Page({
           nickName: profileData.nickName || '',
           signature: profileData.signature || '',
           birthday: profileData.birthday || '',
-          region: profileData.region || ['江苏省', '南京市'],
+          region: profileData.region || ['江苏省', '南京市', ''],
           interests: profileData.interests || [],
-        },
-        birthdayDate: profileData.birthday || '2000-01-01',
+      },
+      region: profileData.region || ['江苏省', '南京市', ''],
+      birthdayDate: profileData.birthday || '2000-01-01',
       })
     } catch (err: any) {
       console.error('[EditProfile] 加载失败:', err)

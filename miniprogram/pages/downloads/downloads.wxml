@@ -1,0 +1,145 @@
+<view class="page">
+
+  <!-- ===== 统计概览 ===== -->
+  <view class="stats-bar">
+    <view class="stat-item">
+      <text class="stat-num">{{stats.total}}</text>
+      <text class="stat-label">总计</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-num stat-num--success">{{stats.completed}}</text>
+      <text class="stat-label">已完成</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-num stat-num--active">{{stats.downloading}}</text>
+      <text class="stat-label">下载中</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-num stat-num--danger">{{stats.failed}}</text>
+      <text class="stat-label">失败</text>
+    </view>
+  </view>
+
+  <!-- ===== 筛选标签 ===== -->
+  <view class="filter-bar" wx:if="{{!isEmpty}}">
+    <view
+      class="filter-chip {{filter === 'all' ? 'filter-chip--active' : ''}}"
+      data-filter="all"
+      bindtap="onFilterChange"
+    >全部</view>
+    <view
+      class="filter-chip {{filter === 'completed' ? 'filter-chip--active' : ''}}"
+      data-filter="completed"
+      bindtap="onFilterChange"
+    >已完成</view>
+    <view
+      class="filter-chip {{filter === 'downloading' ? 'filter-chip--active' : ''}}"
+      data-filter="downloading"
+      bindtap="onFilterChange"
+    >下载中</view>
+    <view
+      class="filter-chip {{filter === 'failed' ? 'filter-chip--active' : ''}}"
+      data-filter="failed"
+      bindtap="onFilterChange"
+    >失败</view>
+    <view class="filter-spacer"></view>
+    <view class="filter-action" bindtap="onToggleManage">
+      <text class="filter-action-icon">{{manageMode ? '✓' : '✎'}}</text>
+    </view>
+    <view wx:if="{{manageMode}}" class="filter-action filter-action--danger" bindtap="onClearAll">
+    <text class="filter-action-icon">X</text>
+    </view>
+  </view>
+
+  <!-- ===== 下载列表 ===== -->
+  <scroll-view class="scroll-list" scroll-y wx:if="{{!isEmpty}}">
+
+    <view
+      class="download-item {{item.status === 'completed' ? 'download-item--done' : ''}}"
+      wx:for="{{downloads}}"
+      wx:key="id"
+    >
+      <!-- 管理模式：显示删除按钮 -->
+      <view wx:if="{{manageMode}}" class="item-delete" bindtap="onDeleteItem" data-id="{{item.id}}">
+        <text class="item-delete-icon">-</text>
+      </view>
+
+      <!-- 文件图标 -->
+      <view class="item-icon {{'item-icon--' + item.type}}">
+        <text class="item-icon-text">{{item.type === 'video' ? 'V' : item.type === 'audio' ? 'A' : item.type === 'image' ? 'I' : item.type === 'doc' ? 'D' : 'F'}}</text>
+      </view>
+
+      <!-- 文件信息 -->
+      <view class="item-body">
+        <!-- 标题 -->
+        <view class="item-title-row">
+          <text class="item-title">{{item.title || '未知作品'}}</text>
+          <text class="item-status {{'item-status--' + item.status}}">{{getStatusLabel(item.status)}}</text>
+        </view>
+
+        <!-- 大小信息 -->
+        <view class="item-meta-row">
+          <text class="item-meta">文件大小: {{formatFileSize(item.totalBytes)}}</text>
+          <text wx:if="{{item.downloadedBytes > 0}}" class="item-meta">
+            已下载: {{formatFileSize(item.downloadedBytes)}}
+          </text>
+        </view>
+
+        <!-- 下载进度条（仅下载中/已完成/失败） -->
+        <view wx:if="{{item.status !== 'paused'}}" class="progress-bar-wrap">
+          <view
+            class="progress-bar-fill {{'progress-bar-fill--' + item.status}}"
+            style="width: {{item.progress}}%;"
+          ></view>
+        </view>
+
+        <!-- 进度/速度/ETA -->
+        <view wx:if="{{item.status === 'downloading'}}" class="item-speed-row">
+          <text class="item-speed-text">{{item.progress}}%</text>
+          <text class="item-speed-text">{{formatSpeed(item.speed)}}</text>
+          <text class="item-speed-text">剩余 {{formatETA(item.eta)}}</text>
+        </view>
+
+        <!-- 失败原因 -->
+        <view wx:if="{{item.status === 'failed' && item.errorMsg}}" class="item-error">
+          <text class="item-error-text">{{item.errorMsg}}</text>
+        </view>
+
+        <!-- 完成时间 -->
+        <view wx:if="{{item.status === 'completed' && item.completedAt}}" class="item-time">
+          <text class="item-time-text">{{item.completedAt}}</text>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="item-actions">
+        <!-- 失败可重试 -->
+        <view wx:if="{{item.status === 'failed'}}" class="item-action-btn" bindtap="onRetry" data-id="{{item.id}}">
+          <text class="action-btn-text">重试</text>
+        </view>
+        <!-- 完成可打开 -->
+        <view wx:if="{{item.status === 'completed' && item.type === 'doc'}}" class="item-action-btn" bindtap="onOpenFile" data-id="{{item.id}}">
+          <text class="action-btn-text">打开</text>
+        </view>
+      </view>
+    </view>
+
+  </scroll-view>
+
+  <!-- ===== 空状态 ===== -->
+  <view wx:else class="empty-state">
+    <text class="empty-icon">↓</text>
+    <text class="empty-title">暂无下载记录</text>
+    <text class="empty-desc">在作品中点击「下载」按钮，下载记录将出现在这里</text>
+    <view class="empty-btn" bindtap="goHall">去发现作品</view>
+  </view>
+
+  <!-- 底部 -->
+  <view class="footer">
+    <text class="footer-text">总计下载 {{formatFileSize(stats.totalSize)}}</text>
+  </view>
+
+</view>

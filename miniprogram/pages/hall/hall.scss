@@ -7,6 +7,7 @@ page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* ===== 搜索栏 ===== */
@@ -157,6 +158,27 @@ page {
   align-items: center;
   justify-content: space-between;
   padding: 24rpx 28rpx 12rpx;
+}
+
+.list-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8rpx 20rpx;
+  font-size: 26rpx;
+  color: var(--theme-color);
+  background: rgba(106, 0, 95, 0.06);
+  border-radius: 30rpx;
+  font-weight: 500;
+}
+
+.back-btn:active {
+  background: rgba(106, 0, 95, 0.12);
 }
 
 .list-header-text {

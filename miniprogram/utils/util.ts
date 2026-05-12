@@ -135,3 +135,42 @@ export const throttle = <T extends (...args: any[]) => any>(
     }
   }
 }
+
+/**
+ * 获取 WebP 格式的图片 URL（利用腾讯云 COS 图片处理）
+ * COS 万象图片处理：添加 ?imageMogr2/format/webp
+ * 在支持 WebP 的浏览器/小程序中节省带宽
+ */
+export function getWebpUrl(url: string, options?: { width?: number; quality?: number }): string {
+  if (!url || !url.includes('cos.ap-')) return url
+
+  const params: string[] = ['imageMogr2']
+  params.push('format/webp')
+
+  if (options?.width) {
+    params.push(`thumbnail/${options.width}x`)
+  }
+  if (options?.quality) {
+    params.push(`quality/${options.quality}`)
+  }
+
+  const separator = url.includes('?') ? '&' : '?'
+  return `${url}${separator}${params.join('/')}`
+}
+
+/**
+ * 防抖函数
+ */
+export const debounce = <T extends (...args: any[]) => any>(
+  fn: T,
+  delay = 300,
+): ((...args: Parameters<T>) => void) => {
+  let timer: ReturnType<typeof setTimeout> | null = null
+  return (...args) => {
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => {
+      fn(...args)
+      timer = null
+    }, delay)
+  }
+}

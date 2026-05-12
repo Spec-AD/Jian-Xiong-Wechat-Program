@@ -30,8 +30,8 @@ router.get('/stats', userController.getStats)
 
 /**
  * GET /api/user/history
- * 获取用户浏览记录数量
- * （功能即将上线，目前返回 0）
+ * 获取用户浏览记录（分页）
+ * Query: ?page=1&pageSize=20
  */
 router.get('/history', userController.getHistory)
 

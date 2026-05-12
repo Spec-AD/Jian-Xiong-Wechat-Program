@@ -67,9 +67,12 @@
     </view>
   </scroll-view>
 
-  <!-- ===== 列表区域头 ===== -->
+  <!-- ===== 列表区域头（含返回大厅按钮）===== -->
   <view class="list-header">
-    <text class="list-header-text">{{mode === 'hall' ? '全部作品' : mode === 'my' ? '我的发布' : '我的点赞'}}</text>
+    <view class="list-header-left">
+      <text wx:if="{{mode !== 'hall'}}" class="back-btn" bindtap="onBackToHall">‹ 返回大厅</text>
+      <text class="list-header-text">{{mode === 'hall' ? '全部作品' : mode === 'my' ? '我的发布' : mode === 'liked' ? '我的点赞' : '浏览记录'}}</text>
+    </view>
     <text class="list-count">共 {{total}} 项</text>
   </view>
 
@@ -127,7 +130,7 @@
   <!-- 空状态 -->
   <view wx:if="{{!loading && works.length === 0}}" class="empty">
     <text class="empty-icon"></text>
-    <text class="empty-text">{{mode === 'my' ? '还没有发布作品哦' : mode === 'liked' ? '还没有点赞过作品' : '暂无相关作品'}}</text>
+    <text class="empty-text">{{mode === 'my' ? '还没有发布作品哦' : mode === 'liked' ? '还没有点赞过作品' : mode === 'history' ? '还没有浏览过作品' : '暂无相关作品'}}</text>
   </view>
 
   <view class="list-bottom"></view>

@@ -66,8 +66,22 @@ router.get('/:id', optionalAuthMiddleware, objectIdParamValidator, validate, wor
 
 /**
  * POST /api/works/:id/view
- * 记录浏览量
+ * 记录浏览量（可选登录，登录后同时记录浏览历史）
  */
-router.post('/:id/view', objectIdParamValidator, validate, workController.recordView)
+router.post('/:id/view', optionalAuthMiddleware, objectIdParamValidator, validate, workController.recordView)
+
+// ============ 评论接口 ============
+
+/**
+ * GET /api/works/:id/comments
+ * 获取作品评论列表
+ */
+router.get('/:id/comments', optionalAuthMiddleware, objectIdParamValidator, validate, workController.getComments)
+
+/**
+ * POST /api/works/:id/comments
+ * 添加评论
+ */
+router.post('/:id/comments', authMiddleware, objectIdParamValidator, validate, workController.addComment)
 
 export default router

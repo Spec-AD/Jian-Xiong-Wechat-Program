@@ -19,6 +19,7 @@ App({
         baseUrl: 'https://jx-plform.site/api',
         /** hall 页面的展示模式：hall | my | liked */
         hallMode: 'hall',
+        /** hall 页面的展示模式：hall | my | liked | history */
     },
     onLaunch() {
         // ── 加载全局自定义字体 ──

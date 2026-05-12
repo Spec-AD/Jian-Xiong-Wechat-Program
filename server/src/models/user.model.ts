@@ -8,6 +8,10 @@ export interface IUserDocument extends Document {
   openid: string
   nickName: string
   avatarUrl: string
+  signature: string
+  birthday: string
+  region: string[]
+  interests: string[]
   role: UserRole
   lastLoginAt: Date | null
   createdAt: Date
@@ -32,6 +36,22 @@ const userSchema = new Schema<IUserDocument>(
     avatarUrl: {
       type: String,
       default: '',
+    },
+    signature: {
+      type: String,
+      default: '',
+    },
+    birthday: {
+      type: String,
+      default: '',
+    },
+    region: {
+      type: [String],
+      default: [],
+    },
+    interests: {
+      type: [String],
+      default: [],
     },
     role: {
       type: String,

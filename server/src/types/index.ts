@@ -103,4 +103,8 @@ export interface WxLoginResult {
 export interface WxUserInfo {
   nickName: string
   avatarUrl: string
+  signature?: string
+  birthday?: string
+  region?: string[]
+  interests?: string[]
 }

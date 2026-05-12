@@ -17,6 +17,7 @@ export interface IWorkDocument extends Document {
   isBanner: boolean
   views: number
   likesCount: number
+  commentsCount: number
   status: WorkStatus
   /** 实际作者（与上传者不同，用于作品署名） */
   actualAuthor: string
@@ -82,6 +83,11 @@ const workSchema = new Schema<IWorkDocument>(
       min: 0,
     },
     likesCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    commentsCount: {
       type: Number,
       default: 0,
       min: 0,

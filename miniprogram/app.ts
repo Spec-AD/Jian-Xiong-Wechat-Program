@@ -7,8 +7,8 @@ App<IAppOption>({
     openid: '',
     loginCode: '',
     baseUrl: 'https://jx-plform.site/api',
-    /** hall 页面的展示模式：hall | my | liked */
-    hallMode: 'hall' as 'hall' | 'my' | 'liked',
+        /** hall 页面的展示模式：hall | my | liked | history */
+    hallMode: 'hall' as 'hall' | 'my' | 'liked' | 'history',
   },
 
     onLaunch() {

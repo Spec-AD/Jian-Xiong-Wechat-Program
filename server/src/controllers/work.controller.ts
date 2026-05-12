@@ -144,8 +144,34 @@ export async function toggleLike(req: AuthRequest, res: Response, next: NextFunc
  */
 export async function recordView(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    await workService.recordView(req.params.id)
+    await workService.recordView(req.params.id, req.user?.id || null)
     success(res, null)
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * GET /works/:id/comments
+ * 获取作品评论列表
+ */
+export async function getComments(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const result = await workService.getWorkComments(req.params.id)
+    success(res, result)
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * POST /works/:id/comments
+ * 添加评论
+ */
+export async function addComment(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const result = await workService.addWorkComment(req.params.id, req.user!.id, req.body.content)
+    created(res, result, '评论成功')
   } catch (error) {
     next(error)
   }

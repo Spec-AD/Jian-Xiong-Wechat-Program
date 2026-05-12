@@ -16,4 +16,22 @@ export const updateProfileValidator = [
     .optional()
     .isString()
     .withMessage('头像 URL 必须是字符串'),
+  body('signature')
+    .optional()
+    .isString()
+    .withMessage('签名必须是字符串')
+    .isLength({ max: 100 })
+    .withMessage('签名最长 100 个字符'),
+  body('birthday')
+    .optional()
+    .isString()
+    .withMessage('生日必须是字符串'),
+  body('region')
+    .optional()
+    .isArray()
+    .withMessage('地域必须是数组'),
+  body('interests')
+    .optional()
+    .isArray()
+    .withMessage('兴趣必须是数组'),
 ]

@@ -92,6 +92,10 @@ function request(options) {
                             wx.navigateTo({ url: '/pages/login/login' });
                             reject(new Error(body.message));
                         }
+                        else if (body.code >= 40400 && body.code < 40500) {
+                            // 资源不存在类错误（404xx），静默处理
+                            reject(new Error(body.message));
+                        }
                         else {
                             wx.showToast({ title: body.message || '请求失败', icon: 'none' });
                             reject(new Error(body.message));
