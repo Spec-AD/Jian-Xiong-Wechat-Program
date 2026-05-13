@@ -52,14 +52,6 @@
       </view>
     </button>
 
-    <!-- 协议 -->
-    <view class="agreement">
-      <text class="agreement-text">登录即代表同意</text>
-            <text class="agreement-link" bindtap="onViewAgreement">《用户协议》</text>
-      <text class="agreement-text">与</text>
-      <text class="agreement-link" bindtap="onViewPrivacy">《隐私政策》</text>
-    </view>
-
     <!-- 特色标签 -->
     <view class="features-row">
             <view class="feature-item">
@@ -82,7 +74,7 @@
 
   <!-- ===== 底部 ===== -->
   <view class="login-footer">
-    <text class="footer-text">南京大学健雄书院 © 2024</text>
+    <text class="footer-text">南京大学健雄书院 © 2026</text>
     <text class="footer-version">v1.0.0</text>
   </view>
 

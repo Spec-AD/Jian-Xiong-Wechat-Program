@@ -287,7 +287,7 @@ const viewCount = await Work.aggregate([
     "id": "664f1a2b3c4d5e6f7a8b9c0d",
     "nickName": "张明远",
     "avatarUrl": "https://...",
-    "createdAt": "2024-01-15T08:00:00Z",
+    "createdAt": "2026-01-15T08:00:00Z",
     "stats": {
       "publishCount": 3,
       "likeCount": 186,
@@ -324,7 +324,7 @@ const viewCount = await Work.aggregate([
         "title": "苏北支教社会实践纪录片",
         "author": "志愿服务队",
         "authorAvatar": "https://...",
-        "date": "2024-06-01",
+        "date": "2026-06-01",
         "cover": "https://...",
         "type": "video",
         "typeName": "视频",
